@@ -1,0 +1,68 @@
+@tailwind base;
+
+/* Your own custom base styles */
+
+/* Start purging... */
+@tailwind components;
+/* Stop purging. */
+
+/* Your own custom component styles */
+
+/* Start purging... */
+@tailwind utilities;
+/* Stop purging. */
+
+/* Your own custom utilities */
+
+@layer utilities {
+  .scrollbar-hidden {
+    -ms-overflow-style: none; /* IE, Edge 対応 */
+    scrollbar-width: none; /* Firefox 対応 */
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    /* Chrome, Safari 対応 */
+    display: none;
+  }
+
+  .bg-black-transparent-01 {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .bg-black-transparent-02 {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .bg-white-transparent-01 {
+    background: rgba(256, 256, 256, 0.8);
+  }
+
+  .bg-white-transparent-02 {
+    background: rgba(256, 256, 256, 0.9);
+  }
+
+  /* layout global properties*/
+  .flex-xyc {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .absolute-xyc {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .absolute-xc {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .absolute-yc {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}

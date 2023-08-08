@@ -1,0 +1,12 @@
+@function map-deep-get($map, $keys...) {
+  @each $key in $keys {
+    $map: map-get($map, $key);
+  }
+  @return $map;
+}
+
+$animation-id: 0;
+@function get-unique-animation-name($animation-name) {
+  $animation-id: $animation-id + 1;
+  @return $animation-name + $animation-id;
+}
