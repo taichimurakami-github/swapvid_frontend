@@ -23,14 +23,14 @@ $zIndex: (
 
   @mixin unactive {
     opacity: 0;
-    visibility: hidden;
+    // visibility: hidden;
     height: 100%;
     top: 0;
   }
 
   @mixin active {
     opacity: 1;
-    visibility: visible;
+    // visibility: visible;
     // height: 100vh;
     height: 100%;
     top: 0;
