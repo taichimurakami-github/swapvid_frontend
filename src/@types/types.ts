@@ -102,7 +102,7 @@ export type TDocumentTimeline = {
   zoomRate: number;
 
   //if not on displayed, set scrollYAmount = -Infinity and scrollMode = "noscroll".
-  invidFocusedArea: TBoundingBox;
+  invidFocusedArea: TBoundingBox | null;
   scrollMode: "linear" | "noscroll";
 }[];
 

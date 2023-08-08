@@ -22,12 +22,9 @@ export function useDocumentScrollTimeline(
           }
 
           // 動画内での注目エリアのBBOXを算出
-          const invidFocusedAreaInDocRate: TBoundingBox = currValue[1] //currValue = (t_frame, null)の場合はマッチングしていない区間とみなす
+          const invidFocusedAreaInDocRate = currValue[1] //currValue = (t_frame, null)の場合はマッチングしていない区間とみなす
             ? (currValue[2] as TBoundingBox)
-            : [
-                [0, 0],
-                [0, 0],
-              ];
+            : null;
 
           // 新たにセクションを定義
           result.push({
