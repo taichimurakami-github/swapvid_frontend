@@ -5,26 +5,25 @@ import React, {
   PropsWithChildren,
   useState,
 } from "react";
+
+import { pdfjs, Document, Page } from "react-pdf";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+
 import {
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
 } from "@/@types/types";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
-import {
-  // useDocumentPlayerStateCtx,
-  useSetDocumentPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
+import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
 import {
   useDocumentActivityTimeline,
   useDocumentScrollTimeline,
 } from "@/hooks/useDocumentTimeline";
+
 import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
-// import { ZoomablePDFViewer } from "./ZoomablePDFViewerContainer";
-import { pdfjs, Document, Page } from "react-pdf";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
 import { getRangeArray } from "@/utils/common";
 
 export default function DocumentPlayerContainer(
@@ -281,74 +280,80 @@ export default function DocumentPlayerContainer(
     }
   }, [currentTime]);
 
+  const activatePlayer = useCallback(() => {
+    !playerActive &&
+      playerStandby &&
+      setDocumentPlayerStateValues({ active: true });
+  }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
+
   return (
-    <div
-      style={{
-        pointerEvents: playerActive || playerStandby ? "all" : "none",
-      }}
-      onWheel={() => {
-        if (!playerActive && playerStandby) {
-          setDocumentPlayerStateValues({ active: true });
-        }
+    <Document
+      file={props.pdfSrc}
+      onLoadSuccess={onDocumentLoadSuccess}
+      onWheel={activatePlayer}
+      onMouseDown={(e: React.MouseEvent) => {
+        const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
+        const isTextClicked =
+          onClickNode.nodeName === "SPAN" && !!onClickNode.innerText;
+        isTextClicked && activatePlayer();
       }}
     >
-      <Document file={props.pdfSrc} onLoadSuccess={onDocumentLoadSuccess}>
+      <div
+        id="document_viewer_wrapper"
+        className="w-full h-full original-player-container bg-white"
+        style={{
+          pointerEvents: playerStandby ? "all" : "none",
+        }}
+        onClick={() => {
+          props.enableDispatchVideoElementClickEvent &&
+            !playerActive &&
+            videoElement.click();
+        }}
+      >
         <div
-          id="document_viewer_wrapper"
-          className="w-full h-full original-player-container bg-white"
-          onClick={() => {
-            props.enableDispatchVideoElementClickEvent &&
-              !playerActive &&
-              videoElement.click();
-          }}
+          id="document_viewer_container"
+          className="relative w-full h-full overflow-hidden"
         >
           <div
-            id="document_viewer_container"
-            className="relative w-full h-full overflow-hidden"
+            className="relative w-full h-full overflow-scroll scrollbar-hidden"
+            style={{
+              width: videoElement.clientWidth + "px",
+              height: videoElement.clientHeight + "px",
+            }}
+            ref={scrollWrapperRef}
+            onScroll={updateDocumentState}
           >
             <div
-              className="relative w-full h-full overflow-scroll scrollbar-hidden"
               style={{
-                width: videoElement.clientWidth + "px",
-                height: videoElement.clientHeight + "px",
+                width: documentStyles.width + "px",
+                pointerEvents: playerStandby ? "all" : "none",
               }}
-              ref={scrollWrapperRef}
-              onScroll={updateDocumentState}
+              ref={documentRef}
             >
-              <div
-                style={{
-                  width: documentStyles.width + "px",
-                  pointerEvents: playerActive && playerStandby ? "all" : "none",
-                }}
-                ref={documentRef}
-              >
-                {getRangeArray(docNumPages, 1).map((i) => (
-                  <Page
-                    width={documentStyles.width}
-                    pageNumber={i}
-                    renderTextLayer
-                  />
-                ))}
-              </div>
-              <div
-                className="absolute top-0 left-0 w-full h-full"
-                ref={guideAreaWrapperRef}
-              >
-                {guideAreaStyles && (
-                  <OnDocumentGuideArea
-                    {...guideAreaStyles}
-                    docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
-                    docViewerHeight={
-                      scrollWrapperRef.current?.clientHeight ?? 0
-                    }
-                    active={true}
-                  ></OnDocumentGuideArea>
-                )}
-              </div>
+              {getRangeArray(docNumPages, 1).map((i) => (
+                <Page
+                  width={documentStyles.width}
+                  pageNumber={i}
+                  renderTextLayer
+                />
+              ))}
+            </div>
+            <div
+              className="absolute top-0 left-0 w-full h-full"
+              ref={guideAreaWrapperRef}
+            >
+              {guideAreaStyles && (
+                <OnDocumentGuideArea
+                  {...guideAreaStyles}
+                  docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
+                  docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
+                  active={true}
+                ></OnDocumentGuideArea>
+              )}
             </div>
           </div>
         </div>
-      </Document>
-    </div>
+      </div>
+    </Document>
   );
 }
