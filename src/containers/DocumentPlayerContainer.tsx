@@ -11,6 +11,7 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
 import {
+  TBoundingBox,
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
@@ -49,7 +50,7 @@ export default function DocumentPlayerContainer(
 
   // for element refs
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
-  const documentRef = useRef<HTMLImageElement>(null);
+  const documentContainerRef = useRef<HTMLImageElement>(null);
   const guideAreaWrapperRef = useRef<HTMLDivElement>(null);
 
   const videoElement = props.videoElement;
@@ -157,19 +158,21 @@ export default function DocumentPlayerContainer(
   );
 
   const updateDocumentState = useCallback(() => {
-    if (documentRef.current && scrollWrapperRef.current) {
+    if (documentContainerRef.current && scrollWrapperRef.current) {
       const currDocScrollY = scrollWrapperRef.current.scrollTop;
       const currDocLeft = 0;
-      const currDocTop = currDocScrollY / documentRef.current.clientHeight;
+      const currDocTop =
+        currDocScrollY / documentContainerRef.current.clientHeight;
       const currDocWidth =
-        scrollWrapperRef.current.clientWidth / documentRef.current.clientWidth;
+        scrollWrapperRef.current.clientWidth /
+        documentContainerRef.current.clientWidth;
       const currDocHeight =
         scrollWrapperRef.current.clientHeight /
-        documentRef.current.clientHeight;
+        documentContainerRef.current.clientHeight;
 
       const activeTimes = getPlaytimeFromInDocScrollY(
         currDocScrollY,
-        documentRef.current.clientHeight,
+        documentContainerRef.current.clientHeight,
         videoElement.duration
       );
 
@@ -179,7 +182,7 @@ export default function DocumentPlayerContainer(
           [currDocLeft, currDocTop],
           [currDocLeft + currDocWidth, currDocTop + currDocHeight],
         ],
-        wrapperScrollHeight: documentRef.current.clientHeight,
+        wrapperScrollHeight: documentContainerRef.current.clientHeight,
         wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
         activeTimes,
       });
@@ -189,6 +192,58 @@ export default function DocumentPlayerContainer(
     getPlaytimeFromInDocScrollY,
     setDocumentPlayerStateValues,
   ]);
+
+  const updateDocumentStyles = useCallback(
+    (
+      currentInvidFocusedArea: TBoundingBox,
+      documentWidth: number,
+      documentHeight: number,
+      scrollWrapperElem: HTMLElement,
+      forceScroll = false,
+      forceChangeWidth = false
+    ) => {
+      const [r_areaWidth] = cvtToWHArray(currentInvidFocusedArea);
+      const [r_top, r_left, r_width, r_height] = cvtToTLWHArray(
+        currentInvidFocusedArea
+      );
+
+      const zoomRate = r_areaWidth > 0 ? 1 / r_areaWidth : 1.0;
+      const currDocumentStyles = {
+        scrollTop: documentHeight * r_top,
+        scrollLeft: documentWidth * r_left,
+        scale: zoomRate,
+        standby: true,
+      };
+
+      // Update document styles
+      setDocumentStyles((b) => ({
+        ...currDocumentStyles,
+        // Set width only when player is unactive
+        // because width change make <Page /> component to re-render pdf
+        // due to using HTML Canvas API
+        width:
+          !playerActive || forceChangeWidth
+            ? videoElement.clientWidth * zoomRate
+            : b.width,
+      }));
+
+      // Update document guide area styles
+      setGuideAreaStyles({
+        top: r_top * documentHeight + "px",
+        left: r_left * documentWidth + "px",
+        width: r_width * documentWidth + "px",
+        height: r_height * documentHeight + "px",
+      });
+
+      // Syncronize document player scroll position
+      (!playerActive || forceScroll) &&
+        scrollWrapperElem.scroll(
+          documentStyles.scrollLeft,
+          documentStyles.scrollTop
+        );
+    },
+    [playerActive, setDocumentStyles, setGuideAreaStyles]
+  );
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -201,10 +256,10 @@ export default function DocumentPlayerContainer(
    * 3. Dispatch changes depending on specific conditions
    */
   useEffect(() => {
-    if (documentRef.current && scrollWrapperRef.current) {
+    if (documentContainerRef.current && scrollWrapperRef.current) {
       const activeTlSection = getActiveTlSectionFromPlaytime(
         currentTime,
-        documentRef.current.clientHeight
+        documentContainerRef.current.clientHeight
       );
 
       setActiveScrollTl(activeTlSection);
@@ -226,59 +281,59 @@ export default function DocumentPlayerContainer(
         return;
       }
 
-      // if (!animateEffectActive.current) {
-      const [r_areaWidth] = cvtToWHArray(activeTlSection.invidFocusedArea);
-
-      const zoomRate = r_areaWidth > 0 ? 1 / r_areaWidth : 1.0;
-      const currContentWidth = documentRef.current.clientWidth;
-      const currContentHeight = documentRef.current.clientHeight;
-
-      const [r_top, r_left, r_width, r_height] = cvtToTLWHArray(
-        activeTlSection.invidFocusedArea
+      updateDocumentStyles(
+        activeTlSection.invidFocusedArea,
+        documentContainerRef.current.clientWidth,
+        documentContainerRef.current.clientHeight,
+        scrollWrapperRef.current
       );
 
-      // Update document styles
-      const currentDocumentStyles = {
-        scrollTop: currContentHeight * r_top,
-        scrollLeft: currContentWidth * r_left,
-        scale: zoomRate,
-        standby: true,
-
-        // Set width only when player is unactive
-        // because width change make <Page /> component to re-render pdf
-        // due to using HTML Canvas API
-        width: props.playerActive
-          ? documentStyles.width
-          : videoElement.clientWidth * zoomRate,
-      };
-      setDocumentStyles(currentDocumentStyles);
-
-      // Syncronize document player scroll position
-      !props.playerActive &&
-        scrollWrapperRef.current.scroll(
-          documentStyles.scrollLeft,
-          documentStyles.scrollTop
-        );
-
-      // Update document guide area styles
-      if (guideAreaWrapperRef.current) {
-        guideAreaWrapperRef.current.style.width = currContentWidth + "px";
-        guideAreaWrapperRef.current.style.height = currContentHeight + "px";
-
-        setGuideAreaStyles({
-          top: r_top * currContentHeight + "px",
-          left: r_left * currContentWidth + "px",
-          width: r_width * currContentWidth + "px",
-          height: r_height * currContentHeight + "px",
-        });
-      }
-      // }
-
-      // (additional)4. Update activity states
+      // Update activity states
       props.enableInvidActivitiesReenactment &&
         updateAcitvityState(currentTime);
     }
   }, [currentTime]);
+
+  // force update document styles when playerAcvive changed
+  useEffect(() => {
+    if (documentContainerRef.current && scrollWrapperRef.current) {
+      const activeTlSection = getActiveTlSectionFromPlaytime(
+        currentTime,
+        documentContainerRef.current.clientHeight
+      );
+
+      setActiveScrollTl(activeTlSection);
+      setDocumentPlayerStateValues({
+        videoOnFocusArea: activeTlSection?.invidFocusedArea,
+        standby: !!activeTlSection,
+      });
+
+      // Failed to found active section from scroll timeline
+      if (!activeTlSection) {
+        setDocumentPlayerStateValues({ standby: false });
+        setDocumentStyles((b) => ({ ...b, standby: false }));
+        return;
+      }
+
+      // Found activeTlSection but section doesn't record onFocusArea
+      if (!activeTlSection.invidFocusedArea) {
+        setDocumentStyles((b) => ({ ...b, standby: false }));
+        return;
+      }
+
+      updateDocumentStyles(
+        activeTlSection.invidFocusedArea,
+        documentContainerRef.current.clientWidth,
+        documentContainerRef.current.clientHeight,
+        scrollWrapperRef.current,
+        true
+      );
+
+      // Update activity states
+      props.enableInvidActivitiesReenactment &&
+        updateAcitvityState(currentTime);
+    }
+  }, [playerActive]);
 
   const activatePlayer = useCallback(() => {
     !playerActive &&
@@ -326,9 +381,9 @@ export default function DocumentPlayerContainer(
             <div
               style={{
                 width: documentStyles.width + "px",
-                pointerEvents: playerStandby ? "all" : "none",
+                pointerEvents: playerStandby || playerActive ? "all" : "none",
               }}
-              ref={documentRef}
+              ref={documentContainerRef}
             >
               {getRangeArray(docNumPages, 1).map((i) => (
                 <Page

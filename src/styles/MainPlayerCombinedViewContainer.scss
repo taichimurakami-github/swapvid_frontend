@@ -100,6 +100,7 @@ $zIndex: (
 
   &.unactive {
     animation: draggableVideoUnactive forwards 0.75s ease-in-out;
+    pointer-events: none;
   }
   &.active {
     animation: draggableVideoActive forwards 0.75s ease-in-out;
@@ -126,12 +127,21 @@ $zIndex: (
   @keyframes draggableVideoActive {
     0% {
       @include unactive;
+
+      // Set pointer-events to none temporarily
+      // to avoid all text selected automatically
+      pointer-events: none;
     }
     50% {
       @include unactive;
+      pointer-events: none;
+    }
+    90% {
+      pointer-events: none;
     }
     100% {
       @include active;
+      pointer-events: all;
     }
   }
 
