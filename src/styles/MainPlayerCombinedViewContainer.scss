@@ -15,27 +15,24 @@ $zIndex: (
   @extend .__player-element-wrapper-base;
 
   &.unactive {
-    animation: playerWrapperUnactive forwards 0.6s ease-in-out;
+    animation: playerWrapperUnactive forwards 0.4s ease-in-out;
   }
   &.active {
-    animation: playerWrapperActive forwards 0.6s ease-in-out;
+    animation: playerWrapperActive forwards 0.4s ease-in-out;
   }
 
   @mixin unactive {
     opacity: 0;
-    visibility: hidden;
+    // visibility: hidden;
     height: 100%;
     top: 0;
   }
 
   @mixin active {
     opacity: 1;
-    visibility: visible;
-    // height: 100vh;
+    // visibility: visible;
     height: 100%;
     top: 0;
-    // top: 50%;
-    // transform: translateY(-50%);
   }
 
   @keyframes playerWrapperActive {
@@ -103,6 +100,7 @@ $zIndex: (
 
   &.unactive {
     animation: draggableVideoUnactive forwards 0.75s ease-in-out;
+    pointer-events: none;
   }
   &.active {
     animation: draggableVideoActive forwards 0.75s ease-in-out;
@@ -129,12 +127,21 @@ $zIndex: (
   @keyframes draggableVideoActive {
     0% {
       @include unactive;
+
+      // Set pointer-events to none temporarily
+      // to avoid all text selected automatically
+      pointer-events: none;
     }
     50% {
       @include unactive;
+      pointer-events: none;
+    }
+    90% {
+      pointer-events: none;
     }
     100% {
       @include active;
+      pointer-events: all;
     }
   }
 

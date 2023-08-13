@@ -18,6 +18,10 @@ export default function OnDocumentGuideArea(
   const wrapperRef = useRef<HTMLDivElement>(null);
   const documentPlayerState = useDocumentPlayerStateCtx();
 
+  if (!documentPlayerState.videoOnFocusArea) {
+    return <></>;
+  }
+
   const areaLeft = documentPlayerState.videoOnFocusArea[0][0];
   const areaTop = documentPlayerState.videoOnFocusArea[0][1];
   const areaRight = documentPlayerState.videoOnFocusArea[1][0];
@@ -26,17 +30,9 @@ export default function OnDocumentGuideArea(
   const areaWidth = areaRight - areaLeft;
   const areaHeight = areaBottom - areaTop;
 
-  const guideAreaStyles = {
-    top: areaTop * 100 + "%",
-    left: areaLeft * 100 + "%",
-
-    width: areaWidth * 100 + "%",
-    height: areaHeight * 100 + "%",
-  };
-
   return (
     <div
-      className="relative scrollbar-hidden h-full"
+      className="relative scrollbar-hidden h-full pointer-events-none"
       style={{
         visibility:
           props.active && areaWidth > 0 && areaHeight > 0
@@ -46,7 +42,7 @@ export default function OnDocumentGuideArea(
       ref={wrapperRef}
     >
       <div
-        className="absolute top-0 left-0 doc-overview-invid-focused-area border-4 border-blue-600 z-10 opacity-40"
+        className="absolute top-0 left-0 doc-overview-invid-focused-area border-[10px] border-blue-600 z-10 opacity-40"
         // style={guideAreaStyles}
         style={{
           top: props.top,

@@ -5,22 +5,27 @@ import React, {
   PropsWithChildren,
   useState,
 } from "react";
+
+import { pdfjs, Document, Page } from "react-pdf";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+
 import {
+  TBoundingBox,
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
 } from "@/@types/types";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
-import {
-  // useDocumentPlayerStateCtx,
-  useSetDocumentPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
+import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
 import {
   useDocumentActivityTimeline,
   useDocumentScrollTimeline,
 } from "@/hooks/useDocumentTimeline";
+
 import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
+import { getRangeArray } from "@/utils/common";
 
 export default function DocumentPlayerContainer(
   props: PropsWithChildren<{
@@ -28,6 +33,7 @@ export default function DocumentPlayerContainer(
     scrollTimeline: TServerGeneratedScrollTimeline | null;
     activityTimeline: TServerGeneratedActivityTimeline | null;
     playerActive: boolean;
+    pdfSrc: string;
     documentBaseImageSrc: string;
     scrollWrapperId?: string;
     enableDispatchVideoElementClickEvent?: boolean;
@@ -38,12 +44,43 @@ export default function DocumentPlayerContainer(
     disableUnactiveAnimation?: boolean;
   }>
 ) {
+  // for player animation when on/off
+  const animateEffectActive = useRef(false);
+  const animating = useRef(false);
+
+  // for element refs
+  const scrollWrapperRef = useRef<HTMLDivElement>(null);
+  const documentContainerRef = useRef<HTMLImageElement>(null);
+  const guideAreaWrapperRef = useRef<HTMLDivElement>(null);
+
   const videoElement = props.videoElement;
   const currentTime = useVideoCurrenttime(props.videoElement);
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
-  const playerActive = props.playerActive;
 
-  // const [currTlSecId, setCurrTlSecId] = useState(0);
+  const [activeScrollTl, setActiveScrollTl] = useState<
+    TDocumentTimeline[0] | null
+  >(null);
+
+  const [documentStyles, setDocumentStyles] = useState({
+    scrollTop: 0,
+    scrollLeft: 0,
+    width: videoElement.clientWidth,
+    scale: 1.0,
+  });
+
+  const [guideAreaStyles, setGuideAreaStyles] = useState<{
+    top: number | string;
+    left: number | string;
+    width: number | string;
+    height: number | string;
+  } | null>({
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  });
+
+  const [docNumPages, setDocNumPages] = useState<number>(0);
 
   const { timeline } = useDocumentScrollTimeline(
     props.scrollTimeline || {
@@ -53,9 +90,6 @@ export default function DocumentPlayerContainer(
     }
   );
 
-  const scrollWrapperRef = useRef<HTMLDivElement>(null);
-  const baseImageRef = useRef<HTMLImageElement>(null);
-  const guideAreaWrapperRef = useRef<HTMLDivElement>(null);
   const {
     // activityState,
     updateAcitvityState,
@@ -76,26 +110,14 @@ export default function DocumentPlayerContainer(
     scrollWrapperRef.current
   );
 
-  const [guideAreaStyles, setGuideAreaStyles] = useState<{
-    top: number | string;
-    left: number | string;
-    width: number | string;
-    height: number | string;
-  }>({
-    top: 0,
-    left: 0,
-    width: 0,
-    height: 0,
-  });
+  const playerActive = props.playerActive;
+  const playerStandby = activeScrollTl && activeScrollTl.invidFocusedArea;
 
-  // for player animation when on/off
-  const animateEffectActive = useRef(false);
-  const animating = useRef(false);
-
-  const convertScrollYToBeCentered = useCallback(
-    (scrollY: number) =>
-      scrollY - props.videoElement.getBoundingClientRect().top,
-    [props.videoElement, scrollWrapperRef]
+  const onDocumentLoadSuccess = useCallback(
+    ({ numPages }: { numPages: number }): void => {
+      setDocNumPages(numPages);
+    },
+    [setDocNumPages]
   );
 
   const getActiveTlSectionFromPlaytime = useCallback(
@@ -116,6 +138,8 @@ export default function DocumentPlayerContainer(
     ): [number, number][] => {
       const MARGIN = 150;
       const targetSections = timeline.filter((v) => {
+        if (!v.invidFocusedArea) return false;
+
         const onFocusAreaTop = v.invidFocusedArea[0][1];
 
         return (
@@ -134,19 +158,21 @@ export default function DocumentPlayerContainer(
   );
 
   const updateDocumentState = useCallback(() => {
-    if (baseImageRef.current && scrollWrapperRef.current) {
+    if (documentContainerRef.current && scrollWrapperRef.current) {
       const currDocScrollY = scrollWrapperRef.current.scrollTop;
       const currDocLeft = 0;
-      const currDocTop = currDocScrollY / baseImageRef.current.clientHeight;
+      const currDocTop =
+        currDocScrollY / documentContainerRef.current.clientHeight;
       const currDocWidth =
-        scrollWrapperRef.current.clientWidth / baseImageRef.current.clientWidth;
+        scrollWrapperRef.current.clientWidth /
+        documentContainerRef.current.clientWidth;
       const currDocHeight =
         scrollWrapperRef.current.clientHeight /
-        baseImageRef.current.clientHeight;
+        documentContainerRef.current.clientHeight;
 
       const activeTimes = getPlaytimeFromInDocScrollY(
         currDocScrollY,
-        baseImageRef.current.clientHeight,
+        documentContainerRef.current.clientHeight,
         videoElement.duration
       );
 
@@ -156,7 +182,7 @@ export default function DocumentPlayerContainer(
           [currDocLeft, currDocTop],
           [currDocLeft + currDocWidth, currDocTop + currDocHeight],
         ],
-        wrapperScrollHeight: baseImageRef.current.clientHeight,
+        wrapperScrollHeight: documentContainerRef.current.clientHeight,
         wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
         activeTimes,
       });
@@ -167,228 +193,175 @@ export default function DocumentPlayerContainer(
     setDocumentPlayerStateValues,
   ]);
 
-  useEffect(() => {
-    if (scrollWrapperRef.current && baseImageRef.current) {
-      // setDocumentPlayerStateValues({
-      //   standby: true,
-      // });
-      // scrollWrapperRef.current.scrollTop = 0; //reset scrollWrapper scrollY
-      // setDocumentPlayerStateValues({
-      //   baseImgSrc: props.documentBaseImageSrc,
-      //   documentOnFocusArea: getZeroBbox(), //reset inDocFocusedScrollY
-      //   wrapperScrollHeight: baseImageRef.current.clientHeight,
-      //   wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
-      // });
-    }
-  }, [
-    props.documentBaseImageSrc,
-    scrollWrapperRef,
-    baseImageRef,
-    setDocumentPlayerStateValues,
-  ]);
-
-  /**
-   * DocPlayer state updation hooks
-   * 1. Get new inVidScrollY from currentTime
-   * 2. Set inVidScrollY in ref and documentPlayerState
-   * 3. Set scrollWrapper scrollY when flg is OK
-   */
-  useEffect(() => {
-    if (baseImageRef.current && scrollWrapperRef.current) {
-      const activeTlSection = getActiveTlSectionFromPlaytime(
-        currentTime,
-        baseImageRef.current.clientHeight
+  const updateDocumentStyles = useCallback(
+    (
+      currentInvidFocusedArea: TBoundingBox,
+      documentWidth: number,
+      documentHeight: number,
+      scrollWrapperElem: HTMLElement
+    ) => {
+      const [r_areaWidth] = cvtToWHArray(currentInvidFocusedArea);
+      const [r_top, r_left, r_width, r_height] = cvtToTLWHArray(
+        currentInvidFocusedArea
       );
 
+      const zoomRate = r_areaWidth > 0 ? 1 / r_areaWidth : 1.0;
+      const currDocumentStyles = {
+        scrollTop: documentHeight * r_top,
+        scrollLeft: documentWidth * r_left,
+        scale: zoomRate,
+        standby: true,
+      };
+
+      // Update document styles
+      setDocumentStyles((b) => ({
+        ...currDocumentStyles,
+        // Set width only when player is unactive
+        // because width change make <Page /> component to re-render pdf
+        // due to using HTML Canvas API
+        width: !playerActive ? videoElement.clientWidth * zoomRate : b.width,
+      }));
+
+      // Update document guide area styles
+      setGuideAreaStyles({
+        top: r_top * documentHeight + "px",
+        left: r_left * documentWidth + "px",
+        width: r_width * documentWidth + "px",
+        height: r_height * documentHeight + "px",
+      });
+
+      // Syncronize document player scroll position
+      if (!playerActive) {
+        scrollWrapperElem.scrollTop = currDocumentStyles.scrollTop;
+        scrollWrapperElem.scrollLeft = currDocumentStyles.scrollLeft;
+      }
+    },
+    [playerActive, setDocumentStyles, setGuideAreaStyles]
+  );
+
+  useEffect(() => {
+    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+  }, []);
+
+  /**
+   * DocPlayer state updation hooks (Video Current Time driven)
+   * 1. Get active timeline section
+   * 2. Calculate new document states
+   * 3. Dispatch changes depending on specific conditions
+   */
+  useEffect(() => {
+    if (documentContainerRef.current && scrollWrapperRef.current) {
+      const activeTlSection = getActiveTlSectionFromPlaytime(
+        currentTime,
+        documentContainerRef.current.clientHeight
+      );
+
+      setActiveScrollTl(activeTlSection);
+      setDocumentPlayerStateValues({
+        videoOnFocusArea: activeTlSection?.invidFocusedArea,
+        standby: !!activeTlSection,
+      });
+
+      // Failed to found active section from scroll timeline
       if (!activeTlSection) {
         setDocumentPlayerStateValues({ standby: false });
+        setDocumentStyles((b) => ({ ...b, standby: false }));
         return;
       }
 
-      const videoOnFocusArea = activeTlSection.invidFocusedArea;
-
-      // setCurrTlSecId(activeTlSection.id);
-      setDocumentPlayerStateValues({ videoOnFocusArea, standby: true });
-
-      if (!playerActive && !animateEffectActive.current) {
-        const [r_areaWidth] = cvtToWHArray(activeTlSection.invidFocusedArea);
-
-        const zoomRate = r_areaWidth > 0 ? 1 / r_areaWidth : 1.0; // d系 -> vf系 変換係数
-
-        const currVideoWidth = scrollWrapperRef.current.clientWidth;
-        const currContentWidth = baseImageRef.current.clientWidth;
-        const currContentHeight = baseImageRef.current.clientHeight;
-
-        const [r_top, r_left, r_width, r_height] = cvtToTLWHArray(
-          activeTlSection.invidFocusedArea
-        );
-
-        baseImageRef.current.width = currVideoWidth * zoomRate;
-        scrollWrapperRef.current.scrollTop = currContentHeight * r_top;
-        scrollWrapperRef.current.scrollLeft = currContentWidth * r_left;
-
-        if (guideAreaWrapperRef.current) {
-          guideAreaWrapperRef.current.style.width =
-            baseImageRef.current.width + "px";
-          guideAreaWrapperRef.current.style.height =
-            baseImageRef.current.height + "px";
-
-          setGuideAreaStyles({
-            top: r_top * currContentHeight + "px",
-            left: r_left * currContentWidth + "px",
-            width: r_width * currContentWidth + "px",
-            height: r_height * currContentHeight + "px",
-          });
-        }
+      // Found activeTlSection but section doesn't record onFocusArea
+      if (!activeTlSection.invidFocusedArea) {
+        setDocumentStyles((b) => ({ ...b, standby: false }));
+        return;
       }
 
-      // (additional)4. Update activity states
+      updateDocumentStyles(
+        activeTlSection.invidFocusedArea,
+        documentContainerRef.current.clientWidth,
+        documentContainerRef.current.clientHeight,
+        scrollWrapperRef.current
+      );
+
+      // Update activity states
       props.enableInvidActivitiesReenactment &&
         updateAcitvityState(currentTime);
     }
-  }, [currentTime, getActiveTlSectionFromPlaytime]);
+  }, [currentTime]);
 
-  /**
-   * DocPlayer animation hooks
-   * Set Animations on player unactivated.
-   */
-  // useEffect(() => {
-  //   (() => {
-  //     // 0. Don't do anything when disabled flg is activated
-  //     if (props.disableUnactiveAnimation) {
-  //       return;
-  //     }
-
-  //     // 1. Activation of animationEffectActive flg (animation standby flg)
-  //     if (playerActive) {
-  //       if (!animateEffectActive.current) {
-  //         animateEffectActive.current = true; // Activate animation standby flg
-  //       }
-
-  //       return;
-  //     }
-
-  //     // 2. Do not execute anything when components are null or animation standby flg is unactivated
-  //     if (
-  //       !scrollWrapperRef.current ||
-  //       !baseImageRef.current ||
-  //       !animateEffectActive.current
-  //     )
-  //       return;
-
-  //     // Start on unactivated animation when documentPlayerState.active changes to "false"
-  //     if (!animating.current) {
-  //       const newScrollY =
-  //         getOnfocusAreaFromPlaytime(
-  //           currentTime,
-  //           baseImageRef.current.clientHeight
-  //         )[0][1] * baseImageRef.current.clientHeight;
-  //       const scrollWrapper = scrollWrapperRef.current as HTMLDivElement;
-
-  //       //animation effectがonのとき
-  //       const nowScrollY = scrollWrapper.scrollTop;
-  //       let i = 0;
-  //       const animation_sec = 0.5;
-
-  //       const times = Math.round(animation_sec * 60);
-  //       const delta = (newScrollY - nowScrollY) / times;
-
-  //       const updateAnimation = () => {
-  //         scrollWrapper.scrollTop += delta;
-  //         i++;
-
-  //         if (i < times) {
-  //           window.requestAnimationFrame(updateAnimation);
-  //         } else {
-  //           animateEffectActive.current = false;
-  //           animating.current = false;
-  //         }
-  //       };
-  //       animating.current = true;
-  //       updateAnimation();
-  //     }
-  //   })();
-  // }, [
-  //   currentTime,
-  //   timeline,
-  //   getScrollYFromPlaytime,
-  //   scrollWrapperRef,
-  //   baseImageRef,
-  // ]);
+  const activatePlayer = useCallback(() => {
+    !playerActive &&
+      playerStandby &&
+      setDocumentPlayerStateValues({ active: true });
+  }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
 
   return (
-    <div
-      id="document_viewer_wrapper"
-      className={`w-full h-full original-player-container bg-white`}
-      onClick={() => {
-        props.enableDispatchVideoElementClickEvent && videoElement.click();
-      }}
-      onWheel={() => {
-        if (!playerActive) {
-          setDocumentPlayerStateValues({ active: true });
-        }
+    <Document
+      file={props.pdfSrc}
+      onLoadSuccess={onDocumentLoadSuccess}
+      onWheel={activatePlayer}
+      onMouseDown={(e: React.MouseEvent) => {
+        const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
+        const isTextClicked =
+          onClickNode.nodeName === "SPAN" && !!onClickNode.innerText;
+        isTextClicked && activatePlayer();
       }}
     >
-      <div id="document_viewer_container" className="relative w-full h-full">
+      <div
+        id="document_viewer_wrapper"
+        className="w-full h-full original-player-container bg-white"
+        style={{
+          pointerEvents: playerStandby ? "all" : "none",
+        }}
+        onClick={() => {
+          props.enableDispatchVideoElementClickEvent &&
+            !playerActive &&
+            videoElement.click();
+        }}
+      >
         <div
-          id={playerActive ? props.scrollWrapperId : ""}
-          className={`relative mx-auto overflow-scroll scrollbar-hidden z-0 w-full h-full`}
-          ref={scrollWrapperRef}
-          // style={{
-          //   width: `${props.scrollWrapperWidth_pct}%`,
-          //   height: `${props.scrollWrapperHeight_pct}%`,
-          //   transform: `scale(${document})`,
-          // }}
-          onScroll={() => {
-            updateDocumentState();
-          }}
+          id="document_viewer_container"
+          className="relative w-full h-full overflow-hidden"
         >
-          <img
-            className="select-none max-w-none"
-            src={props.documentBaseImageSrc}
-            ref={baseImageRef}
-          />
-          {/* <div
-            id="activity_assets_layer"
-            className="absolute top-0 left-1/2 -translate-x-1/2 h-full"
-            style={{
-              width:
-                (100 * getAssetsMetadata().video.width) /
-                  getAssetsMetadata().document.width +
-                "%",
-            }}
-          >
-            {props.enableInvidActivitiesReenactment &&
-              getActivityAssets().map((v) => {
-                return (
-                  <img
-                    className="absolute"
-                    src={v[2]}
-                    style={{
-                      top: v[1][0][0] * 100 + "%",
-                      left: v[1][0][1] * 100 + "%",
-                      width: (v[1][1][1] - v[1][0][1]) * 100 + "%",
-                      display: currentTime >= v[0] ? "block" : "none",
-                    }}
-                  />
-                );
-              })}
-          </div> */}
           <div
-            className="absolute top-0 left-0 w-full h-full"
-            ref={guideAreaWrapperRef}
+            className="relative w-full h-full overflow-scroll scrollbar-hidden"
+            style={{
+              width: videoElement.clientWidth + "px",
+              height: videoElement.clientHeight + "px",
+            }}
+            ref={scrollWrapperRef}
+            onScroll={updateDocumentState}
           >
-            <OnDocumentGuideArea
-              {...guideAreaStyles}
-              docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
-              docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
-              // height={baseImageRef.current?.clientHeight ?? 0}
-              // active={!props?.enableCombinedView}
-              active={true}
-            ></OnDocumentGuideArea>
+            <div
+              style={{
+                width: documentStyles.width + "px",
+                pointerEvents: playerStandby || playerActive ? "all" : "none",
+              }}
+              ref={documentContainerRef}
+            >
+              {getRangeArray(docNumPages, 1).map((i) => (
+                <Page
+                  width={documentStyles.width}
+                  pageNumber={i}
+                  renderTextLayer
+                />
+              ))}
+            </div>
+            <div
+              className="absolute top-0 left-0 w-full h-full"
+              ref={guideAreaWrapperRef}
+            >
+              {guideAreaStyles && (
+                <OnDocumentGuideArea
+                  {...guideAreaStyles}
+                  docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
+                  docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
+                  active={true}
+                ></OnDocumentGuideArea>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Document>
   );
 }

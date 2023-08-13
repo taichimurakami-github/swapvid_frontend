@@ -15,9 +15,8 @@ import {
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
 import DocumentPlayerContainer from "./DocumentPlayerContainer";
-
-import "@/styles/MainPlayerCombinedViewContainer.scss";
 import DraggableVideo from "@/ui/DraggableVideo";
+import "@/styles/MainPlayerCombinedViewContainer.scss";
 
 export default function MainPlayerCombinedViewContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
@@ -86,6 +85,7 @@ export default function MainPlayerCombinedViewContainer(
           // Document Player
           videoRef.current && (
             <div
+              id="document_player_outer"
               className={`top-0 left-0 z-10 document-player-wrapper w-full h-full overflow-hidden ${animationTriggerClassname} `}
             >
               <div className="relative w-full h-full">
@@ -98,6 +98,7 @@ export default function MainPlayerCombinedViewContainer(
                   <DocumentPlayerContainer
                     videoElement={videoRef.current}
                     documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
+                    pdfSrc={documentPlayerAssets.pdfSrc}
                     enableCombinedView={true}
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
@@ -178,15 +179,6 @@ export default function MainPlayerCombinedViewContainer(
           </div>
         </div>
       )}
-
-      <div
-        className="document-player-close-btn-wrapper absolute top-0 right-0 bg-red-600 text-white"
-        onClick={() => {
-          setDocumentPlayerStateValues({ active: false });
-        }}
-      >
-        <button>close document player</button>
-      </div>
     </div>
   );
 }
