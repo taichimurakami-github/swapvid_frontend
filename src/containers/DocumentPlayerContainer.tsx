@@ -198,9 +198,7 @@ export default function DocumentPlayerContainer(
       currentInvidFocusedArea: TBoundingBox,
       documentWidth: number,
       documentHeight: number,
-      scrollWrapperElem: HTMLElement,
-      forceScroll = false,
-      forceChangeWidth = false
+      scrollWrapperElem: HTMLElement
     ) => {
       const [r_areaWidth] = cvtToWHArray(currentInvidFocusedArea);
       const [r_top, r_left, r_width, r_height] = cvtToTLWHArray(
@@ -221,10 +219,7 @@ export default function DocumentPlayerContainer(
         // Set width only when player is unactive
         // because width change make <Page /> component to re-render pdf
         // due to using HTML Canvas API
-        width:
-          !playerActive || forceChangeWidth
-            ? videoElement.clientWidth * zoomRate
-            : b.width,
+        width: !playerActive ? videoElement.clientWidth * zoomRate : b.width,
       }));
 
       // Update document guide area styles
@@ -236,11 +231,10 @@ export default function DocumentPlayerContainer(
       });
 
       // Syncronize document player scroll position
-      (!playerActive || forceScroll) &&
-        scrollWrapperElem.scroll(
-          documentStyles.scrollLeft,
-          documentStyles.scrollTop
-        );
+      if (!playerActive) {
+        scrollWrapperElem.scrollTop = currDocumentStyles.scrollTop;
+        scrollWrapperElem.scrollLeft = currDocumentStyles.scrollLeft;
+      }
     },
     [playerActive, setDocumentStyles, setGuideAreaStyles]
   );
@@ -293,47 +287,6 @@ export default function DocumentPlayerContainer(
         updateAcitvityState(currentTime);
     }
   }, [currentTime]);
-
-  // force update document styles when playerAcvive changed
-  useEffect(() => {
-    if (documentContainerRef.current && scrollWrapperRef.current) {
-      const activeTlSection = getActiveTlSectionFromPlaytime(
-        currentTime,
-        documentContainerRef.current.clientHeight
-      );
-
-      setActiveScrollTl(activeTlSection);
-      setDocumentPlayerStateValues({
-        videoOnFocusArea: activeTlSection?.invidFocusedArea,
-        standby: !!activeTlSection,
-      });
-
-      // Failed to found active section from scroll timeline
-      if (!activeTlSection) {
-        setDocumentPlayerStateValues({ standby: false });
-        setDocumentStyles((b) => ({ ...b, standby: false }));
-        return;
-      }
-
-      // Found activeTlSection but section doesn't record onFocusArea
-      if (!activeTlSection.invidFocusedArea) {
-        setDocumentStyles((b) => ({ ...b, standby: false }));
-        return;
-      }
-
-      updateDocumentStyles(
-        activeTlSection.invidFocusedArea,
-        documentContainerRef.current.clientWidth,
-        documentContainerRef.current.clientHeight,
-        scrollWrapperRef.current,
-        true
-      );
-
-      // Update activity states
-      props.enableInvidActivitiesReenactment &&
-        updateAcitvityState(currentTime);
-    }
-  }, [playerActive]);
 
   const activatePlayer = useCallback(() => {
     !playerActive &&
