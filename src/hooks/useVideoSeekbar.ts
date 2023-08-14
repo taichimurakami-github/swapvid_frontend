@@ -4,8 +4,8 @@ const useVideoSeekbar = (
   videoElement: HTMLVideoElement,
   currentTime: number,
   liveModeEnabled = false,
-  seekbar_height = 10,
-  dragger_radius = 20,
+  seekbar_height = 12,
+  dragger_radius = 24,
 
   onHandleSetDocumentPlayerActive?: (v: boolean) => void
 ) => {
@@ -161,22 +161,6 @@ const useVideoSeekbar = (
     [_getDraggerLeft]
   );
 
-  const seekbarWrapperProps = {
-    onMouseLeave: () => {
-      if (!isDragging.current) {
-        _setIsDragging(false);
-        _hidePreview();
-      }
-    },
-    onMouseMove: (e: MouseEvent) => {
-      _showPreview(e.clientX);
-    },
-    onMouseDown: (e: MouseEvent) => {
-      _moveDragger(e.clientX);
-      _setIsDragging(true);
-    },
-  };
-
   /**
    * currentTimeのontimeupdateに合わせてDraggerLeftを更新
    */
@@ -211,39 +195,79 @@ const useVideoSeekbar = (
     videoElement,
   ]);
 
+  const _handleLeaveDragger = useCallback(
+    (clientX: number) => {
+      _setCurrentTimeFromClientX(clientX);
+      _setIsDragging(false);
+      _hidePreview();
+    },
+    [_setCurrentTimeFromClientX, _setIsDragging, _hidePreview]
+  ); // mouseup, touchend
+
+  const _handleGrabDragger = useCallback(
+    (clientX: number) => {
+      _moveDragger(clientX);
+      _setIsDragging(true);
+    },
+    [_moveDragger, _setIsDragging]
+  ); // mousedown, touchstart
+
+  const _handleMoveDragger = useCallback(
+    (clientX: number) => {
+      _showPreview(clientX);
+      _moveDragger(clientX);
+      _setCurrentTimeFromClientX(clientX); // real time preview with scrubbing
+    },
+    [_showPreview, _moveDragger, _setCurrentTimeFromClientX]
+  ); // mousemove, touchmove
+
+  const seekbarWrapperProps = {
+    // タッチ操作によるドラッグのスタート
+    onTouchStart: (e: TouchEvent) => {
+      _handleGrabDragger(e.touches[0].clientX);
+    },
+
+    // マウスによるドラッグのスタート
+    onMouseDown: (e: MouseEvent) => {
+      _handleGrabDragger(e.clientX);
+    },
+
+    // マウスのホバーによるプレビュー表示ON
+    onMouseMove: (e: MouseEvent) => {
+      _showPreview(e.clientX);
+    },
+
+    // マウスのホバーによるプレビュー表示OFF
+    onMouseLeave: (e: MouseEvent) => {
+      _hidePreview();
+    },
+  };
+  /**
+   * draggerMove, draggerLeave関連のイベントのハンドリングは，
+   * シークバーコンポーネント外の領域でも操作可能である必要があるため，
+   * documentオブジェクトに対してイベントをアタッチする
+   */
   useEffect(() => {
-    document.onmousemove = (e) => {
-      if (isDragging.current) {
-        _showPreview(e.clientX);
-        _moveDragger(e.clientX);
-        _setCurrentTimeFromClientX(e.clientX); // real time preview with scrubbing
-      }
-    };
+    // マウスによるドラッグ操作中の処理
+    document.addEventListener("mousemove", (e: MouseEvent) => {
+      isDragging.current && _handleMoveDragger(e.clientX);
+    });
 
-    document.onmouseup = (e) => {
-      if (isDragging.current) {
-        _setCurrentTimeFromClientX(e.clientX);
-        _setIsDragging(false);
-        _hidePreview();
-      }
-    };
+    // タッチによるドラッグ操作中の処理
+    document.addEventListener("touchmove", (e: TouchEvent) => {
+      isDragging.current && _handleMoveDragger(e.touches[0].clientX);
+    });
 
-    //まれにdragイベントのみ発火してmousemoveイベントが発火しない場合があるため、
-    //onmousemoveだけでなくdragも併用して設定すると安定する
-    document.ondrag = (e) => {
-      if (isDragging.current) {
-        _showPreview(e.clientX);
-        _moveDragger(e.clientX);
-      }
-    };
+    // マウスによるドラッグ操作終了
+    document.addEventListener("mouseup", (e: MouseEvent) => {
+      isDragging.current && _handleLeaveDragger(e.clientX);
+    });
 
-    document.ondragend = (e) => {
-      if (isDragging.current) {
-        _setCurrentTimeFromClientX(e.clientX);
-        _setIsDragging(false);
-      }
-    };
-  }, [_showPreview, _moveDragger, _setCurrentTimeFromClientX, _setIsDragging]);
+    // タッチによるドラッグ操作終了
+    document.addEventListener("touchend", (e) => {
+      isDragging.current && _handleLeaveDragger(e.changedTouches[0].clientX);
+    });
+  }, [_handleMoveDragger, _handleLeaveDragger]);
 
   return {
     seekbarWrapperRef,

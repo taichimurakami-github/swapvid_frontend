@@ -60,13 +60,12 @@ export default function MainPlayerCombinedViewContainer(
   }
 
   return (
-    <div className="video-player-container">
-      <div className="relative max-w-[1440px] z-0">
+    <div className="video-player-container w-screen h-screen flex-xyc flex-col">
+      <div className="grid relative max-w-[1440px] max-h-[90%] z-0">
         <video
           id={UIELEM_ID_LIST.system.videoPlayer.videoElement}
-          className="max-w-full z-0"
+          className="max-h-[75vh] z-0"
           src={assetDataState.movieSrc}
-          width={1920}
           ref={videoRef}
           loop={false}
           autoPlay={true}

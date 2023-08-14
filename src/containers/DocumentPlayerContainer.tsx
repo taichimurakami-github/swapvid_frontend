@@ -300,10 +300,15 @@ export default function DocumentPlayerContainer(
       onLoadSuccess={onDocumentLoadSuccess}
       onWheel={activatePlayer}
       onMouseDown={(e: React.MouseEvent) => {
-        const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
-        const isTextClicked =
-          onClickNode.nodeName === "SPAN" && !!onClickNode.innerText;
-        isTextClicked && activatePlayer();
+        if (!playerActive) {
+          const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
+          const isTextClicked =
+            onClickNode.nodeName === "SPAN" && !!onClickNode.innerText;
+          isTextClicked && activatePlayer();
+        }
+      }}
+      onTouchStart={() => {
+        !playerActive && activatePlayer();
       }}
     >
       <div
