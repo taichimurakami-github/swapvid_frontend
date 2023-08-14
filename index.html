@@ -6,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VidDocs User-Study Updation Demo</title>
   </head>
-  <body>
+  <!--
+    trick:
+    Set style="overflow:hidden;" on body element to make it sure for iOS/iPadOS Safari 
+    not to scroll body element first.
+  -->
+  <body style="overflow: hidden">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -99,11 +99,11 @@ $zIndex: (
   @extend .__player-element-wrapper-base;
 
   &.unactive {
-    animation: draggableVideoUnactive forwards 0.75s ease-in-out;
+    animation: draggableVideoUnactive forwards 0.5s ease-in-out;
     pointer-events: none;
   }
   &.active {
-    animation: draggableVideoActive forwards 0.75s ease-in-out;
+    animation: draggableVideoActive forwards 0.5s ease-out;
   }
 
   transition: opacity 0.75s ease-in-out, top, left, transform, width;
@@ -136,7 +136,7 @@ $zIndex: (
       @include unactive;
       pointer-events: none;
     }
-    90% {
+    99% {
       pointer-events: none;
     }
     100% {
