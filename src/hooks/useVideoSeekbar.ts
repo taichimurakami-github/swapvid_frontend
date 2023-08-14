@@ -223,22 +223,22 @@ const useVideoSeekbar = (
 
   const seekbarWrapperProps = {
     // タッチ操作によるドラッグのスタート
-    onTouchStart: (e: TouchEvent) => {
+    onTouchStart: (e: React.TouchEvent) => {
       _handleGrabDragger(e.touches[0].clientX);
     },
 
     // マウスによるドラッグのスタート
-    onMouseDown: (e: MouseEvent) => {
+    onMouseDown: (e: React.MouseEvent) => {
       _handleGrabDragger(e.clientX);
     },
 
     // マウスのホバーによるプレビュー表示ON
-    onMouseMove: (e: MouseEvent) => {
+    onMouseMove: (e: React.MouseEvent) => {
       _showPreview(e.clientX);
     },
 
     // マウスのホバーによるプレビュー表示OFF
-    onMouseLeave: (e: MouseEvent) => {
+    onMouseLeave: (e: React.MouseEvent) => {
       _hidePreview();
     },
   };
