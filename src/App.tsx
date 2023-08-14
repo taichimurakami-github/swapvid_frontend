@@ -1,23 +1,19 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { MainPlayerRootContainer } from "./containers/MainPlayerRootContainer";
+import { TAssetId } from "./@types/types";
+import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "./app.config";
+
+const defaultAssetId = "EdanMeyerVpt";
+const defaultInterfaceMode = "combined";
 
 export default function App() {
-  useEffect(() => {
-    (async () => {
-      // await loadTimelineData("EdanMeyerVpt");
-      // await loadAssetData("IEEEVR2022Hoshikawa");
-    })();
-  }, []);
-
-  // return <div>test mode.</div>;
   return (
     <MainPlayerRootContainer
-      // interfaceMode="parallel"
-      initialInterfaceMode="combined"
-      // initialAssetId="CHI2021Fujita"
-      // initialAssetId="IEEEVR2022Ogawa"
-      // initialAssetId="IEEEVR2022Hoshikawa"
-      initialAssetId="EdanMeyerVpt"
+      initialInterfaceMode={defaultInterfaceMode}
+      initialAssetId={
+        (localStorage.getItem(ACTIVE_ASSET_ID_LS_CACHE_KEY) as TAssetId) ??
+        defaultAssetId
+      }
       enableOverflowModeOnCombinedView={false}
     />
   );

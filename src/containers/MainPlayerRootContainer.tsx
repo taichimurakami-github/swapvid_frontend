@@ -5,6 +5,7 @@ import MainPlayerCombinedViewContainer from "./MainPlayerCombinedViewContainer";
 import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
+import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
 
 export const MainPlayerRootContainer = (
   props: PropsWithChildren<{
@@ -47,6 +48,7 @@ export const MainPlayerRootContainer = (
     (assetId: TAssetId) => {
       setAssetChangeFormVisible(false);
       setActiveIdState(assetId);
+      localStorage.setItem(ACTIVE_ASSET_ID_LS_CACHE_KEY, assetId);
     },
     [setAssetChangeFormVisible, setActiveIdState]
   );

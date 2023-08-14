@@ -1,6 +1,9 @@
 /**
  * APP SYSTEM CONFIGS
  */
+
+export const ACTIVE_ASSET_ID_LS_CACHE_KEY = "__lastActiveAssetId";
+
 export const UIELEM_ID_LIST = {
   system: {
     videoPlayer: {
