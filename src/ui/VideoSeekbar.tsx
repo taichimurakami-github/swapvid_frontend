@@ -47,7 +47,16 @@ export default function VideoSeekbar(props: {
       style={{
         height: seekbarHeight,
       }}
-      {...seekbarWrapperProps}
+      onTouchStart={(e) => {
+        props.onHandleSetPlayerActive(false); //シークバークリック時にdocumentPlayerを消す
+        seekbarWrapperProps.onTouchStart(e);
+      }}
+      onMouseDown={(e) => {
+        props.onHandleSetPlayerActive(false); //シークバークリック時にdocumentPlayerを消す
+        seekbarWrapperProps.onMouseDown(e);
+      }}
+      onMouseMove={seekbarWrapperProps.onMouseMove}
+      onMouseLeave={seekbarWrapperProps.onMouseLeave}
     >
       <SeekbarHighlightContainer
         videoElement={props.videoElement}
