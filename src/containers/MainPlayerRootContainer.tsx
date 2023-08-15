@@ -58,7 +58,7 @@ export const MainPlayerRootContainer = (
       ? document.exitFullscreen()
       : document.body.requestFullscreen();
     screenState.then((_) => setIsFullScreen((b) => !b));
-  }, [setIsFullScreen]);
+  }, [isFullScreen, setIsFullScreen]);
 
   // const handleSetActiveAssetId = useCallback(
   //   (v: TAssetId) => setActiveIdState(v),
