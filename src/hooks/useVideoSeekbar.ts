@@ -256,7 +256,7 @@ const useVideoSeekbar = (
       isDragging.current && _handleMoveDragger(e.clientX);
     };
     const handleDocumentTouchMove = (e: globalThis.TouchEvent) => {
-      isDragging.current && _handleLeaveDragger(e.changedTouches[0].clientX);
+      isDragging.current && _handleMoveDragger(e.changedTouches[0].clientX);
     };
 
     const handleDocumentMouseUp = (e: globalThis.MouseEvent) => {
