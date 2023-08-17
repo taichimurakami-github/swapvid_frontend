@@ -216,9 +216,13 @@ const useVideoSeekbar = (
     (clientX: number) => {
       _showPreview(clientX);
       _moveDragger(clientX);
-      _setCurrentTimeFromClientX(clientX); // real time preview with scrubbing
+      // _setCurrentTimeFromClientX(clientX); // real time preview with scrubbing (temporarily off due to performance issues)
     },
-    [_showPreview, _moveDragger, _setCurrentTimeFromClientX]
+    [
+      _showPreview,
+      _moveDragger,
+      // _setCurrentTimeFromClientX
+    ]
   ); // mousemove, touchmove
 
   const seekbarWrapperProps = {
@@ -248,25 +252,38 @@ const useVideoSeekbar = (
    * documentオブジェクトに対してイベントをアタッチする
    */
   useEffect(() => {
-    // マウスによるドラッグ操作中の処理
-    document.addEventListener("mousemove", (e: MouseEvent) => {
+    const handleDocumentMouseMove = (e: globalThis.MouseEvent) => {
       isDragging.current && _handleMoveDragger(e.clientX);
-    });
+    };
+    const handleDocumentTouchMove = (e: globalThis.TouchEvent) => {
+      isDragging.current && _handleLeaveDragger(e.changedTouches[0].clientX);
+    };
+
+    const handleDocumentMouseUp = (e: globalThis.MouseEvent) => {
+      isDragging.current && _handleLeaveDragger(e.clientX);
+    };
+    const handleDocumentTouchEnd = (e: globalThis.TouchEvent) => {
+      isDragging.current && _handleLeaveDragger(e.changedTouches[0].clientX);
+    };
+
+    // マウスによるドラッグ操作中の処理
+    document.addEventListener("mousemove", handleDocumentMouseMove);
 
     // タッチによるドラッグ操作中の処理
-    document.addEventListener("touchmove", (e: TouchEvent) => {
-      isDragging.current && _handleMoveDragger(e.touches[0].clientX);
-    });
+    document.addEventListener("touchmove", handleDocumentTouchMove);
 
     // マウスによるドラッグ操作終了
-    document.addEventListener("mouseup", (e: MouseEvent) => {
-      isDragging.current && _handleLeaveDragger(e.clientX);
-    });
+    document.addEventListener("mouseup", handleDocumentMouseUp);
 
     // タッチによるドラッグ操作終了
-    document.addEventListener("touchend", (e) => {
-      isDragging.current && _handleLeaveDragger(e.changedTouches[0].clientX);
-    });
+    document.addEventListener("touchend", handleDocumentTouchEnd);
+
+    return () => {
+      document.removeEventListener("mousemove", handleDocumentMouseMove);
+      document.removeEventListener("touchmove", handleDocumentTouchMove);
+      document.removeEventListener("mouseup", handleDocumentMouseUp);
+      document.removeEventListener("touchend", handleDocumentTouchEnd);
+    };
   }, [_handleMoveDragger, _handleLeaveDragger]);
 
   return {
