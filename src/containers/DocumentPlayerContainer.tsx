@@ -299,6 +299,7 @@ export default function DocumentPlayerContainer(
       file={props.pdfSrc}
       onLoadSuccess={onDocumentLoadSuccess}
       onWheel={activatePlayer}
+      onTouchStart={activatePlayer}
       onMouseDown={(e: React.MouseEvent) => {
         if (!playerActive) {
           const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
@@ -307,16 +308,10 @@ export default function DocumentPlayerContainer(
           isTextClicked && activatePlayer();
         }
       }}
-      onTouchStart={() => {
-        !playerActive && activatePlayer();
-      }}
     >
       <div
         id="document_viewer_wrapper"
         className="w-full h-full original-player-container bg-white"
-        style={{
-          pointerEvents: playerStandby ? "all" : "none",
-        }}
         onClick={() => {
           props.enableDispatchVideoElementClickEvent &&
             !playerActive &&
