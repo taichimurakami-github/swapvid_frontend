@@ -15,9 +15,8 @@ import {
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
 import DocumentPlayerContainer from "./DocumentPlayerContainer";
-
-import "@/styles/MainPlayerCombinedViewContainer.scss";
 import DraggableVideo from "@/ui/DraggableVideo";
+import "@/styles/MainPlayerCombinedViewContainer.scss";
 
 export default function MainPlayerCombinedViewContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
@@ -61,13 +60,12 @@ export default function MainPlayerCombinedViewContainer(
   }
 
   return (
-    <div className="video-player-container">
-      <div className="relative max-w-[1440px] z-0">
+    <div className="video-player-container w-screen h-screen flex-xyc flex-col">
+      <div className="grid relative max-w-[1440px] max-h-[90%] z-0">
         <video
           id={UIELEM_ID_LIST.system.videoPlayer.videoElement}
-          className="max-w-full z-0"
+          className="max-h-[75vh] z-0"
           src={assetDataState.movieSrc}
-          width={1920}
           ref={videoRef}
           loop={false}
           autoPlay={true}
@@ -86,6 +84,7 @@ export default function MainPlayerCombinedViewContainer(
           // Document Player
           videoRef.current && (
             <div
+              id="document_player_outer"
               className={`top-0 left-0 z-10 document-player-wrapper w-full h-full overflow-hidden ${animationTriggerClassname} `}
             >
               <div className="relative w-full h-full">
@@ -98,6 +97,7 @@ export default function MainPlayerCombinedViewContainer(
                   <DocumentPlayerContainer
                     videoElement={videoRef.current}
                     documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
+                    pdfSrc={documentPlayerAssets.pdfSrc}
                     enableCombinedView={true}
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
@@ -178,15 +178,6 @@ export default function MainPlayerCombinedViewContainer(
           </div>
         </div>
       )}
-
-      <div
-        className="document-player-close-btn-wrapper absolute top-0 right-0 bg-red-600 text-white"
-        onClick={() => {
-          setDocumentPlayerStateValues({ active: false });
-        }}
-      >
-        <button>close document player</button>
-      </div>
     </div>
   );
 }

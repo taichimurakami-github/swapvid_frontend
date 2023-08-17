@@ -23,7 +23,7 @@ import DocumentOverviewContainer from "./DocumentOverviewContainer";
 // 一時的にアセットを直接インポートする
 // import EdanMeyerVptActivityTimeline from "@/assets/EdanMeyerVpt/EdanMeyerVpt.activities.json";
 import EdanMeyerVptBaseImg from "@/assets/EdanMeyerVpt/EdanMeyerVpt.concat.png";
-import DocumentPlayerContainer from "./DocumentPlayerContainer";
+import DocumentPlayerContainer from "./DocumentPlayerContainerFromImg";
 
 export default function MainPlayerPVServerComponentTest(
   props: PropsWithChildren<{

@@ -19,9 +19,10 @@ export type TDocumentPlayerStateCtx = {
   standby: boolean;
   activeTimes: [number, number][];
   baseImgSrc: string;
+  pdfSrc: string;
   wrapperScrollHeight: number;
   wrapperWindowHeight: number;
-  videoOnFocusArea: TBoundingBox;
+  videoOnFocusArea: TBoundingBox | null;
   documentOnFocusArea: TBoundingBox;
   playerElement: HTMLElement | null;
   unableScrollTo: number;
@@ -71,6 +72,7 @@ export default function DocumentPlayerCtxProvider(
       standby: false,
       activeTimes: [],
       baseImgSrc: "",
+      pdfSrc: "",
       wrapperScrollHeight: 0,
       wrapperWindowHeight: 0,
       videoOnFocusArea: [

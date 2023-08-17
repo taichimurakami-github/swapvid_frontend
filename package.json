@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev-expose": "vite --host",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -15,7 +16,9 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-draggable": "^4.4.5"
+    "react-draggable": "^4.4.5",
+    "react-pdf": "^7.3.3",
+    "react-zoom-pan-pinch": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.16.3",

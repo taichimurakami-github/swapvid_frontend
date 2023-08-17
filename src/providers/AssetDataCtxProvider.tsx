@@ -34,6 +34,7 @@ export type TDocumentPlayerAssets = {
   scrollTl: TServerGeneratedScrollTimeline | null;
   activityTl: TServerGeneratedActivityTimeline | null;
   baseImageSrc: string;
+  pdfSrc: string;
   assetsReady: boolean;
 };
 
@@ -48,6 +49,7 @@ const initialDocumentPlayerAssets: TDocumentPlayerAssets = {
   scrollTl: null,
   activityTl: null,
   baseImageSrc: "",
+  pdfSrc: "",
   assetsReady: false,
 };
 
@@ -116,6 +118,10 @@ export default function AssetDataCtxProvider(
         `${assetId}.timeline.activity`,
         "json"
       );
+
+    const loadedPdfData =
+      (await loadAssetData<string>(assetId, `${assetId}`, "pdf")) ?? "";
+
     console.log(
       "Document player assets loaded.",
       loadedScrollTlData,
@@ -124,6 +130,7 @@ export default function AssetDataCtxProvider(
 
     setDocumentPlayerAssets({
       baseImageSrc: loadedDocumentImageData,
+      pdfSrc: loadedPdfData,
       scrollTl: loadedScrollTlData,
       activityTl: loadedActivityTlData,
       assetsReady: true,

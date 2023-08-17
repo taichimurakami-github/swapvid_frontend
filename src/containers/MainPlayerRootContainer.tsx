@@ -1,10 +1,11 @@
-import React, { PropsWithChildren, useCallback, useRef, useState } from "react";
+import React, { PropsWithChildren, useCallback, useState } from "react";
 import { TAssetId, TInterfaceMode } from "@/@types/types";
 import MainPlayerParallelViewContainer from "./MainPlayerParallelViewContainer";
 import MainPlayerCombinedViewContainer from "./MainPlayerCombinedViewContainer";
 import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
+import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
 
 export const MainPlayerRootContainer = (
   props: PropsWithChildren<{
@@ -28,15 +29,16 @@ export const MainPlayerRootContainer = (
   const [activeAssetIdState, setActiveIdState] = useState<TAssetId>(
     props.initialAssetId
   );
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [assetChangeFormVisible, setAssetChangeFormVisible] = useState(false);
 
-  const handleOnChangeInterfaceMode = useCallback(
-    (nextInterfaceState: TInterfaceMode) => {
-      setInterfaceModeState(nextInterfaceState);
-    },
-    []
-  );
+  // const handleOnChangeInterfaceMode = useCallback(
+  //   (nextInterfaceState: TInterfaceMode) => {
+  //     setInterfaceModeState(nextInterfaceState);
+  //   },
+  //   []
+  // );
 
   const handleOnClickAssetChangeFormVisibleBtn = useCallback(() => {
     setAssetChangeFormVisible((b) => !b);
@@ -46,9 +48,17 @@ export const MainPlayerRootContainer = (
     (assetId: TAssetId) => {
       setAssetChangeFormVisible(false);
       setActiveIdState(assetId);
+      localStorage.setItem(ACTIVE_ASSET_ID_LS_CACHE_KEY, assetId);
     },
     [setAssetChangeFormVisible, setActiveIdState]
   );
+
+  const handleFullScreen = useCallback(() => {
+    const screenState = isFullScreen
+      ? document.exitFullscreen()
+      : document.body.requestFullscreen();
+    screenState.then((_) => setIsFullScreen((b) => !b));
+  }, [isFullScreen, setIsFullScreen]);
 
   // const handleSetActiveAssetId = useCallback(
   //   (v: TAssetId) => setActiveIdState(v),
@@ -72,7 +82,7 @@ export const MainPlayerRootContainer = (
           assetId={activeAssetIdState}
           playerMode={interfaceModeState}
         >
-          <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc px-4">
+          <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc px-4 pt-4">
             {interfaceModeState === "parallel" && (
               <MainPlayerParallelViewContainer assetId={activeAssetIdState} />
             )}
@@ -83,16 +93,22 @@ export const MainPlayerRootContainer = (
                 enableOverflowMode={props.enableOverflowModeOnCombinedView}
               />
             )}
-            <div className="absolute top-4 left-4 flex-xyc gap-4 text-center text-white text-xl">
-              <h1 className="flex-xyc gap-4 bg-neutral-800 text-center text-white text-xl">
+            <div className="absolute top-0 left-0 flex-xyc gap-4 text-center text-white text-md p-2">
+              <h1 className="flex-xyc gap-4 bg-neutral-800 text-center text-white">
                 <p className="flex-xyc gap-2">
-                  Playing: <b className="text-2xl">{activeAssetIdState}</b>
+                  Playing: <b>{activeAssetIdState}</b>
                 </p>
                 <button
                   className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
                   onClick={handleOnClickAssetChangeFormVisibleBtn}
                 >
                   Change Asset
+                </button>
+                <button
+                  className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+                  onClick={handleFullScreen}
+                >
+                  {isFullScreen ? "Exit full screen" : "Request full screen"}
                 </button>
               </h1>
               {/* <button
