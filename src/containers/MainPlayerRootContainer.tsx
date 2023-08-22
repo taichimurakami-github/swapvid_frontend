@@ -143,7 +143,7 @@ export const MainPlayerRootContainer = (
               onClick={handleOnClickAssetChangeFormVisibleBtn}
             >
               <div
-                className="bg-gray-200 rounded-md p-[50px] font-bold text-xl"
+                className="bg-gray-200 rounded-md p-[50px] font-bold text-xl text-center"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
@@ -153,16 +153,22 @@ export const MainPlayerRootContainer = (
                     表示する動画素材を選んでください
                   </p>
                 </h3>
-                <ul className="grid gap-4 text-cener text-2xl">
+                <ul className="grid gap-4 text-2xl">
                   {ASSET_ID_LIST.map((v) => (
                     <button
                       id={`new_asset_selector#${v}`}
-                      className="p-2 hover:bg-slate-600 hover:text-white"
+                      className={`p-2 ${
+                        activeAssetIdState === v
+                          ? "bg-gray-400 text-white pointer-events-none"
+                          : "hover:bg-slate-600 hover:text-white"
+                      }
+                      `}
                       onClick={() => {
                         handleOnChangeAssetState(v as TAssetId);
                       }}
                     >
                       {v}
+                      {activeAssetIdState === v && " (playing)"}
                     </button>
                   ))}
                 </ul>
