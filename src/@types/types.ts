@@ -1,3 +1,4 @@
+import { ASSET_ID_LIST } from "@/app.config";
 import { PropsWithChildren } from "react";
 
 export type TContentType = "slide" | "document" | "web";
@@ -50,12 +51,7 @@ export type TContextTimeline = {
   i_end: number;
 };
 
-export type TAssetId =
-  | "CHI2021Fujita"
-  | "IEEEVR2022Ogawa"
-  | "IEEEVR2022Hoshikawa"
-  | "EdanMeyerVpt"
-  | "EdanMeyerGymMuRts";
+export type TAssetId = (typeof ASSET_ID_LIST)[number];
 
 export type TInterfaceMode = "parallel" | "combined" | "servertest";
 
