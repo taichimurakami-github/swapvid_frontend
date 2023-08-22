@@ -8,9 +8,9 @@ export const ASSET_ID_LIST = [
   /**
    * Slide Assets
    */
-  // "CHI2021Fujita", // Slide #1
-  // "IEEEVR2022Ogawa", // Slide #2
-  // "IEEEVR2022Hoshikawa", // Slide #3
+  "CHI2021Fujita", // Slide #1
+  "IEEEVR2022Ogawa", // Slide #2
+  "IEEEVR2022Hoshikawa", // Slide #3
 
   /**
    * Document Assets
