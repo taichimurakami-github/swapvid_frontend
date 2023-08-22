@@ -5,7 +5,7 @@ import MainPlayerCombinedViewContainer from "./MainPlayerCombinedViewContainer";
 import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
-import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
+import { ACTIVE_ASSET_ID_LS_CACHE_KEY, ASSET_ID_LIST } from "@/app.config";
 
 export const MainPlayerRootContainer = (
   props: PropsWithChildren<{
@@ -154,14 +154,7 @@ export const MainPlayerRootContainer = (
                   </p>
                 </h3>
                 <ul className="grid gap-4 text-cener text-2xl">
-                  {[
-                    // "CHI2021Fujita",
-                    "IEEEVR2022Ogawa",
-                    "IEEEVR2022Hoshikawa",
-                    // "EdanMeyerStableDiffusion",
-                    "EdanMeyerVpt",
-                    // "EdanMeyerGymMicroRts",
-                  ].map((v) => (
+                  {ASSET_ID_LIST.map((v) => (
                     <button
                       id={`new_asset_selector#${v}`}
                       className="p-2 hover:bg-slate-600 hover:text-white"
