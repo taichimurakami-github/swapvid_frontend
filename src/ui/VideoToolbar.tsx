@@ -10,6 +10,7 @@ import {
   faFileInvoice,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import "@/styles/VideoToolbar.scss";
 
 export default function VideoToolbar(
   props: PropsWithChildren<{
@@ -35,8 +36,12 @@ export default function VideoToolbar(
   return (
     <ul className="video-tools-wrapper text-white select-none">
       <div
-        className={`flex justify-between h-[60px] ${
-          props.documentPlayerActive ? "bg-red-900" : "bg-black"
+        className={`flex justify-between h-[60px] py-2 ${
+          props.documentPlayerActive
+            ? "bg-toolbar-active"
+            : props.documentPlayerStandby
+            ? "bg-toolbar-standby"
+            : "bg-toolbar-unactive"
         }`}
       >
         <ul className="flex justify-between">
@@ -77,6 +82,34 @@ export default function VideoToolbar(
             </li>
           )}
         </ul>
+
+        <div className="flex-xyc gap-2 text-sm">
+          {props.documentPlayerStandby && !props.documentPlayerActive && (
+            <>
+              <div
+                className="rounded-full bg-blue-400"
+                style={{
+                  width: 10,
+                  height: 10,
+                }}
+              ></div>
+              document standby
+            </>
+          )}
+          {props.documentPlayerActive && (
+            <>
+              <div
+                className="rounded-full bg-red-500 border-1 border-white"
+                style={{
+                  width: 10,
+                  height: 10,
+                }}
+              ></div>
+              document active
+            </>
+          )}
+        </div>
+
         {/* <ul className="flex-xyc">
           {props.documentPlayerActive && (
             <li
@@ -120,9 +153,9 @@ export default function VideoToolbar(
               props.onDocumentPlayerButtonClick(!props.documentPlayerActive);
             }}
           >
-            <FontAwesomeIcon className={`text-3xl`} icon={faFileInvoice} />
-            <p className="text-xl">
-              Click to {!props.documentPlayerActive ? "Show" : "Close"} Document
+            <FontAwesomeIcon className={`text-2xl`} icon={faFileInvoice} />
+            <p className="text-lg">
+              {!props.documentPlayerActive ? "Open" : "Close"} Document
             </p>
           </li>
           {!props.disableControlPanelSubtitle && (
