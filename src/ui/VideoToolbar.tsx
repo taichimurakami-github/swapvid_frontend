@@ -8,6 +8,7 @@ import {
   faVolumeUp,
   faClosedCaptioning,
   faFileInvoice,
+  faFilm,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "@/styles/VideoToolbar.scss";
@@ -36,12 +37,12 @@ export default function VideoToolbar(
   return (
     <ul className="video-tools-wrapper text-white select-none">
       <div
-        className={`flex justify-between h-[60px] py-2 ${
+        className={`bg-toolbar flex justify-between h-[60px] py-2 ${
           props.documentPlayerActive
-            ? "bg-toolbar-active"
+            ? "active"
             : props.documentPlayerStandby
-            ? "bg-toolbar-standby"
-            : "bg-toolbar-unactive"
+            ? "standby"
+            : ""
         }`}
       >
         <ul className="flex justify-between">
@@ -153,7 +154,10 @@ export default function VideoToolbar(
               props.onDocumentPlayerButtonClick(!props.documentPlayerActive);
             }}
           >
-            <FontAwesomeIcon className={`text-2xl`} icon={faFileInvoice} />
+            <FontAwesomeIcon
+              className={`text-2xl`}
+              icon={props.documentPlayerActive ? faFilm : faFileInvoice}
+            />
             {/* <p className="text-md">
               Click to {!props.documentPlayerActive ? "Open" : "Close"}
             </p> */}

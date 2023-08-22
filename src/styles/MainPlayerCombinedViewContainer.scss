@@ -159,11 +159,11 @@ $zIndex: (
   // width: 100%;
   // @extend .__player-element-wrapper-base;
   // position: absolute;
-  transition: bottom transform 1s ease-in-out;
+  // transition: bottom transform 1s ease-in-out;
 
   .active {
     transition: opacity 0.2s ease-in-out;
-    opacity: 0.5;
+    opacity: 0.75;
 
     &:hover {
       opacity: 1;
