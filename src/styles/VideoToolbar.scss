@@ -1,0 +1,12 @@
+.bg-toolbar {
+  transition: all 0.2s ease-out;
+  background: black;
+
+  &.active {
+    background: #7f1d1d;
+  }
+
+  &.standby {
+    background: #172554;
+  }
+}

@@ -8,8 +8,10 @@ import {
   faVolumeUp,
   faClosedCaptioning,
   faFileInvoice,
+  faFilm,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import "@/styles/VideoToolbar.scss";
 
 export default function VideoToolbar(
   props: PropsWithChildren<{
@@ -35,8 +37,12 @@ export default function VideoToolbar(
   return (
     <ul className="video-tools-wrapper text-white select-none">
       <div
-        className={`flex justify-between h-[60px] ${
-          props.documentPlayerActive ? "bg-red-900" : "bg-black"
+        className={`bg-toolbar flex justify-between h-[60px] py-2 ${
+          props.documentPlayerActive
+            ? "active"
+            : props.documentPlayerStandby
+            ? "standby"
+            : ""
         }`}
       >
         <ul className="flex justify-between">
@@ -65,7 +71,7 @@ export default function VideoToolbar(
           {!props.disableControlPanelMuted && (
             <li
               id={UIELEM_ID_LIST.system.videoPlayer.muteButton}
-              className="flex items-center cursor-pointer h-full"
+              className="flex-xyc cursor-pointer h-full rounded-md hover:bg-gray-600 w-[50px]"
               onClick={() => {
                 props.onHandleMuteButtonClick(!props.videoElementMuted);
               }}
@@ -77,6 +83,34 @@ export default function VideoToolbar(
             </li>
           )}
         </ul>
+
+        <div className="flex-xyc gap-2 text-sm">
+          {props.documentPlayerStandby && !props.documentPlayerActive && (
+            <>
+              <div
+                className="rounded-full bg-blue-400"
+                style={{
+                  width: 10,
+                  height: 10,
+                }}
+              ></div>
+              document available
+            </>
+          )}
+          {props.documentPlayerActive && (
+            <>
+              <div
+                className="rounded-full bg-red-500 border-1 border-white"
+                style={{
+                  width: 10,
+                  height: 10,
+                }}
+              ></div>
+              document active
+            </>
+          )}
+        </div>
+
         {/* <ul className="flex-xyc">
           {props.documentPlayerActive && (
             <li
@@ -112,18 +146,21 @@ export default function VideoToolbar(
             </li>
           )}
         </ul> */}
-        <ul className={`flex justify-between gap-6`}>
+        <ul className={`flex justify-between gap-2`}>
           <li
             id={UIELEM_ID_LIST.system.documentPlayer.enableDocumentPlayerButton}
-            className={`flex-xyc gap-[10px] cursor-pointer p-2 rounded-md hover:bg-gray-600`}
+            className={`flex-xyc gap-[10px] cursor-pointer p-2 rounded-md hover:bg-gray-600 w-[65px]`}
             onClick={() => {
               props.onDocumentPlayerButtonClick(!props.documentPlayerActive);
             }}
           >
-            <FontAwesomeIcon className={`text-3xl`} icon={faFileInvoice} />
-            <p className="text-xl">
-              Click to {!props.documentPlayerActive ? "Show" : "Close"} Document
-            </p>
+            <FontAwesomeIcon
+              className={`text-2xl`}
+              icon={props.documentPlayerActive ? faFilm : faFileInvoice}
+            />
+            {/* <p className="text-md">
+              Click to {!props.documentPlayerActive ? "Open" : "Close"}
+            </p> */}
           </li>
           {!props.disableControlPanelSubtitle && (
             <li

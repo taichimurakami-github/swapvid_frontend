@@ -85,7 +85,7 @@ export default function MainPlayerCombinedViewContainer(
           videoRef.current && (
             <div
               id="document_player_outer"
-              className={`top-0 left-0 z-10 document-player-wrapper w-full h-full overflow-hidden ${animationTriggerClassname} `}
+              className={`top-0 left-0 z-0 document-player-wrapper w-full h-full overflow-hidden ${animationTriggerClassname} `}
             >
               <div className="relative w-full h-full">
                 <div
@@ -111,73 +111,77 @@ export default function MainPlayerCombinedViewContainer(
           )
         }
 
+        {videoRef.current && (
+          <div
+            className={`video-controls-wrapper w-full z-10`}
+            style={{
+              top: videoRef.current.getBoundingClientRect().bottom,
+              // width: videoRef.current.clientWidth,
+              // top: documentPlayerState.active
+              //   ? document.body.getBoundingClientRect().bottom
+              //   : videoRef.current.getBoundingClientRect().bottom,
+              // transform: documentPlayerState.active ? "translateY(-100%)" : "",
+            }}
+          >
+            {videoRef.current && documentPlayerState.active && (
+              <div className="absolute bottom-[95px] right-0 w-full">
+                <DraggableVideo
+                  active={documentPlayerState.active}
+                  videoElement={videoRef.current}
+                  movieSrc={videoRef.current.currentSrc}
+                  onHandleClick={() => {
+                    setDocumentPlayerStateValues({ active: false });
+                  }}
+                />
+              </div>
+            )}
+
+            <div className="relative bottom-[0px]">
+              <VideoSubtitle
+                videoElement={videoRef.current}
+                subtitlesData={assetDataState.subtitlesData}
+                active={videoPlayerState.subtitlesActive}
+                zIndex={40}
+              />
+            </div>
+
+            <div
+              className={`relative w-full pt-2 ${animationTriggerClassname}`}
+            >
+              {assetDataState.assetsReady && (
+                <VideoSeekbar
+                  videoElement={videoRef.current}
+                  onHandleSetPlayerActive={setDocumentPlayerStateActive}
+                  documentActiveTimes={documentPlayerState.activeTimes}
+                  documentPlayerActive={documentPlayerState.active}
+                />
+              )}
+              {
+                <VideoToolbar
+                  videoElement={videoRef.current}
+                  videoElementPaused={videoPlayerState.paused}
+                  videoElementMuted={videoPlayerState.muted}
+                  documentPlayerActive={documentPlayerState.active}
+                  documentPlayerStandby={documentPlayerState.standby}
+                  videoSubtitlesActive={
+                    assetDataState.subtitlesDataReady &&
+                    videoPlayerState.subtitlesActive
+                  }
+                  onHandleMuteButtonClick={handleVideoElementMuted}
+                  onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
+                  onSubtitlesButtonClick={handleVideoSubtitlesActive}
+                />
+              }
+            </div>
+          </div>
+        )}
+
         {!videoPlayerState.loading && !assetDataState.assetsReady && (
-          <div className="absolute top-0 left-0 w-full h-screen z-30 loading-screen-wrapper">
+          <div className="absolute top-0 left-0 w-full h-screen z-50 loading-screen-wrapper">
             <LoadingScreen />
           </div>
         )}
-
-        {videoRef.current && (
-          <DraggableVideo
-            active={documentPlayerState.active}
-            videoElement={videoRef.current}
-            movieSrc={videoRef.current.currentSrc}
-            onHandleClick={() => {
-              setDocumentPlayerStateValues({ active: false });
-            }}
-          />
-        )}
       </div>
-
-      {videoRef.current && (
-        <div
-          className={`z-50 video-controls-wrapper`}
-          style={{
-            width: videoRef.current.clientWidth,
-            top: videoRef.current.getBoundingClientRect().bottom,
-            // top: documentPlayerState.active
-            //   ? document.body.getBoundingClientRect().bottom
-            //   : videoRef.current.getBoundingClientRect().bottom,
-            // transform: documentPlayerState.active ? "translateY(-100%)" : "",
-          }}
-        >
-          <div className="relative bottom-[0px]">
-            <VideoSubtitle
-              videoElement={videoRef.current}
-              subtitlesData={assetDataState.subtitlesData}
-              active={videoPlayerState.subtitlesActive}
-              zIndex={40}
-            />
-          </div>
-
-          <div className={`relative w-full pt-2 ${animationTriggerClassname}`}>
-            {assetDataState.assetsReady && (
-              <VideoSeekbar
-                videoElement={videoRef.current}
-                onHandleSetPlayerActive={setDocumentPlayerStateActive}
-                documentActiveTimes={documentPlayerState.activeTimes}
-                documentPlayerActive={documentPlayerState.active}
-              />
-            )}
-            {
-              <VideoToolbar
-                videoElement={videoRef.current}
-                videoElementPaused={videoPlayerState.paused}
-                videoElementMuted={videoPlayerState.muted}
-                documentPlayerActive={documentPlayerState.active}
-                documentPlayerStandby={documentPlayerState.standby}
-                videoSubtitlesActive={
-                  assetDataState.subtitlesDataReady &&
-                  videoPlayerState.subtitlesActive
-                }
-                onHandleMuteButtonClick={handleVideoElementMuted}
-                onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
-                onSubtitlesButtonClick={handleVideoSubtitlesActive}
-              />
-            }
-          </div>
-        </div>
-      )}
     </div>
   );
 }

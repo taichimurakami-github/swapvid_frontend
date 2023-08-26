@@ -259,12 +259,11 @@ export default function DocumentPlayerContainer(
       setActiveScrollTl(activeTlSection);
       setDocumentPlayerStateValues({
         videoOnFocusArea: activeTlSection?.invidFocusedArea,
-        standby: !!activeTlSection,
+        standby: !!activeTlSection && !!activeTlSection.invidFocusedArea,
       });
 
       // Failed to found active section from scroll timeline
       if (!activeTlSection) {
-        setDocumentPlayerStateValues({ standby: false });
         setDocumentStyles((b) => ({ ...b, standby: false }));
         return;
       }
