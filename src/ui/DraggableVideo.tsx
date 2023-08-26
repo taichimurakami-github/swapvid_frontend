@@ -3,7 +3,15 @@ import Draggable from "react-draggable";
 import { useHandleClickWithDrag } from "@/hooks/useDraggable";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
 
-export default function DraggableVideo(
+/**
+ * Memorize component to improve performance
+ *
+ * ATTENTION:
+ * To reset initial position to be shown,
+ * please update virtual DOM by inserting and deleting DraggableVideo
+ * (It wouldn't cause performance issues cause DraggableVideo uses component memorization)
+ */
+const DraggableVideo = React.memo(function _DraggableVideo(
   props: PropsWithChildren<{
     active: boolean;
     videoElement: HTMLVideoElement | null;
@@ -15,9 +23,11 @@ export default function DraggableVideo(
   const videoCurrentTime = useVideoCurrenttime(props.videoElement);
   const eventHandlers = useHandleClickWithDrag(props.onHandleClick, 200);
 
-  if (smallVideoRef.current) {
-    smallVideoRef.current.currentTime = videoCurrentTime;
-  }
+  const syncParentVideoCurrentTime = (target: HTMLVideoElement) => {
+    target.currentTime = videoCurrentTime;
+  };
+
+  smallVideoRef.current && syncParentVideoCurrentTime(smallVideoRef.current);
 
   return (
     <Draggable>
@@ -33,6 +43,9 @@ export default function DraggableVideo(
           muted
           autoPlay={false}
           ref={smallVideoRef}
+          onLoadedData={(e) => {
+            syncParentVideoCurrentTime(e.currentTarget);
+          }}
         />
         <div
           className="_dragger-onclick-handler absolute top-0 left-0 w-full h-full"
@@ -41,4 +54,6 @@ export default function DraggableVideo(
       </div>
     </Draggable>
   );
-}
+});
+
+export default DraggableVideo;
