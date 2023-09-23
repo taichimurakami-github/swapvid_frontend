@@ -21,6 +21,7 @@ export default function VideoToolbar(
     videoSubtitlesActive: boolean;
     documentPlayerActive: boolean;
     documentPlayerStandby: boolean;
+    zIndex?: number;
 
     onHandleMuteButtonClick: (nextMuted: boolean) => void;
     // onHandlePlayAndPauseButtonClick: (nextPaused: boolean) => void;
@@ -35,7 +36,12 @@ export default function VideoToolbar(
   }>
 ) {
   return (
-    <ul className="video-tools-wrapper text-white select-none">
+    <ul
+      className="video-tools-wrapper text-white select-none"
+      style={{
+        zIndex: props.zIndex,
+      }}
+    >
       <div
         className={`bg-toolbar flex justify-between h-[60px] py-2 ${
           props.documentPlayerActive
@@ -57,6 +63,7 @@ export default function VideoToolbar(
               <FontAwesomeIcon
                 className="flex items-center text-2xl"
                 icon={props.videoElement.paused ? faPlay : faPause}
+                // icon={faPause}
               ></FontAwesomeIcon>
             </li>
           )}
