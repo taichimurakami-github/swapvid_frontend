@@ -17,6 +17,8 @@ import {
 import DocumentPlayerContainer from "./DocumentPlayerContainer";
 import DraggableVideo from "@/ui/DraggableVideo";
 import "@/styles/MainPlayerCombinedViewContainer.scss";
+import DocumentOverviewContainer from "./DocumentOverviewContainer";
+import DocumentCtxInfoShowcaseContainer from "./DocumentCtxInfoShowcaseContainer";
 
 export default function MainPlayerCombinedViewContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
@@ -184,6 +186,12 @@ export default function MainPlayerCombinedViewContainer(
           </div>
         )}
       </div>
+
+      <div className="absolute top-0 left-0 w-[15%] h-full">
+        <DocumentOverviewContainer active />
+      </div>
+
+      <DocumentCtxInfoShowcaseContainer />
     </div>
   );
 }
