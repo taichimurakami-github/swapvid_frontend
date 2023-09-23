@@ -6,7 +6,9 @@ import { faFileInvoice, faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, {
   CSSProperties,
+  PointerEvent,
   PropsWithChildren,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -19,6 +21,7 @@ export default function DocumentOverviewContainer(
   const documentViewportAreaRef = useRef<HTMLDivElement>(null);
   const videoViewportAreaRef = useRef<HTMLDivElement>(null);
   const backgroundImgRef = useRef<HTMLImageElement>(null);
+  const isDragging = useRef(false);
 
   const [documentAreaStyle, setDocumentAreaStyle] = useState<CSSProperties>({});
 
@@ -69,7 +72,6 @@ export default function DocumentOverviewContainer(
     const documentAreaLeft = documentPlayerState.documentOnFocusArea[0][0];
     const documentAreaTop = documentPlayerState.documentOnFocusArea[0][1];
     const documentAreaRight = documentPlayerState.documentOnFocusArea[1][0];
-    const documentAreaBottom = documentPlayerState.documentOnFocusArea[1][1];
 
     const documentAreaWidth = wrapperRef.current
       ? (documentAreaRight - documentAreaLeft) * wrapperRef.current.clientWidth
@@ -78,13 +80,7 @@ export default function DocumentOverviewContainer(
     const documentAreaHeight =
       documentAreaWidth * (videoPlayerState.height / videoPlayerState.width);
 
-    const [x_r, y_r] = [documentAreaLeft, documentAreaTop];
-
     if (backgroundImgRef.current && wrapperRef.current) {
-      console.log(
-        wrapperRef.current.clientHeight,
-        documentAreaTop * wrapperRef.current.clientHeight
-      );
       setDocumentAreaStyle({
         left: documentAreaLeft * wrapperRef.current.clientWidth, //x
         // top: documentAreaTop * 100 + "%", //y
@@ -94,9 +90,10 @@ export default function DocumentOverviewContainer(
       });
 
       wrapperRef.current.scrollTop =
+        documentAreaHeight * documentAreaTop + //documentArea.clientHeightを補正項として付け足し
         documentAreaTop *
-        (backgroundImgRef.current.clientHeight -
-          wrapperRef.current.clientHeight);
+          (backgroundImgRef.current.clientHeight -
+            wrapperRef.current.clientHeight);
     }
   }, [documentPlayerState.documentOnFocusArea]);
 
@@ -114,23 +111,61 @@ export default function DocumentOverviewContainer(
     }
   }, [wrapperRef.current]);
 
+  const handlePointerDown = useCallback((e: PointerEvent) => {
+    isDragging.current = true;
+    const wrapperBrect = e.currentTarget.getBoundingClientRect();
+
+    const documentAreaTop = documentPlayerState.documentOnFocusArea[0][1];
+    const documentAreaBottom = documentPlayerState.documentOnFocusArea[1][1];
+
+    const newScrollYRatio =
+      (-1 * (documentAreaBottom - documentAreaTop)) / 2 +
+      (e.clientY - wrapperBrect.top) / wrapperBrect.height;
+
+    const documentViewerScrollWrapper = document.getElementById(
+      "document_viewer_scroll_wrapper"
+    );
+    if (documentViewerScrollWrapper) {
+      documentViewerScrollWrapper.scrollTop =
+        documentPlayerState.wrapperScrollHeight * newScrollYRatio;
+    }
+  }, []);
+
+  const handlePointerMove = useCallback((e: PointerEvent) => {
+    if (!isDragging.current) return;
+
+    handlePointerDown(e);
+  }, []);
+
+  const handlePointerUp = useCallback(() => {
+    isDragging.current = false;
+  }, []);
+
   return (
     <div
       id="document_overview_container_wrapper"
-      className="relative overflow-hidden scrollbar-hidden"
+      className="relative overflow-hidden scrollbar-hidden bg-white select-none"
       style={{
         visibility: props.active ? "visible" : "hidden",
         height: props.height ?? "100%",
       }}
       ref={wrapperRef}
     >
-      <img
-        className="w-full select-none"
-        src={documentPlayerState.baseImgSrc}
-        ref={backgroundImgRef}
-      />
       <div
-        className="absolute flex-xyc doc-overview-invid-focused-area bg-blue-600 z-10 opacity-70"
+        className="select-none"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onPointerMove={handlePointerMove}
+      >
+        <img
+          className="w-full pointer-events-none"
+          src={documentPlayerState.baseImgSrc}
+          ref={backgroundImgRef}
+        />
+      </div>
+      <div
+        className="absolute flex-xyc doc-overview-invid-focused-area bg-blue-600 z-10 opacity-70 pointer-events-none"
         ref={videoViewportAreaRef}
         style={
           videoOnFocusAreaStyles
@@ -144,7 +179,7 @@ export default function DocumentOverviewContainer(
         <FontAwesomeIcon className="text-4xl text-white" icon={faPlay} />
       </div>
       <div
-        className="absolute flex-xyc flex-col doc-overview-indoc-focused-area bg-red-600 z-10 opacity-70"
+        className="absolute flex-xyc flex-col doc-overview-indoc-focused-area bg-red-600 z-10 opacity-70 pointer-events-none"
         ref={documentViewportAreaRef}
         style={
           documentAreaStyle
