@@ -6,6 +6,7 @@ import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
 import { ACTIVE_ASSET_ID_LS_CACHE_KEY, ASSET_ID_LIST } from "@/app.config";
+import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 
 export const MainPlayerRootContainer = (
   props: PropsWithChildren<{
@@ -22,6 +23,7 @@ export const MainPlayerRootContainer = (
     disableControlPanelPauseAndPlay?: boolean;
     disableControlPanelSubtilte?: boolean;
     disablePauseAndPlay?: boolean;
+    disableAppMenu?: boolean;
   }>
 ) => {
   const [interfaceModeState, setInterfaceModeState] =
@@ -32,6 +34,8 @@ export const MainPlayerRootContainer = (
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [assetChangeFormVisible, setAssetChangeFormVisible] = useState(false);
+
+  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
 
   // const handleOnChangeInterfaceMode = useCallback(
   //   (nextInterfaceState: TInterfaceMode) => {
@@ -49,6 +53,8 @@ export const MainPlayerRootContainer = (
       setAssetChangeFormVisible(false);
       setActiveIdState(assetId);
       localStorage.setItem(ACTIVE_ASSET_ID_LS_CACHE_KEY, assetId);
+      setDocumentPlayerStateValues({ active: false });
+      // location.reload();
     },
     [setAssetChangeFormVisible, setActiveIdState]
   );
@@ -82,7 +88,7 @@ export const MainPlayerRootContainer = (
           assetId={activeAssetIdState}
           playerMode={interfaceModeState}
         >
-          <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc px-4 pt-4">
+          <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc flex-col px-4 pt-4">
             {interfaceModeState === "parallel" && (
               <MainPlayerParallelViewContainer assetId={activeAssetIdState} />
             )}
@@ -93,25 +99,29 @@ export const MainPlayerRootContainer = (
                 enableOverflowMode={props.enableOverflowModeOnCombinedView}
               />
             )}
-            <div className="absolute top-0 left-0 flex-xyc gap-4 text-center text-white text-md p-2">
-              <h1 className="flex-xyc gap-4 bg-neutral-800 text-center text-white">
-                <p className="flex-xyc gap-2">
-                  Playing: <b>{activeAssetIdState}</b>
-                </p>
-                <button
-                  className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-                  onClick={handleOnClickAssetChangeFormVisibleBtn}
-                >
-                  Change Asset
-                </button>
-                <button
-                  className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-                  onClick={handleFullScreen}
-                >
-                  {isFullScreen ? "Exit full screen" : "Request full screen"}
-                </button>
-              </h1>
-              {/* <button
+
+            {props.disableAppMenu && <div className="h-[15vh]"></div>}
+
+            {!props.disableAppMenu && (
+              <div className="absolute top-0 left-0 flex-xyc gap-4 text-center text-white text-md p-2">
+                <h1 className="flex-xyc gap-4 bg-neutral-800 text-center text-white">
+                  <p className="flex-xyc gap-2">
+                    Playing: <b>{activeAssetIdState}</b>
+                  </p>
+                  <button
+                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+                    onClick={handleOnClickAssetChangeFormVisibleBtn}
+                  >
+                    Change Asset
+                  </button>
+                  <button
+                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+                    onClick={handleFullScreen}
+                  >
+                    {isFullScreen ? "Exit full screen" : "Request full screen"}
+                  </button>
+                </h1>
+                {/* <button
                 className={
                   interfaceModeState === "parallel"
                     ? "p-2 rounded-md font-bold bg-red-600 cursor-auto"
@@ -135,7 +145,8 @@ export const MainPlayerRootContainer = (
               >
                 Combined View
               </button> */}
-            </div>
+              </div>
+            )}
           </div>
           {assetChangeFormVisible && (
             <div
