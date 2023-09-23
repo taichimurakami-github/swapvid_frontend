@@ -161,12 +161,12 @@ $zIndex: (
   // position: absolute;
   // transition: bottom transform 1s ease-in-out;
 
-  .active {
-    transition: opacity 0.2s ease-in-out;
-    opacity: 0.75;
+  // .active {
+  //   transition: opacity 0.2s ease-in-out;
+  //   opacity: 0.75;
 
-    &:hover {
-      opacity: 1;
-    }
-  }
+  //   &:hover {
+  //     opacity: 1;
+  //   }
+  // }
 }
