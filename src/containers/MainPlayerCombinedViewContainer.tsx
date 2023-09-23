@@ -87,7 +87,7 @@ export default function MainPlayerCombinedViewContainer(
           videoRef.current && (
             <div
               id="document_player_outer"
-              className={`top-0 left-0 z-0 document-player-wrapper w-full h-full overflow-hidden ${animationTriggerClassname} `}
+              className={`top-0 left-0 z-0 document-player-wrapper w-full h-full ${animationTriggerClassname} `}
             >
               <div className="relative w-full h-full">
                 <div
@@ -112,6 +112,10 @@ export default function MainPlayerCombinedViewContainer(
             </div>
           )
         }
+
+        <div className="absolute top-0 left-[-15.5%] w-[15%] h-full">
+          <DocumentOverviewContainer active={documentPlayerState.active} />
+        </div>
 
         {videoRef.current && (
           <div
@@ -185,10 +189,6 @@ export default function MainPlayerCombinedViewContainer(
             <LoadingScreen />
           </div>
         )}
-      </div>
-
-      <div className="absolute top-0 left-0 w-[15%] h-full">
-        <DocumentOverviewContainer active />
       </div>
 
       <DocumentCtxInfoShowcaseContainer />
