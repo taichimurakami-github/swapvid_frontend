@@ -8,7 +8,7 @@ import VideoToolbar from "@/ui/VideoToolbar";
 import { TAssetId } from "@/@types/types";
 
 import { UIELEM_ID_LIST } from "@/app.config";
-import { PropsWithChildren, useCallback, useEffect } from "react";
+import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
@@ -17,6 +17,8 @@ import {
 import DocumentPlayerContainer from "./DocumentPlayerContainer";
 import DraggableVideo from "@/ui/DraggableVideo";
 import "@/styles/MainPlayerCombinedViewContainer.scss";
+import DocumentOverviewContainer from "./DocumentOverviewContainer";
+import DocumentCtxInfoShowcaseContainer from "./DocumentCtxInfoShowcaseContainer";
 
 export default function MainPlayerCombinedViewContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
@@ -34,6 +36,11 @@ export default function MainPlayerCombinedViewContainer(
     handleVideoElementPaused,
     handleVideoSubtitlesActive,
   } = useVideoPlayerCore(props.assetId);
+
+  const [documentOverviewActive, setDocumentOverviewActive] = useState(false);
+  const handleDocumentOverviewActive = useCallback(() => {
+    setDocumentOverviewActive((b) => !b);
+  }, [setDocumentOverviewActive]);
 
   const documentPlayerState = useDocumentPlayerStateCtx();
   const { documentPlayerAssets } = useAssetDataCtx();
@@ -85,9 +92,16 @@ export default function MainPlayerCombinedViewContainer(
           videoRef.current && (
             <div
               id="document_player_outer"
-              className={`top-0 left-0 z-0 document-player-wrapper w-full h-full overflow-hidden ${animationTriggerClassname} `}
+              className={`top-0 left-0 z-0 document-player-wrapper w-full h-full ${animationTriggerClassname} `}
             >
-              <div className="relative w-full h-full">
+              <div
+                className="relative w-full h-full"
+                onClick={() => {
+                  if (documentPlayerState.active && documentOverviewActive) {
+                    setDocumentOverviewActive(false);
+                  }
+                }}
+              >
                 <div
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-full"
                   style={{
@@ -106,11 +120,30 @@ export default function MainPlayerCombinedViewContainer(
                     enableCenteredScrollYBaseline={true}
                   ></DocumentPlayerContainer>
                 </div>
+
+                {documentPlayerState.active && documentOverviewActive && (
+                  <div className="absolute left-0 top-0 w-full h-full bg-black opacity-30 pointer-events-none"></div>
+                )}
+
+                <div
+                  className="absolute top-0 w-[15%] h-full"
+                  style={{
+                    pointerEvents: documentOverviewActive ? "auto" : "none",
+                  }}
+                >
+                  {videoRef.current && (
+                    <DocumentOverviewContainer
+                      active={
+                        documentPlayerState.active && documentOverviewActive
+                      }
+                      height={videoRef.current.clientHeight}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           )
         }
-
         {videoRef.current && (
           <div
             className={`video-controls-wrapper w-full z-10`}
@@ -165,16 +198,35 @@ export default function MainPlayerCombinedViewContainer(
                   videoElementMuted={videoPlayerState.muted}
                   documentPlayerActive={documentPlayerState.active}
                   documentPlayerStandby={documentPlayerState.standby}
+                  documentOverviewActive={documentOverviewActive}
                   videoSubtitlesActive={
                     assetDataState.subtitlesDataReady &&
                     videoPlayerState.subtitlesActive
                   }
                   onHandleMuteButtonClick={handleVideoElementMuted}
+                  onHandleDocumentOverviewButtonClick={
+                    handleDocumentOverviewActive
+                  }
                   onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
                   onSubtitlesButtonClick={handleVideoSubtitlesActive}
                 />
               }
             </div>
+          </div>
+        )}
+
+        {documentPlayerState.active && !documentOverviewActive && (
+          <div
+            className="absolute top-0 left-0 flex-xyc flex-col h-full w-[50px] opacity-0 hover:bg-black hover:opacity-90 text-white font-bold text-xl select-none"
+            onClick={handleDocumentOverviewActive}
+          >
+            <span
+              style={{
+                writingMode: "vertical-rl",
+              }}
+            >
+              &gt;&gt; Show Overview
+            </span>
           </div>
         )}
 
@@ -184,6 +236,8 @@ export default function MainPlayerCombinedViewContainer(
           </div>
         )}
       </div>
+
+      <DocumentCtxInfoShowcaseContainer />
     </div>
   );
 }

@@ -322,6 +322,7 @@ export default function DocumentPlayerContainer(
           className="relative w-full h-full overflow-hidden"
         >
           <div
+            id="document_viewer_scroll_wrapper"
             className="relative w-full h-full overflow-scroll scrollbar-hidden"
             style={{
               width: videoElement.clientWidth + "px",
