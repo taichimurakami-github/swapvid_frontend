@@ -15,6 +15,7 @@ export default function App() {
         defaultAssetId
       }
       enableOverflowModeOnCombinedView={false}
+      disableAppMenu={!false}
     />
   );
 }

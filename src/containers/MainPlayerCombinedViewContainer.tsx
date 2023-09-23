@@ -124,7 +124,7 @@ export default function MainPlayerCombinedViewContainer(
             }}
           >
             {videoRef.current && documentPlayerState.active && (
-              <div className="absolute bottom-[95px] right-0 w-full">
+              <div className="absolute bottom-[95px] right-0 w-full z-0">
                 <DraggableVideo
                   active={documentPlayerState.active}
                   videoElement={videoRef.current}
@@ -150,6 +150,7 @@ export default function MainPlayerCombinedViewContainer(
             >
               {assetDataState.assetsReady && (
                 <VideoSeekbar
+                  zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}
                   documentActiveTimes={documentPlayerState.activeTimes}
@@ -158,6 +159,7 @@ export default function MainPlayerCombinedViewContainer(
               )}
               {
                 <VideoToolbar
+                  zIndex={10}
                   videoElement={videoRef.current}
                   videoElementPaused={videoPlayerState.paused}
                   videoElementMuted={videoPlayerState.muted}

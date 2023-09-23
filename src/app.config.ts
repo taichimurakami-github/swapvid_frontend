@@ -11,6 +11,7 @@ export const ASSET_ID_LIST = [
   "CHI2021Fujita", // Slide #1
   "IEEEVR2022Ogawa", // Slide #2
   "IEEEVR2022Hoshikawa", // Slide #3
+  "SampleLectureLLM01", // Slide #4
 
   /**
    * Document Assets

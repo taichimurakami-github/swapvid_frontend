@@ -12,6 +12,7 @@ export default function VideoSeekbar(props: {
   videoElement: HTMLVideoElement;
   documentPlayerActive: boolean;
   documentActiveTimes: [number, number][];
+  zIndex?: number;
   onHandleSetPlayerActive: (v: boolean) => void;
 }) {
   const currentTime = useVideoCurrenttime(props.videoElement);
@@ -45,6 +46,7 @@ export default function VideoSeekbar(props: {
       className={`relative w-full flex bg-gray-400 cursor-pointer select-none`}
       ref={seekbarWrapperRef}
       style={{
+        zIndex: props.zIndex,
         height: seekbarHeight,
       }}
       onTouchStart={(e) => {
