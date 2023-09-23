@@ -9,6 +9,7 @@ import {
   faClosedCaptioning,
   faFileInvoice,
   faFilm,
+  faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "@/styles/VideoToolbar.scss";
@@ -21,10 +22,12 @@ export default function VideoToolbar(
     videoSubtitlesActive: boolean;
     documentPlayerActive: boolean;
     documentPlayerStandby: boolean;
+    documentOverviewActive: boolean;
     zIndex?: number;
 
     onHandleMuteButtonClick: (nextMuted: boolean) => void;
     // onHandlePlayAndPauseButtonClick: (nextPaused: boolean) => void;
+    onHandleDocumentOverviewButtonClick: () => void;
 
     onDocumentPlayerButtonClick: (v: boolean) => void;
     onSubtitlesButtonClick: (v: boolean) => void;
@@ -53,7 +56,7 @@ export default function VideoToolbar(
       >
         <ul className="flex justify-between">
           {!props.disableControlPanelPauseAndPlay && (
-            <li
+            <button
               id={UIELEM_ID_LIST.system.videoPlayer.pauseAndPlayButton}
               className={`flex-xyc cursor-pointer rounded-md w-[65px] hover:bg-gray-600`}
               onClick={() => {
@@ -65,7 +68,7 @@ export default function VideoToolbar(
                 icon={props.videoElement.paused ? faPlay : faPause}
                 // icon={faPause}
               ></FontAwesomeIcon>
-            </li>
+            </button>
           )}
 
           <li className="flex items-center text-lg h-full select-none px-4">
@@ -76,7 +79,7 @@ export default function VideoToolbar(
           </li>
 
           {!props.disableControlPanelMuted && (
-            <li
+            <button
               id={UIELEM_ID_LIST.system.videoPlayer.muteButton}
               className="flex-xyc cursor-pointer h-full rounded-md hover:bg-gray-600 w-[50px]"
               onClick={() => {
@@ -87,11 +90,11 @@ export default function VideoToolbar(
                 className="text-white text-xl"
                 icon={props.videoElementMuted ? faVolumeMute : faVolumeUp}
               ></FontAwesomeIcon>
-            </li>
+            </button>
           )}
         </ul>
 
-        <div className="flex-xyc gap-2 text-sm">
+        <button className="flex-xyc gap-2 text-sm">
           {props.documentPlayerStandby && !props.documentPlayerActive && (
             <>
               <div
@@ -116,7 +119,7 @@ export default function VideoToolbar(
               document active
             </>
           )}
-        </div>
+        </button>
 
         {/* <ul className="flex-xyc">
           {props.documentPlayerActive && (
@@ -154,7 +157,31 @@ export default function VideoToolbar(
           )}
         </ul> */}
         <ul className={`flex justify-between gap-2`}>
-          <li
+          {props.documentPlayerActive && (
+            <button
+              className={`relative p-2 flex-xyc cursor-pointer rounded-md w-[65px] hover:bg-gray-600`}
+              onClick={() => {
+                props.onHandleDocumentOverviewButtonClick();
+              }}
+            >
+              {props.documentOverviewActive && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-3/4 -translate-y-1/2 w-[3rem] h-[4px] bg-red-800 rotate-[-65deg]"></div>
+              )}
+
+              <div className="px-2 py-1 flex-xyc gap-1 w-full rounded-sm">
+                <div className="grid gap-[3.5px]">
+                  <div className="w-[1rem] h-[0.6rem] rounded-sm bg-white"></div>
+                  <div className="w-[1rem] h-[0.6rem] rounded-sm bg-white"></div>
+                  <div className="w-[1rem] h-[0.6rem] rounded-sm bg-white"></div>
+                </div>
+                <span className="font-bold text-xl">
+                  {props.documentOverviewActive ? <>&larr;</> : <>&rarr;</>}
+                </span>
+              </div>
+            </button>
+          )}
+
+          <button
             id={UIELEM_ID_LIST.system.documentPlayer.enableDocumentPlayerButton}
             className={`flex-xyc gap-[10px] cursor-pointer p-2 rounded-md hover:bg-gray-600 w-[65px]`}
             onClick={() => {
@@ -168,9 +195,9 @@ export default function VideoToolbar(
             {/* <p className="text-md">
               Click to {!props.documentPlayerActive ? "Open" : "Close"}
             </p> */}
-          </li>
+          </button>
           {!props.disableControlPanelSubtitle && (
-            <li
+            <button
               id={UIELEM_ID_LIST.system.videoPlayer.captionButton}
               className={`flex-xyc cursor-pointer rounded-md w-[65px] hover:bg-gray-600`}
               onClick={() => {
@@ -183,7 +210,7 @@ export default function VideoToolbar(
                 }`}
                 icon={faClosedCaptioning}
               />
-            </li>
+            </button>
           )}
         </ul>
       </div>
