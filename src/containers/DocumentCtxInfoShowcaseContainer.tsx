@@ -19,7 +19,7 @@ export default function DocumentCtxInfoShowcaseContainer() {
       </button>
 
       {showcaseActive && (
-        <div className="grid p-2 bg-gray-600 text-white text-lg fixed top-0 right-0 w-[30%] h-full opacity-80 overflow-auto">
+        <div className="grid p-2 bg-gray-600 text-white text-lg fixed top-0 right-0 w-[50%] h-full opacity-80 overflow-auto pointer-events-none">
           <h2 className="p-2 font-bold text-xl text-center">
             Current docuentPlayerState
           </h2>
