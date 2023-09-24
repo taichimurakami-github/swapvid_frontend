@@ -39,18 +39,18 @@ const DocumentOverviewContainer = React.memo(
       bottom: null,
     };
 
-    if (documentPlayerState.videoOnFocusArea) {
-      videoArea.left = documentPlayerState.videoOnFocusArea[0][0];
-      videoArea.top = documentPlayerState.videoOnFocusArea[0][1];
-      videoArea.right = documentPlayerState.videoOnFocusArea[1][0];
-      videoArea.bottom = documentPlayerState.videoOnFocusArea[1][1];
+    if (documentPlayerState.videoViewport) {
+      videoArea.left = documentPlayerState.videoViewport[0][0];
+      videoArea.top = documentPlayerState.videoViewport[0][1];
+      videoArea.right = documentPlayerState.videoViewport[1][0];
+      videoArea.bottom = documentPlayerState.videoViewport[1][1];
     }
 
     /**
      * VideoArea is rendered as a WrapperElem scale (same as the background image region)
      */
 
-    const videoOnFocusAreaStyles =
+    const videoViewportStyles =
       videoArea.top !== null &&
       videoArea.left !== null &&
       videoArea.right !== null &&
@@ -73,9 +73,9 @@ const DocumentOverviewContainer = React.memo(
        * DocumentArea is rendered as a VideoArea scale
        */
 
-      const documentAreaLeft = documentPlayerState.documentOnFocusArea[0][0];
-      const documentAreaTop = documentPlayerState.documentOnFocusArea[0][1];
-      const documentAreaRight = documentPlayerState.documentOnFocusArea[1][0];
+      const documentAreaLeft = documentPlayerState.documentViewport[0][0];
+      const documentAreaTop = documentPlayerState.documentViewport[0][1];
+      const documentAreaRight = documentPlayerState.documentViewport[1][0];
 
       const documentAreaWidth = wrapperRef.current
         ? (documentAreaRight - documentAreaLeft) *
@@ -100,16 +100,15 @@ const DocumentOverviewContainer = React.memo(
             (backgroundImgRef.current.clientHeight -
               wrapperRef.current.clientHeight);
       }
-    }, [documentPlayerState.documentOnFocusArea]);
+    }, [documentPlayerState.documentViewport]);
 
     const handlePointerDown = useCallback(
       (e: PointerEvent) => {
         isDragging.current = true;
         const wrapperBrect = e.currentTarget.getBoundingClientRect();
 
-        const documentAreaTop = documentPlayerState.documentOnFocusArea[0][1];
-        const documentAreaBottom =
-          documentPlayerState.documentOnFocusArea[1][1];
+        const documentAreaTop = documentPlayerState.documentViewport[0][1];
+        const documentAreaBottom = documentPlayerState.documentViewport[1][1];
 
         const newScrollYRatio =
           (-1 * (documentAreaBottom - documentAreaTop)) / 2 +
@@ -186,7 +185,7 @@ const DocumentOverviewContainer = React.memo(
         <div
           className="absolute flex-xyc doc-overview-invid-focused-area bg-blue-600 z-10 opacity-70 pointer-events-none"
           ref={videoViewportAreaRef}
-          style={videoOnFocusAreaStyles}
+          style={videoViewportStyles}
         >
           <FontAwesomeIcon className="text-4xl text-white" icon={faPlay} />
         </div>

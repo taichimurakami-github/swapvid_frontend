@@ -24,8 +24,9 @@ import {
   useDocumentScrollTimeline,
 } from "@/hooks/useDocumentTimeline";
 
-import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
+import { calcBboxArea, cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
 import { getRangeArray } from "@/utils/common";
+import { calcRectCollision } from "@/utils/collision";
 
 export default function DocumentPlayerContainer(
   props: PropsWithChildren<{
@@ -111,7 +112,7 @@ export default function DocumentPlayerContainer(
   );
 
   const playerActive = props.playerActive;
-  const playerStandby = activeScrollTl && activeScrollTl.invidFocusedArea;
+  const playerStandby = activeScrollTl && activeScrollTl.videoViewport;
 
   const onDocumentLoadSuccess = useCallback(
     ({ numPages }: { numPages: number }): void => {
@@ -130,58 +131,65 @@ export default function DocumentPlayerContainer(
     [timeline]
   );
 
-  const getPlaytimeFromInDocScrollY = useCallback(
+  const getPlaytimeFromCurrentDocumentViewport = useCallback(
     (
-      currentScrollY: number,
-      maxScrollY: number,
+      currentDocumentViewport: TBoundingBox,
       videoDuration: number
-    ): [number, number][] => {
-      const MARGIN = 150;
-      const targetSections = timeline.filter((v) => {
-        if (!v.invidFocusedArea) return false;
+    ): [number, number, number][] => {
+      const viewportArea = calcBboxArea(currentDocumentViewport);
 
-        const onFocusAreaTop = v.invidFocusedArea[0][1];
+      return timeline
+        .map((v) => {
+          if (!v.videoViewport) return null; // 資料が映り込んでいないシーンは対象から除外
 
-        return (
-          onFocusAreaTop * maxScrollY - MARGIN <= currentScrollY && //Is current scroll Y larger than onFocusArea.top ?
-          currentScrollY <= onFocusAreaTop * maxScrollY + MARGIN //Is current scroll Y smaller than onFocusArea.top ?
-        );
-      });
+          const collidedRect = calcRectCollision(
+            currentDocumentViewport,
+            v.videoViewport
+          );
 
-      return targetSections.map((v) => {
-        return videoDuration < v.time[1] //time[1]がInfinityの場合，ビデオの終了まで位置が持続するとみなす
-          ? [v.time[0], videoDuration] //time[start, videoEnd]に置換
-          : v.time; //time[start, end] をそのまま代入
-      });
+          if (!collidedRect) return null; //ビューポートと衝突していない区間はハイライトしない
+
+          const collidedArea = calcBboxArea(collidedRect);
+
+          const sectionTimeRange =
+            videoDuration < v.time[1] //time[1]がInfinityの場合，ビデオの終了まで位置が持続するとみなす
+              ? [v.time[0], videoDuration] //time[start, videoEnd]に置換
+              : v.time; //time[start, end] をそのまま代入
+
+          const areaRatioCollidedPerViewport = collidedArea / viewportArea;
+
+          return [...sectionTimeRange, areaRatioCollidedPerViewport];
+        })
+        .filter((v) => !!v) as [number, number, number][]; //nullを除く
     },
     [timeline]
   );
 
   const updateDocumentState = useCallback(() => {
     if (documentContainerRef.current && scrollWrapperRef.current) {
-      const currDocScrollY = scrollWrapperRef.current.scrollTop;
-      const currDocLeft = 0;
-      const currDocTop =
-        currDocScrollY / documentContainerRef.current.clientHeight;
-      const currDocWidth =
-        scrollWrapperRef.current.clientWidth /
-        documentContainerRef.current.clientWidth;
-      const currDocHeight =
-        scrollWrapperRef.current.clientHeight /
-        documentContainerRef.current.clientHeight;
+      const documentWidth = documentContainerRef.current.clientWidth;
+      const documentHeight = documentContainerRef.current.clientHeight;
+      const playerViewportWidth = scrollWrapperRef.current.clientWidth;
+      const playerViewportHeight = scrollWrapperRef.current.clientHeight;
 
-      const activeTimes = getPlaytimeFromInDocScrollY(
-        currDocScrollY,
-        documentContainerRef.current.clientHeight,
+      const currDocLeft = scrollWrapperRef.current.scrollLeft / documentWidth;
+      const currDocTop = scrollWrapperRef.current.scrollTop / documentHeight;
+      const currDocWidth = playerViewportWidth / documentWidth;
+      const currDocHeight = playerViewportHeight / documentHeight;
+
+      const documentViewport: [[number, number], [number, number]] = [
+        [currDocLeft, currDocTop],
+        [currDocLeft + currDocWidth, currDocTop + currDocHeight],
+      ];
+
+      const activeTimes = getPlaytimeFromCurrentDocumentViewport(
+        documentViewport,
         videoElement.duration
       );
 
       setDocumentPlayerStateValues({
         baseImgSrc: props.documentBaseImageSrc,
-        documentOnFocusArea: [
-          [currDocLeft, currDocTop],
-          [currDocLeft + currDocWidth, currDocTop + currDocHeight],
-        ],
+        documentViewport: documentViewport,
         wrapperScrollHeight: documentContainerRef.current.clientHeight,
         wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
         activeTimes,
@@ -189,21 +197,21 @@ export default function DocumentPlayerContainer(
     }
   }, [
     scrollWrapperRef,
-    getPlaytimeFromInDocScrollY,
+    // getPlaytimeFromInDocScrollY,
+    getPlaytimeFromCurrentDocumentViewport,
     setDocumentPlayerStateValues,
   ]);
 
   const updateDocumentStyles = useCallback(
     (
-      currentInvidFocusedArea: TBoundingBox,
+      currentVideoViewport: TBoundingBox,
       documentWidth: number,
       documentHeight: number,
       scrollWrapperElem: HTMLElement
     ) => {
-      const [r_areaWidth] = cvtToWHArray(currentInvidFocusedArea);
-      const [r_top, r_left, r_width, r_height] = cvtToTLWHArray(
-        currentInvidFocusedArea
-      );
+      const [r_areaWidth] = cvtToWHArray(currentVideoViewport);
+      const [r_top, r_left, r_width, r_height] =
+        cvtToTLWHArray(currentVideoViewport);
 
       const zoomRate = r_areaWidth > 0 ? 1 / r_areaWidth : 1.0;
       const currDocumentStyles = {
@@ -258,8 +266,8 @@ export default function DocumentPlayerContainer(
 
       setActiveScrollTl(activeTlSection);
       setDocumentPlayerStateValues({
-        videoOnFocusArea: activeTlSection?.invidFocusedArea,
-        standby: !!activeTlSection && !!activeTlSection.invidFocusedArea,
+        videoViewport: activeTlSection?.videoViewport,
+        standby: !!activeTlSection && !!activeTlSection.videoViewport,
       });
 
       // Failed to found active section from scroll timeline
@@ -269,13 +277,13 @@ export default function DocumentPlayerContainer(
       }
 
       // Found activeTlSection but section doesn't record onFocusArea
-      if (!activeTlSection.invidFocusedArea) {
+      if (!activeTlSection.videoViewport) {
         setDocumentStyles((b) => ({ ...b, standby: false }));
         return;
       }
 
       updateDocumentStyles(
-        activeTlSection.invidFocusedArea,
+        activeTlSection.videoViewport,
         documentContainerRef.current.clientWidth,
         documentContainerRef.current.clientHeight,
         scrollWrapperRef.current

@@ -26,3 +26,8 @@ export const cvtToTLWHArray = (value: TBoundingBox) => [
   value[1][0] - value[0][0], //width
   value[1][1] - value[0][1], //height
 ];
+
+export const calcBboxArea = (value: TBoundingBox) => {
+  const [width, height] = cvtToWHArray(value);
+  return width * height;
+};
