@@ -22,7 +22,7 @@ export const calcRectCollision = (
     ? [
         // collision rect
         [Math.max(x1, x3), Math.max(y1, y3)],
-        [Math.min(y2, y4), Math.min(y2, y4)],
+        [Math.min(x2, x4), Math.min(y2, y4)],
       ]
     : null;
 };
