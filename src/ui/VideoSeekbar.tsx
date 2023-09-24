@@ -11,7 +11,7 @@ import usePreviewDummyVideo from "@/hooks/usePreviewDummyVideo";
 export default function VideoSeekbar(props: {
   videoElement: HTMLVideoElement;
   documentPlayerActive: boolean;
-  documentActiveTimes: [number, number][];
+  documentActiveTimes: [number, number, number][];
   zIndex?: number;
   onHandleSetPlayerActive: (v: boolean) => void;
 }) {

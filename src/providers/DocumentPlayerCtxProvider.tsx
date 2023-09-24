@@ -17,13 +17,13 @@ export type TDocumentPlayerStateCtx = {
   loaded: boolean;
   active: boolean;
   standby: boolean;
-  activeTimes: [number, number][];
+  activeTimes: [number, number, number][];
   baseImgSrc: string;
   pdfSrc: string;
   wrapperScrollHeight: number;
   wrapperWindowHeight: number;
-  videoOnFocusArea: TBoundingBox | null;
-  documentOnFocusArea: TBoundingBox;
+  videoViewport: TBoundingBox | null;
+  documentViewport: TBoundingBox;
   playerElement: HTMLElement | null;
   unableScrollTo: number;
   gapBetweenImagesPx: number;
@@ -75,11 +75,11 @@ export default function DocumentPlayerCtxProvider(
       pdfSrc: "",
       wrapperScrollHeight: 0,
       wrapperWindowHeight: 0,
-      videoOnFocusArea: [
+      videoViewport: [
         [0.0, 0.0],
         [0.0, 0.0],
       ],
-      documentOnFocusArea: [
+      documentViewport: [
         [0.0, 0.0],
         [0.0, 0.0],
       ],

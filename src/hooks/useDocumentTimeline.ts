@@ -22,7 +22,7 @@ export function useDocumentScrollTimeline(
           }
 
           // 動画内での注目エリアのBBOXを算出
-          const invidFocusedAreaInDocRate = currValue[1] //currValue = (t_frame, null)の場合はマッチングしていない区間とみなす
+          const relativeVideoViewportInDoc = currValue[1] //currValue = (t_frame, null)の場合はマッチングしていない区間とみなす
             ? (currValue[2] as TBoundingBox)
             : null;
 
@@ -31,7 +31,7 @@ export function useDocumentScrollTimeline(
             id: i,
             time: [currSectionTime, Infinity],
             zoomRate: currValue[1] ?? 1.0,
-            invidFocusedArea: invidFocusedAreaInDocRate,
+            videoViewport: relativeVideoViewportInDoc,
             scrollMode: "noscroll",
           });
 
