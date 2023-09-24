@@ -8,7 +8,7 @@ import React, { PropsWithChildren } from "react";
 export default function SeekbarHighlightContainer(
   props: PropsWithChildren<{
     videoElement: HTMLVideoElement;
-    documentActiveTimes: [number, number][];
+    documentActiveTimes: [number, number, number][];
     documentPlayerActive: boolean;
     onHandleSetDocumentPlayerActive: (v: boolean) => void;
   }>
@@ -37,7 +37,8 @@ export default function SeekbarHighlightContainer(
               left_pct={left_pct}
               width_pct={width_pct}
               visible={props.documentPlayerActive}
-              time={v}
+              time={[v[0], v[1]]}
+              opacity={v[2]}
               onHandleSetDocumentPlayerActive={
                 props.onHandleSetDocumentPlayerActive
               }
@@ -59,6 +60,7 @@ function SeekbarHighlightArea(
     width_pct: number;
     visible: boolean;
     time: [number, number];
+    opacity: number;
     // handleSetVideoCurrentTime: () => void;
     onHandleSetDocumentPlayerActive: (v: boolean) => void;
     color?: string;
@@ -77,6 +79,7 @@ function SeekbarHighlightArea(
         width: props.width_pct + "%",
         background: props.color ?? "yellow",
         visibility: props.visible ? "visible" : "hidden",
+        opacity: props.opacity,
         translate: `translateX(${type === "point" ? "-50%" : "0"})`,
       }}
       // onMouseDown={() => {
