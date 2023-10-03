@@ -2,6 +2,7 @@ import React, { PropsWithChildren, useRef, useState } from "react";
 import Draggable from "react-draggable";
 import { useHandleClickWithDrag } from "@/hooks/useDraggable";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
+import useIntersectionObserver from "@/hooks/useIntersectionObserver";
 
 /**
  * Memorize component to improve performance
@@ -29,12 +30,23 @@ const DraggableVideo = React.memo(function _DraggableVideo(
   const smallVideoRef = useRef<HTMLVideoElement>(null);
   const videoCurrentTime = useVideoCurrenttime(props.videoElement);
   const eventHandlers = useHandleClickWithDrag(props.onHandleClick, 200);
+  const wrapperElemRef = useRef(null);
 
   const [closeBtnOpacity, setCloseBtnOpacity] = useState(0);
 
   const syncParentVideoCurrentTime = (target: HTMLVideoElement) => {
     target.currentTime = videoCurrentTime;
   };
+
+  // TODO: intersection observerw監視対象を単体のコンポーネントとして切り出す
+  const { intersectionEntry } = useIntersectionObserver(wrapperElemRef);
+  if (
+    intersectionEntry &&
+    props.onHandleClose &&
+    intersectionEntry.intersectionRatio < 0.2
+  ) {
+    props.onHandleClose();
+  }
 
   smallVideoRef.current && syncParentVideoCurrentTime(smallVideoRef.current);
 
@@ -44,6 +56,7 @@ const DraggableVideo = React.memo(function _DraggableVideo(
         className={`draggable-video relative z-30 cursor-pointer ${
           props.active ? "active" : "unactive"
         }`}
+        ref={wrapperElemRef}
         onPointerEnter={() => {
           setCloseBtnOpacity(CLOSE_BTN_OPACITY.visible);
         }}
