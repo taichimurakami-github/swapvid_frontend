@@ -46,9 +46,15 @@ export default function MainPlayerCombinedViewContainer(
   const { documentPlayerAssets } = useAssetDataCtx();
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
 
+  const [draggableVideoActive, setDraggableVideoActive] = useState(true);
+
   const setDocumentPlayerStateActive = useCallback((value: boolean) => {
     setDocumentPlayerStateValues({ active: value });
   }, []);
+
+  const handleDraggableVideoButtonClick = useCallback(() => {
+    setDraggableVideoActive((b) => !b);
+  }, [setDraggableVideoActive]);
 
   const animationTriggerClassname = documentPlayerState.active
     ? "active"
@@ -156,18 +162,23 @@ export default function MainPlayerCombinedViewContainer(
               // transform: documentPlayerState.active ? "translateY(-100%)" : "",
             }}
           >
-            {videoRef.current && documentPlayerState.active && (
-              <div className="absolute bottom-[95px] right-0 w-full z-0">
-                <DraggableVideo
-                  active={documentPlayerState.active}
-                  videoElement={videoRef.current}
-                  movieSrc={videoRef.current.currentSrc}
-                  onHandleClick={() => {
-                    setDocumentPlayerStateValues({ active: false });
-                  }}
-                />
-              </div>
-            )}
+            {videoRef.current &&
+              documentPlayerState.active &&
+              draggableVideoActive && (
+                <div className="absolute bottom-[95px] right-0 w-full z-0">
+                  <DraggableVideo
+                    active={documentPlayerState.active}
+                    videoElement={videoRef.current}
+                    movieSrc={videoRef.current.currentSrc}
+                    onHandleClick={() => {
+                      setDocumentPlayerStateValues({ active: false });
+                    }}
+                    onHandleClose={() => {
+                      setDraggableVideoActive(false);
+                    }}
+                  />
+                </div>
+              )}
 
             <div className="relative bottom-[0px]">
               <VideoSubtitle
@@ -199,6 +210,7 @@ export default function MainPlayerCombinedViewContainer(
                   documentPlayerActive={documentPlayerState.active}
                   documentPlayerStandby={documentPlayerState.standby}
                   documentOverviewActive={documentOverviewActive}
+                  draggableVideoActive={draggableVideoActive}
                   videoSubtitlesActive={
                     assetDataState.subtitlesDataReady &&
                     videoPlayerState.subtitlesActive
@@ -209,6 +221,7 @@ export default function MainPlayerCombinedViewContainer(
                   }
                   onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
                   onSubtitlesButtonClick={handleVideoSubtitlesActive}
+                  onDraggableVideoButtonClick={handleDraggableVideoButtonClick}
                 />
               }
             </div>
