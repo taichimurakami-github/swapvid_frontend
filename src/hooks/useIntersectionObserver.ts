@@ -20,44 +20,41 @@ export default function useIntersectionObserver(
         observer.current.disconnect();
       }
 
-      if (observerTarget.current) {
-        observer.current = new IntersectionObserver(
-          ([entry]) => {
-            const intersectRatioDiffAbs =
-              intersectionEntry === undefined
-                ? 0
-                : Math.abs(
-                    intersectionEntry.intersectionRatio -
-                      entry.intersectionRatio
-                  );
+      observer.current = new IntersectionObserver(
+        ([entry]) => {
+          const intersectRatioDiffAbs =
+            intersectionEntry === undefined
+              ? 0
+              : Math.abs(
+                  intersectionEntry.intersectionRatio - entry.intersectionRatio
+                );
 
-            if (
-              !intersectionEntry ||
-              intersectRatioDiffAbs >= validIntersectRatioInterval
-            ) {
-              setIntersectionEntry(entry);
-            }
-          },
-          {
-            root: observerRoot?.current,
-            threshold: (() => {
-              const thresholds = [];
-              const numSteps = 20;
-
-              for (let i = 1.0; i <= numSteps; i++) {
-                const ratio = i / numSteps;
-                thresholds.push(ratio);
-              }
-
-              thresholds.push(0);
-              return thresholds;
-            })(),
+          if (
+            !intersectionEntry ||
+            intersectRatioDiffAbs >= validIntersectRatioInterval
+          ) {
+            setIntersectionEntry(entry);
           }
-        );
+        },
+        {
+          root: observerRoot?.current,
+          threshold: (() => {
+            const thresholds = [];
+            const numSteps = 20;
 
-        observer.current.observe(observerTarget.current);
-        prevObserverOptions.current = observerOptions;
-      }
+            for (let i = 1.0; i <= numSteps; i++) {
+              const ratio = i / numSteps;
+              thresholds.push(ratio);
+            }
+
+            thresholds.push(0);
+            return thresholds;
+          })(),
+        }
+      );
+
+      observer.current.observe(observerTarget.current);
+      prevObserverOptions.current = observerOptions;
     }
   }, [
     observerTarget,
