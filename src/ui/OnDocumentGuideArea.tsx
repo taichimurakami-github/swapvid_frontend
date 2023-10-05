@@ -18,14 +18,14 @@ export default function OnDocumentGuideArea(
   const wrapperRef = useRef<HTMLDivElement>(null);
   const documentPlayerState = useDocumentPlayerStateCtx();
 
-  if (!documentPlayerState.videoOnFocusArea) {
+  if (!documentPlayerState.videoViewport) {
     return <></>;
   }
 
-  const areaLeft = documentPlayerState.videoOnFocusArea[0][0];
-  const areaTop = documentPlayerState.videoOnFocusArea[0][1];
-  const areaRight = documentPlayerState.videoOnFocusArea[1][0];
-  const areaBottom = documentPlayerState.videoOnFocusArea[1][1];
+  const areaLeft = documentPlayerState.videoViewport[0][0];
+  const areaTop = documentPlayerState.videoViewport[0][1];
+  const areaRight = documentPlayerState.videoViewport[1][0];
+  const areaBottom = documentPlayerState.videoViewport[1][1];
 
   const areaWidth = areaRight - areaLeft;
   const areaHeight = areaBottom - areaTop;
