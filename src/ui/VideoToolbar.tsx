@@ -23,6 +23,7 @@ export default function VideoToolbar(
     documentPlayerActive: boolean;
     documentPlayerStandby: boolean;
     documentOverviewActive: boolean;
+    draggableVideoActive: boolean;
     zIndex?: number;
 
     onHandleMuteButtonClick: (nextMuted: boolean) => void;
@@ -31,6 +32,8 @@ export default function VideoToolbar(
 
     onDocumentPlayerButtonClick: (v: boolean) => void;
     onSubtitlesButtonClick: (v: boolean) => void;
+
+    onDraggableVideoButtonClick: () => void;
 
     /** control panel disable settings */
     disableControlPanelMuted?: boolean;
@@ -159,7 +162,28 @@ export default function VideoToolbar(
         <ul className={`flex justify-between gap-2`}>
           {props.documentPlayerActive && (
             <button
-              className={`relative p-2 flex-xyc cursor-pointer rounded-md w-[65px] hover:bg-gray-600`}
+              className={`relative p-2 flex-xyc rounded-md w-[65px] hover:bg-gray-600`}
+              onClick={props.onDraggableVideoButtonClick}
+            >
+              <div className="rounded-sm w-[35px] h-[25px] bg-white opacity-40"></div>
+              <div className="absolute flex-xyc right-3 bottom-2 rounded-sm w-[25px] h-[20px] bg-white">
+                <div className="flex-xyc rounded-full w-[15px] h-[15px]  bg-red-700">
+                  <FontAwesomeIcon
+                    className="flex items-center w-1/2"
+                    icon={faPlay}
+                    // icon={faPause}
+                  ></FontAwesomeIcon>
+                </div>
+              </div>
+              {props.draggableVideoActive && (
+                <div className="absolute w-full h-[5px] bg-red-900 rotate-45"></div>
+              )}
+            </button>
+          )}
+
+          {props.documentPlayerActive && (
+            <button
+              className={`relative p-2 flex-xyc rounded-md w-[65px] hover:bg-gray-600`}
               onClick={() => {
                 props.onHandleDocumentOverviewButtonClick();
               }}

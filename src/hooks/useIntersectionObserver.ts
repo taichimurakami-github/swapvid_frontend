@@ -2,7 +2,7 @@ import React, { RefObject, useEffect, useRef, useState } from "react";
 
 export default function useIntersectionObserver(
   observerTarget: RefObject<HTMLElement>,
-  observerRoot: RefObject<HTMLElement>,
+  observerRoot?: RefObject<HTMLElement>,
   validIntersectRatioInterval = 0.1,
   observerOptions?: {
     rootMargin?: string;
@@ -15,7 +15,7 @@ export default function useIntersectionObserver(
   const prevObserverOptions = useRef<IntersectionObserverInit>();
 
   useEffect(() => {
-    if (observerTarget.current && observerRoot.current) {
+    if (observerTarget.current) {
       if (observer.current) {
         observer.current.disconnect();
       }
@@ -37,7 +37,7 @@ export default function useIntersectionObserver(
           }
         },
         {
-          root: observerRoot.current,
+          root: observerRoot?.current,
           threshold: (() => {
             const thresholds = [];
             const numSteps = 20;
@@ -56,7 +56,12 @@ export default function useIntersectionObserver(
       observer.current.observe(observerTarget.current);
       prevObserverOptions.current = observerOptions;
     }
-  }, [observerTarget, observerRoot]);
+  }, [
+    observerTarget,
+    observerTarget.current,
+    observerRoot,
+    observerRoot?.current,
+  ]);
 
   return { intersectionEntry };
 }

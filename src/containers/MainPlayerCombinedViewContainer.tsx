@@ -1,24 +1,22 @@
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
-
+import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
 import { LoadingScreen } from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/ui/VideoSeekbar";
 import VideoToolbar from "@/ui/VideoToolbar";
-
-import { TAssetId } from "@/@types/types";
-
-import { UIELEM_ID_LIST } from "@/app.config";
-import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
+import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
 import DocumentPlayerContainer from "./DocumentPlayerContainer";
-import DraggableVideo from "@/ui/DraggableVideo";
-import "@/styles/MainPlayerCombinedViewContainer.scss";
+import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
 import DocumentCtxInfoShowcaseContainer from "./DocumentCtxInfoShowcaseContainer";
+
+import { TAssetId } from "@/@types/types";
+import { UIELEM_ID_LIST } from "@/app.config";
+import "@/styles/MainPlayerCombinedViewContainer.scss";
 
 export default function MainPlayerCombinedViewContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
@@ -46,17 +44,23 @@ export default function MainPlayerCombinedViewContainer(
   const { documentPlayerAssets } = useAssetDataCtx();
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
 
+  const [draggableVideoActive, setDraggableVideoActive] = useState(true);
+
   const setDocumentPlayerStateActive = useCallback((value: boolean) => {
     setDocumentPlayerStateValues({ active: value });
   }, []);
+
+  const handleDraggableVideoButtonClick = useCallback(() => {
+    setDraggableVideoActive((b) => !b);
+  }, [setDraggableVideoActive]);
 
   const animationTriggerClassname = documentPlayerState.active
     ? "active"
     : "unactive";
 
-  const overflowModeEnabledClassname = props.enableOverflowMode
-    ? "overflow"
-    : "";
+  // const overflowModeEnabledClassname = props.enableOverflowMode
+  //   ? "overflow"
+  //   : "";
 
   useEffect(() => {
     setDocumentPlayerStateValues({ active: false });
@@ -156,18 +160,23 @@ export default function MainPlayerCombinedViewContainer(
               // transform: documentPlayerState.active ? "translateY(-100%)" : "",
             }}
           >
-            {videoRef.current && documentPlayerState.active && (
-              <div className="absolute bottom-[95px] right-0 w-full z-0">
-                <DraggableVideo
-                  active={documentPlayerState.active}
-                  videoElement={videoRef.current}
-                  movieSrc={videoRef.current.currentSrc}
-                  onHandleClick={() => {
-                    setDocumentPlayerStateValues({ active: false });
-                  }}
-                />
-              </div>
-            )}
+            {videoRef.current &&
+              documentPlayerState.active &&
+              draggableVideoActive && (
+                <div className="absolute bottom-[95px] right-0 w-full z-0">
+                  <DraggableVideoContainer
+                    active={documentPlayerState.active}
+                    videoElement={videoRef.current}
+                    movieSrc={videoRef.current.currentSrc}
+                    onHandleClick={() => {
+                      setDocumentPlayerStateValues({ active: false });
+                    }}
+                    onHandleClose={() => {
+                      setDraggableVideoActive(false);
+                    }}
+                  />
+                </div>
+              )}
 
             <div className="relative bottom-[0px]">
               <VideoSubtitle
@@ -199,6 +208,7 @@ export default function MainPlayerCombinedViewContainer(
                   documentPlayerActive={documentPlayerState.active}
                   documentPlayerStandby={documentPlayerState.standby}
                   documentOverviewActive={documentOverviewActive}
+                  draggableVideoActive={draggableVideoActive}
                   videoSubtitlesActive={
                     assetDataState.subtitlesDataReady &&
                     videoPlayerState.subtitlesActive
@@ -209,6 +219,7 @@ export default function MainPlayerCombinedViewContainer(
                   }
                   onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
                   onSubtitlesButtonClick={handleVideoSubtitlesActive}
+                  onDraggableVideoButtonClick={handleDraggableVideoButtonClick}
                 />
               }
             </div>
