@@ -1,7 +1,7 @@
 import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
 
 import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
+import LoadingScreen from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/containers/VideoSeekbarContainer";
 import VideoToolbar from "@/ui/VideoToolbar";
 
@@ -121,8 +121,10 @@ export default function MainPlayerPVServerComponentTest(
             videoElement={videoRef.current}
             videoElementPaused={videoPlayerState.paused}
             videoElementMuted={videoPlayerState.muted}
-            documentPlayerActive={false}
-            documentPlayerStandby={false}
+            documentPlayerActive={documentPlayerState.active}
+            documentPlayerStandby={documentPlayerState.standby}
+            documentOverviewActive={false}
+            draggableVideoActive={false}
             videoSubtitlesActive={
               assetDataState.subtitlesDataReady &&
               videoPlayerState.subtitlesActive
@@ -130,6 +132,8 @@ export default function MainPlayerPVServerComponentTest(
             onHandleMuteButtonClick={handleVideoElementMuted}
             onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
             onSubtitlesButtonClick={handleVideoSubtitlesActive}
+            onHandleDocumentOverviewButtonClick={() => {}}
+            onDraggableVideoButtonClick={() => {}}
           />
         )}
       </div>
