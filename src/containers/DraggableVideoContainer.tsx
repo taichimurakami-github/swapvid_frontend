@@ -1,5 +1,5 @@
-import React, { PropsWithChildren, useRef } from "react";
-import Draggable from "react-draggable";
+import React, { PropsWithChildren, useCallback, useRef } from "react";
+import Draggable, { DraggableEvent } from "react-draggable";
 import { useHandleClickWithDrag } from "@/hooks/useDraggable";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
 import useIntersectionObserver from "@/hooks/useIntersectionObserver";
@@ -35,15 +35,19 @@ const DraggableVideoContainer = React.memo(function _DraggableVideo(
   if (
     intersectionEntry &&
     props.onHandleClose &&
-    intersectionEntry.intersectionRatio < 0.2
+    intersectionEntry.intersectionRatio < 0.5
   ) {
     props.onHandleClose();
   }
 
   smallVideoRef.current && syncParentVideoCurrentTime(smallVideoRef.current);
 
+  const handleDraggableOnDrag = useCallback((e: DraggableEvent) => {
+    e.preventDefault(); // Avoid selecting texts in document when
+  }, []);
+
   return (
-    <Draggable>
+    <Draggable onDrag={handleDraggableOnDrag}>
       <div
         className={`draggable-video relative z-30 cursor-pointer ${
           props.active ? "active" : "unactive"
