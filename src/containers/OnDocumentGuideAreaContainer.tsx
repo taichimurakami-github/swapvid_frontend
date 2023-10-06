@@ -3,7 +3,7 @@ import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function OnDocumentGuideArea(
+export default function OnDocumentGuideAreaContainer(
   props: PropsWithChildren<{
     top: number | string;
     left: number | string;

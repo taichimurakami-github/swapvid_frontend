@@ -2,7 +2,7 @@ import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
 
 import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
 import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
+import VideoSeekbar from "@/containers/VideoSeekbarContainer";
 import VideoToolbar from "@/ui/VideoToolbar";
 
 import {

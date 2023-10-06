@@ -1,6 +1,6 @@
-import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const useVideoSeekbar = (
+const useVideoSeekbarCore = (
   videoElement: HTMLVideoElement,
   currentTime: number,
   liveModeEnabled = false,
@@ -300,4 +300,4 @@ const useVideoSeekbar = (
   };
 };
 
-export default useVideoSeekbar;
+export default useVideoSeekbarCore;

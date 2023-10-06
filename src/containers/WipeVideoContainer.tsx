@@ -1,7 +1,7 @@
 import useInteractJS from "@/hooks/useInteractJS";
 import React, { PropsWithChildren } from "react";
 
-export default function WipeVideo(props: PropsWithChildren) {
+export default function WipeVideoContainer(props: PropsWithChildren) {
   const windowWidth = 1500;
   const windowHeight = 800;
   const interactJs = useInteractJS({

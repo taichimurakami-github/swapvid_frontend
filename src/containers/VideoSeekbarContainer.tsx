@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import useVideoSeekbar from "@/hooks/useVideoSeekbar";
+import React from "react";
+import useVideoSeekbarCore from "@/hooks/useVideoSeekbarCore";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
 
 import SeekbarHighlightContainer from "@/containers/SeekbarHighlightContainer";
@@ -8,7 +8,7 @@ import { getHMFormatCurrentTime } from "@/utils/getHMFormatCurrentTime";
 import { UIELEM_ID_LIST } from "@/app.config";
 import usePreviewDummyVideo from "@/hooks/usePreviewDummyVideo";
 
-export default function VideoSeekbar(props: {
+export default function VideoSeekbarContainer(props: {
   videoElement: HTMLVideoElement;
   documentPlayerActive: boolean;
   documentActiveTimes: [number, number, number][];
@@ -28,7 +28,7 @@ export default function VideoSeekbar(props: {
     // previewImgSrc,
     previewVisibility,
     previewCurrentTime_sec,
-  } = useVideoSeekbar(
+  } = useVideoSeekbarCore(
     props.videoElement,
     currentTime,
     false //enableLiveMode

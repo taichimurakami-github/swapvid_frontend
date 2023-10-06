@@ -1,7 +1,7 @@
 import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
 import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
+import VideoSeekbar from "@/containers/VideoSeekbarContainer";
 import VideoToolbar from "@/ui/VideoToolbar";
 import {
   useAssetDataCtx,
@@ -248,7 +248,7 @@ export default function MainPlayerCombinedViewContainer(
         )}
       </div>
 
-      <DocumentCtxInfoShowcaseContainer />
+      {/* <DocumentCtxInfoShowcaseContainer /> */}
     </div>
   );
 }

@@ -18,7 +18,7 @@ import {
 } from "@/@types/types";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
 import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
-import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
+import OnDocumentGuideAreaContainer from "@/containers/OnDocumentGuideAreaContainer";
 import {
   useDocumentActivityTimeline,
   useDocumentScrollTimeline,
@@ -359,12 +359,12 @@ export default function DocumentPlayerContainer(
               ref={guideAreaWrapperRef}
             >
               {guideAreaStyles && (
-                <OnDocumentGuideArea
+                <OnDocumentGuideAreaContainer
                   {...guideAreaStyles}
                   docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
                   docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
                   active={true}
-                ></OnDocumentGuideArea>
+                />
               )}
             </div>
           </div>

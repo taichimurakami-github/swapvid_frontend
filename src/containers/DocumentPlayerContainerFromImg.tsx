@@ -15,7 +15,7 @@ import {
   // useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
-import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
+import OnDocumentGuideArea from "@/containers/OnDocumentGuideAreaContainer";
 import {
   useDocumentActivityTimeline,
   useDocumentScrollTimeline,
