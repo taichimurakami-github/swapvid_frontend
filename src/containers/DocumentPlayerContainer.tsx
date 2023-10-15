@@ -327,145 +327,87 @@ export default function DocumentPlayerContainer(
   }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
 
   const transformScaleDefault = 1;
-  const [zoomModeState, setZoomModeState] =
+  const [transformState, setTransformState] =
     useState<null | ReactZoomPanPinchState>(null);
-  const prevPointerPos = useRef<null | [number, number]>(null);
-  const prevZoomPosCache = useRef<[number, number] | null>(null);
-  const momentumScrollingInfo = useRef<
-    | {
-        prevPos: [number, number];
-        vector: [number, number];
-        active: true;
-      }
-    | {
-        prevPos: [];
-        vector: [];
-        active: false;
-      }
-  >({
-    prevPos: [],
-    vector: [],
-    active: false,
-  });
-  const momentumScrollingSmoothingSteps = 0.1;
   const resetTransformFlg = useRef(false);
 
   const handleResetTransform = useCallback(() => {
+    resetTransformFlg.current = true;
     if (transformComponentRef.current) {
-      resetTransformFlg.current = true;
+      console.log("reset transform");
       const utils = transformComponentRef.current;
-      utils.resetTransform();
-      momentumScrollingInfo.current = {
-        active: false,
-        prevPos: [],
-        vector: [],
-      };
-      setZoomModeState(null);
+      utils.resetTransform(0);
+      setTransformState(null);
     }
-  }, [transformComponentRef]);
+    resetTransformFlg.current = false;
+  }, [transformComponentRef, resetTransformFlg]);
 
   const handleZoomStart = useCallback(
     (e: ReactZoomPanPinchRef) => {
-      resetTransformFlg.current = false;
-      setZoomModeState(e.state);
+      console.log("handleZoomStart", resetTransformFlg.current);
+      if (!resetTransformFlg.current) setTransformState(e.state);
 
       // activatePlayer(); // Cause a bug (activeScrollTl becomes null in activatePlayer(), but Idk why)
       !playerActive && setDocumentPlayerStateValues({ active: true });
     },
-    [setZoomModeState, setDocumentPlayerStateValues, playerActive]
+    [
+      setTransformState,
+      setDocumentPlayerStateValues,
+      playerActive,
+      resetTransformFlg,
+    ]
   );
 
   const handleZoomStop = useCallback(
     (e: ReactZoomPanPinchRef) => {
-      if (resetTransformFlg.current) return;
-
-      setZoomModeState(e.state);
-      prevZoomPosCache.current = [e.state.positionX, e.state.positionY];
+      console.log("handleZoomStop", resetTransformFlg.current);
+      if (!resetTransformFlg.current) setTransformState(e.state);
     },
-    [setZoomModeState]
+    [setTransformState, resetTransformFlg]
   );
 
-  const handleScrollOnZoomMode = useCallback(
+  const handleSetTransform = useCallback(
     (newPositionX: number, newPositionY: number, currentScale: number) => {
-      if (transformComponentRef.current) {
-        transformComponentRef.current.setTransform(
-          newPositionX,
-          newPositionY,
-          currentScale,
-          0
-        );
-
-        setZoomModeState((b) => ({
-          positionX: newPositionX,
-          positionY: newPositionY,
-          scale: currentScale,
-          previousScale: b?.previousScale ?? 0,
-        }));
+      console.log("handleTransform");
+      if (!transformComponentRef.current || resetTransformFlg.current) {
+        return;
       }
+
+      transformComponentRef.current.setTransform(
+        newPositionX,
+        newPositionY,
+        currentScale,
+        0
+      );
+
+      setTransformState((b) => ({
+        positionX: newPositionX,
+        positionY: newPositionY,
+        scale: currentScale,
+        previousScale: b?.previousScale ?? 0,
+      }));
     },
-    [transformComponentRef, setZoomModeState]
+    [transformComponentRef, resetTransformFlg, setTransformState]
   );
-
-  const momentumScrollingAnimationCallback = useCallback(() => {
-    const msInfo = momentumScrollingInfo.current;
-    console.log(
-      // "momentumScrolling animation callback",
-      // msInfo.vector,
-      prevPointerPos.current
-    );
-
-    if (!msInfo.active || !zoomModeState) {
-      return;
-    }
-
-    const newPosition: [number, number] = [
-      msInfo.prevPos[0] + msInfo.vector[0],
-      msInfo.prevPos[1] + msInfo.vector[1],
-    ];
-
-    handleScrollOnZoomMode(
-      // zoomModeState.positionX - msInfo.vector[0],
-      // zoomModeState.positionY - msInfo.vector[1],
-      ...newPosition,
-      zoomModeState.scale
-    );
-
-    prevZoomPosCache.current = [
-      msInfo.prevPos[0] - msInfo.vector[0],
-      msInfo.prevPos[1] - msInfo.vector[1],
-    ];
-
-    if (
-      momentumScrollingInfo.current.active &&
-      (msInfo.vector[0] > 1 || msInfo.vector[1] > 1)
-    ) {
-      const mul = 1 - momentumScrollingSmoothingSteps;
-      momentumScrollingInfo.current = {
-        prevPos: newPosition,
-        vector: [msInfo.vector[0] * mul, msInfo.vector[1] * mul],
-        active: true,
-      };
-
-      requestAnimationFrame(momentumScrollingAnimationCallback);
-    }
-  }, [
-    zoomModeState,
-    momentumScrollingInfo,
-    momentumScrollingInfo.current,
-    handleScrollOnZoomMode,
-  ]);
 
   const handleWrapperOnWheel = useCallback(
     (e: React.WheelEvent) => {
       // [PC] Enable free scrolling when zoom mode is enabled
-      if (zoomModeState) {
-        handleScrollOnZoomMode(
-          zoomModeState.positionX - e.deltaX,
-          zoomModeState.positionY - e.deltaY,
-          zoomModeState.scale
+      if (transformState) {
+        handleSetTransform(
+          transformState.positionX - e.deltaX,
+          transformState.positionY - e.deltaY,
+          transformState.scale
         );
       }
 
+      activatePlayer();
+    },
+    [transformState, activatePlayer, handleSetTransform]
+  );
+
+  const handleWrapperOnPointerDown = useCallback(
+    (e: React.PointerEvent) => {
       if (!playerActive) {
         const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
         const isTextClicked =
@@ -475,92 +417,29 @@ export default function DocumentPlayerContainer(
 
       activatePlayer();
     },
-    [zoomModeState, transformComponentRef, setZoomModeState, activatePlayer]
+    [activatePlayer, playerActive]
   );
 
   const handleWrapperOnTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      // Initialize momentum scrolling info
-      momentumScrollingInfo.current = {
-        prevPos: [],
-        vector: [],
-        active: false,
-      };
-
-      // Initialize previous transform positions
-      // prevZoomPosCache.current = null;
-
-      if (e.touches.length === 1) {
-        prevPointerPos.current = [e.touches[0].clientX, e.touches[0].clientY];
-      }
+      // if (e.touches.length === 1) {
+      //   prevPointerPos.current = [e.touches[0].clientX, e.touches[0].clientY];
+      // }
 
       activatePlayer();
     },
-    [playerActive, zoomModeState, prevPointerPos, activatePlayer]
+    [playerActive, transformState, activatePlayer]
   );
-
-  const handleWrapperOnTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      // Update cached pointer event
-
-      if (playerActive && zoomModeState && e.touches.length === 1) {
-        // [Touch Device] Enable free scrolling when zoom mode is enabled, if document is swiped by a single finger
-        const pt: [number, number] = [
-          e.touches[0].clientX,
-          e.touches[0].clientY,
-        ];
-
-        if (
-          prevPointerPos.current &&
-          zoomModeState &&
-          prevZoomPosCache.current
-        ) {
-          const delta: [number, number] = [
-            pt[0] - prevPointerPos.current[0],
-            pt[1] - prevPointerPos.current[1],
-          ];
-
-          const newPosition: [number, number] = [
-            prevZoomPosCache.current[0] + delta[0],
-            prevZoomPosCache.current[1] + delta[1],
-          ];
-
-          handleScrollOnZoomMode(...newPosition, zoomModeState.scale);
-
-          momentumScrollingInfo.current = {
-            prevPos: [...newPosition],
-            vector: delta,
-            active: true, // Set momentum scrolling flg
-          };
-          prevZoomPosCache.current = [...newPosition];
-        }
-
-        prevPointerPos.current = pt;
-      }
-    },
-    [zoomModeState, handleScrollOnZoomMode]
-  );
-
-  const handleWrapperOnTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      requestAnimationFrame(momentumScrollingAnimationCallback);
-
-      setTestState([]);
-    },
-    [transformComponentRef, momentumScrollingAnimationCallback]
-  );
-
-  const [testState, setTestState] = useState([]);
 
   return (
     <Document
       file={props.pdfSrc}
       onLoadSuccess={onDocumentLoadSuccess}
       onWheel={handleWrapperOnWheel}
+      onPointerDown={handleWrapperOnPointerDown}
       onTouchStart={handleWrapperOnTouchStart}
-      onTouchMove={handleWrapperOnTouchMove}
-      onTouchEnd={handleWrapperOnTouchEnd}
-      // onTouchStart={handleWrapperOnTouchStart}
+      // onTouchMove={handleWrapperOnTouchMove}
+      // onTouchEnd={handleWrapperOnTouchEnd}
       // onMouseDown={(e: React.MouseEvent) => {
       //   if (!playerActive) {
       //     const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
@@ -588,16 +467,15 @@ export default function DocumentPlayerContainer(
         >
           <TransformWrapper
             initialScale={transformScaleDefault}
+            limitToBounds={false}
             wheel={{ wheelDisabled: true, smoothStep: 0.02 }}
-            panning={{ disabled: true }}
-            alignmentAnimation={{ disabled: true }}
+            // panning={{ disabled: true }}
+            // alignmentAnimation={{ disabled: true }}
+            velocityAnimation={{ equalToMove: false }}
             ref={transformComponentRef}
             onZoomStart={handleZoomStart}
             onZoomStop={handleZoomStop}
-            onTransformed={(e) => {
-              console.log("trnasform");
-              handleZoomStop(e);
-            }}
+            // onTransformed={handleZoomStop}
           >
             <div
               id="document_viewer_scroll_wrapper"
@@ -605,7 +483,7 @@ export default function DocumentPlayerContainer(
               style={{
                 width: videoElement.clientWidth + "px",
                 height: videoElement.clientHeight + "px",
-                overflow: zoomModeState ? "hidden" : "scroll",
+                overflow: transformState ? "hidden" : "scroll",
               }}
               ref={scrollWrapperRef}
               onScroll={(e) => {
@@ -627,7 +505,7 @@ export default function DocumentPlayerContainer(
                     <Page
                       width={documentStyles.width}
                       pageNumber={i}
-                      renderTextLayer={!!zoomModeState}
+                      renderTextLayer
                       canvasRef={pageComponentRef}
                     />
                   ))}
@@ -637,7 +515,7 @@ export default function DocumentPlayerContainer(
                 className="absolute top-0 left-0 w-full h-full"
                 ref={guideAreaWrapperRef}
               >
-                {guideAreaStyles && !zoomModeState && (
+                {guideAreaStyles && !transformState && (
                   <OnDocumentGuideArea
                     {...guideAreaStyles}
                     docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
@@ -650,7 +528,7 @@ export default function DocumentPlayerContainer(
               </div>
             </div>
           </TransformWrapper>
-          {zoomModeState && (
+          {transformState && (
             <>
               <div className="absolute top-0 left-0 w-full h-full border border-[20px] border-slate-600 opacity-50 z-10 pointer-events-none"></div>
               <button
@@ -658,17 +536,9 @@ export default function DocumentPlayerContainer(
                 onClick={handleResetTransform}
               >
                 Exit Zoom Mode<br></br>({" "}
-                {Math.round((zoomModeState ? zoomModeState.scale : 0) * 100)} %
-                )
+                {Math.round((transformState ? transformState.scale : 0) * 100)}{" "}
+                % )
               </button>
-              <div
-                className="absolute top-0 left-0 p-2 black text-white"
-                style={{ background: "rgba(0, 0, 0, 0.8)" }}
-              >
-                {testState.map((v) => (
-                  <p>debugger : {v}</p>
-                ))}
-              </div>
             </>
           )}
         </div>
