@@ -11,6 +11,7 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
 import {
+  TAssetId,
   TBoundingBox,
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
@@ -19,18 +20,15 @@ import {
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
 import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
-import {
-  useDocumentActivityTimeline,
-  useDocumentScrollTimeline,
-} from "@/hooks/useDocumentTimeline";
 
-import { calcBboxArea, cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
+import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
 import { getRangeArray } from "@/utils/common";
-import { calcRectCollision } from "@/utils/collision";
+import useSequenceAnalyzer from "@/hooks/useSequenceAnalyzer";
 
-export default function DocumentPlayerContainer(
+export default function DocumentPlayerLiveStreamingContainer(
   props: PropsWithChildren<{
     videoElement: HTMLVideoElement;
+    assetId: TAssetId;
     scrollTimeline: TServerGeneratedScrollTimeline | null;
     activityTimeline: TServerGeneratedActivityTimeline | null;
     playerActive: boolean;
@@ -45,10 +43,6 @@ export default function DocumentPlayerContainer(
     disableUnactiveAnimation?: boolean;
   }>
 ) {
-  // for player animation when on/off
-  const animateEffectActive = useRef(false);
-  const animating = useRef(false);
-
   // for element refs
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
   const documentContainerRef = useRef<HTMLImageElement>(null);
@@ -57,10 +51,13 @@ export default function DocumentPlayerContainer(
   const videoElement = props.videoElement;
   const currentTime = useVideoCurrenttime(props.videoElement);
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const { matchContentSequence } = useSequenceAnalyzer(
+    props.assetId,
+    props.videoElement
+  );
 
-  const [activeScrollTl, setActiveScrollTl] = useState<
-    TDocumentTimeline[0] | null
-  >(null);
+  const [activeVideoViewport, setActiveVideoViewport] =
+    useState<null | TBoundingBox>(null);
 
   const [documentStyles, setDocumentStyles] = useState({
     scrollTop: 0,
@@ -83,86 +80,14 @@ export default function DocumentPlayerContainer(
 
   const [docNumPages, setDocNumPages] = useState<number>(0);
 
-  const { timeline } = useDocumentScrollTimeline(
-    props.scrollTimeline || {
-      media_metadata: [0, 0, 0, 0],
-      document_metadata: [0, 0],
-      tl_document_scrollY: [],
-    }
-  );
-
-  const {
-    // activityState,
-    updateAcitvityState,
-    // getActivityAssets,
-    // getAssetsMetadata,
-  } = useDocumentActivityTimeline(
-    props?.activityTimeline ?? {
-      video_metadata: [0, 0],
-      doc_metadata: [0, 0],
-      activities: [],
-    },
-    props.scrollTimeline ?? {
-      media_metadata: [0, 0, 0, 0],
-      document_metadata: [0, 0],
-      tl_document_scrollY: [],
-    },
-    videoElement,
-    scrollWrapperRef.current
-  );
-
   const playerActive = props.playerActive;
-  const playerStandby = activeScrollTl && activeScrollTl.videoViewport;
+  const playerStandby = activeVideoViewport;
 
   const onDocumentLoadSuccess = useCallback(
     ({ numPages }: { numPages: number }): void => {
       setDocNumPages(numPages);
     },
     [setDocNumPages]
-  );
-
-  const getActiveTlSectionFromPlaytime = useCallback(
-    (time: number, maxScrollY: number): TDocumentTimeline[0] | null => {
-      const currentSection =
-        timeline.find((v) => v.time[0] <= time && time < v.time[1]) ?? null;
-
-      return currentSection;
-    },
-    [timeline]
-  );
-
-  const getPlaytimeFromCurrentDocumentViewport = useCallback(
-    (
-      currentDocumentViewport: TBoundingBox,
-      videoDuration: number
-    ): [number, number, number][] => {
-      const viewportArea = calcBboxArea(currentDocumentViewport);
-
-      return timeline
-        .map((v) => {
-          if (!v.videoViewport) return null; // 資料が映り込んでいないシーンは対象から除外
-
-          const collidedRect = calcRectCollision(
-            currentDocumentViewport,
-            v.videoViewport
-          );
-
-          if (!collidedRect) return null; //ビューポートと衝突していない区間はハイライトしない
-
-          const collidedArea = calcBboxArea(collidedRect);
-
-          const sectionTimeRange =
-            videoDuration < v.time[1] //time[1]がInfinityの場合，ビデオの終了まで位置が持続するとみなす
-              ? [v.time[0], videoDuration] //time[start, videoEnd]に置換
-              : v.time; //time[start, end] をそのまま代入
-
-          const areaRatioCollidedPerViewport = collidedArea / viewportArea;
-
-          return [...sectionTimeRange, areaRatioCollidedPerViewport];
-        })
-        .filter((v) => !!v) as [number, number, number][]; //nullを除く
-    },
-    [timeline]
   );
 
   const updateDocumentState = useCallback(() => {
@@ -182,23 +107,24 @@ export default function DocumentPlayerContainer(
         [currDocLeft + currDocWidth, currDocTop + currDocHeight],
       ];
 
-      const activeTimes = getPlaytimeFromCurrentDocumentViewport(
-        documentViewport,
-        videoElement.duration
-      );
+      // const activeTimes = getPlaytimeFromCurrentDocumentViewport(
+      //   documentViewport,
+      //   videoElement.duration
+      // );
 
       setDocumentPlayerStateValues({
         baseImgSrc: props.documentBaseImageSrc,
         documentViewport: documentViewport,
         wrapperScrollHeight: documentContainerRef.current.clientHeight,
         wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
-        activeTimes,
+        // activeTimes,
       });
     }
   }, [
     scrollWrapperRef,
+    props.documentBaseImageSrc,
     // getPlaytimeFromInDocScrollY,
-    getPlaytimeFromCurrentDocumentViewport,
+    // getPlaytimeFromCurrentDocumentViewport,
     setDocumentPlayerStateValues,
   ]);
 
@@ -257,43 +183,69 @@ export default function DocumentPlayerContainer(
    * 2. Calculate new document states
    * 3. Dispatch changes depending on specific conditions
    */
+  const currentTimePrevSent = useRef<number>(0);
   useEffect(() => {
-    if (documentContainerRef.current && scrollWrapperRef.current) {
-      const activeTlSection = getActiveTlSectionFromPlaytime(
-        currentTime,
-        documentContainerRef.current.clientHeight
-      );
+    /** TODO: Get video viewport from server */
 
-      setActiveScrollTl(activeTlSection);
-      setDocumentPlayerStateValues({
-        videoViewport: activeTlSection?.videoViewport,
-        standby: !!activeTlSection && !!activeTlSection.videoViewport,
+    if (
+      documentContainerRef.current &&
+      scrollWrapperRef.current &&
+      Math.abs(currentTime - currentTimePrevSent.current) > 0.1
+    ) {
+      matchContentSequence().then((result) => {
+        if (!result) return;
+
+        const videoViewport = result.matching_result;
+        setActiveVideoViewport(videoViewport);
+
+        setDocumentPlayerStateValues({
+          videoViewport,
+          standby: !!videoViewport,
+        });
+
+        console.log(videoViewport);
+
+        videoViewport &&
+          updateDocumentStyles(
+            videoViewport,
+            (documentContainerRef.current as HTMLDivElement).clientWidth,
+            (documentContainerRef.current as HTMLDivElement).clientHeight,
+            scrollWrapperRef.current as HTMLDivElement
+          );
       });
-
-      // Failed to found active section from scroll timeline
-      if (!activeTlSection) {
-        setDocumentStyles((b) => ({ ...b, standby: false }));
-        return;
-      }
-
-      // Found activeTlSection but section doesn't record onFocusArea
-      if (!activeTlSection.videoViewport) {
-        setDocumentStyles((b) => ({ ...b, standby: false }));
-        return;
-      }
-
-      updateDocumentStyles(
-        activeTlSection.videoViewport,
-        documentContainerRef.current.clientWidth,
-        documentContainerRef.current.clientHeight,
-        scrollWrapperRef.current
-      );
-
-      // Update activity states
-      props.enableInvidActivitiesReenactment &&
-        updateAcitvityState(currentTime);
+      currentTimePrevSent.current = currentTime;
     }
-  }, [currentTime]);
+
+    /** ------------------------------------ */
+
+    // const matchResult: null | {
+    //   videoViewport: null | TBoundingBox;
+    // } = (() =>
+    //   Math.random() > 0.5
+    //     ? null
+    //     : {
+    //         videoViewport: [
+    //           [0, 0],
+    //           [0, 0],
+    //         ],
+    //       })();
+
+    // const videoViewport = matchResult?.videoViewport;
+    // const standby = !!matchResult && !!matchResult?.videoViewport;
+
+    // setDocumentPlayerStateValues({
+    //   videoViewport,
+    //   standby,
+    // });
+
+    // matchResult?.videoViewport &&
+  }, [
+    currentTime,
+    props.videoElement,
+    matchContentSequence,
+    setDocumentPlayerStateValues,
+    updateDocumentStyles,
+  ]);
 
   const activatePlayer = useCallback(() => {
     !playerActive &&

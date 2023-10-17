@@ -9,7 +9,7 @@ import {
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
 import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
-import DocumentPlayerContainer from "./DocumentPlayerContainer";
+import DocumentPlayerContainer from "./DocumentPlayerOnDemandContainer";
 import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
 import DocumentCtxInfoShowcaseContainer from "./DocumentCtxInfoShowcaseContainer";

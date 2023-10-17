@@ -1,12 +1,13 @@
 import React, { PropsWithChildren, useCallback, useState } from "react";
 import { TAssetId, TInterfaceMode } from "@/@types/types";
 import MainPlayerParallelViewContainer from "./MainPlayerParallelViewContainer";
-import MainPlayerCombinedViewContainer from "./MainPlayerCombinedViewContainer";
+import MainPlayerCombinedViewContainer from "./MainPlayerCombinedViewODContainer";
 import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
 import { ACTIVE_ASSET_ID_LS_CACHE_KEY, ASSET_ID_LIST } from "@/app.config";
 import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
+import MainPlayerCombinedViewLSContainer from "./MainPlayerCombinedViewLSContainer";
 
 export const MainPlayerRootContainer = (
   props: PropsWithChildren<{
@@ -94,7 +95,11 @@ export const MainPlayerRootContainer = (
             )}
 
             {interfaceModeState === "combined" && (
-              <MainPlayerCombinedViewContainer
+              // <MainPlayerCombinedViewContainer
+              //   assetId={activeAssetIdState}
+              //   enableOverflowMode={props.enableOverflowModeOnCombinedView}
+              // />
+              <MainPlayerCombinedViewLSContainer
                 assetId={activeAssetIdState}
                 enableOverflowMode={props.enableOverflowModeOnCombinedView}
               />
