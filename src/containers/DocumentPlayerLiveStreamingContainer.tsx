@@ -13,7 +13,6 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import {
   TAssetId,
   TBoundingBox,
-  TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
 } from "@/@types/types";
@@ -23,7 +22,9 @@ import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
 
 import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
 import { getRangeArray } from "@/utils/common";
-import useSequenceAnalyzer from "@/hooks/useSequenceAnalyzer";
+import useSequenceAnalyzer, {
+  SequenceAnalyzerOkResponse,
+} from "@/hooks/useSequenceAnalyzer";
 
 export default function DocumentPlayerLiveStreamingContainer(
   props: PropsWithChildren<{
@@ -51,7 +52,7 @@ export default function DocumentPlayerLiveStreamingContainer(
   const videoElement = props.videoElement;
   const currentTime = useVideoCurrenttime(props.videoElement);
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
-  const { matchContentSequence } = useSequenceAnalyzer(
+  const { matchContentSequenceOnVideoTimeUpdate } = useSequenceAnalyzer(
     props.assetId,
     props.videoElement
   );
@@ -90,7 +91,7 @@ export default function DocumentPlayerLiveStreamingContainer(
     [setDocNumPages]
   );
 
-  const updateDocumentState = useCallback(() => {
+  const updateDocumentStateOnScroll = useCallback(() => {
     if (documentContainerRef.current && scrollWrapperRef.current) {
       const documentWidth = documentContainerRef.current.clientWidth;
       const documentHeight = documentContainerRef.current.clientHeight;
@@ -128,7 +129,7 @@ export default function DocumentPlayerLiveStreamingContainer(
     setDocumentPlayerStateValues,
   ]);
 
-  const updateDocumentStyles = useCallback(
+  const updateDocumentAndGuideAreaStyles = useCallback(
     (
       currentVideoViewport: TBoundingBox,
       documentWidth: number,
@@ -170,7 +171,12 @@ export default function DocumentPlayerLiveStreamingContainer(
         scrollWrapperElem.scrollLeft = currDocumentStyles.scrollLeft;
       }
     },
-    [playerActive, setDocumentStyles, setGuideAreaStyles]
+    [
+      playerActive,
+      videoElement.clientWidth,
+      setDocumentStyles,
+      setGuideAreaStyles,
+    ]
   );
 
   useEffect(() => {
@@ -183,19 +189,14 @@ export default function DocumentPlayerLiveStreamingContainer(
    * 2. Calculate new document states
    * 3. Dispatch changes depending on specific conditions
    */
-  const currentTimePrevSent = useRef<number>(0);
   useEffect(() => {
-    /** TODO: Get video viewport from server */
+    if (documentContainerRef.current && scrollWrapperRef.current) {
+      matchContentSequenceOnVideoTimeUpdate(currentTime).then((result) => {
+        if (!result || result.status !== 200) return;
 
-    if (
-      documentContainerRef.current &&
-      scrollWrapperRef.current &&
-      Math.abs(currentTime - currentTimePrevSent.current) > 0.1
-    ) {
-      matchContentSequence().then((result) => {
-        if (!result) return;
+        const resultContent = result.bodyContent as SequenceAnalyzerOkResponse;
 
-        const videoViewport = result.matching_result;
+        const videoViewport = resultContent.estimated_viewport;
         setActiveVideoViewport(videoViewport);
 
         setDocumentPlayerStateValues({
@@ -203,32 +204,17 @@ export default function DocumentPlayerLiveStreamingContainer(
           standby: !!videoViewport,
         });
 
-        console.log(videoViewport);
+        // console.log(`Video viewport updated: ${videoViewport}`);
 
         videoViewport &&
-          updateDocumentStyles(
+          updateDocumentAndGuideAreaStyles(
             videoViewport,
             (documentContainerRef.current as HTMLDivElement).clientWidth,
             (documentContainerRef.current as HTMLDivElement).clientHeight,
             scrollWrapperRef.current as HTMLDivElement
           );
       });
-      currentTimePrevSent.current = currentTime;
     }
-
-    /** ------------------------------------ */
-
-    // const matchResult: null | {
-    //   videoViewport: null | TBoundingBox;
-    // } = (() =>
-    //   Math.random() > 0.5
-    //     ? null
-    //     : {
-    //         videoViewport: [
-    //           [0, 0],
-    //           [0, 0],
-    //         ],
-    //       })();
 
     // const videoViewport = matchResult?.videoViewport;
     // const standby = !!matchResult && !!matchResult?.videoViewport;
@@ -242,9 +228,9 @@ export default function DocumentPlayerLiveStreamingContainer(
   }, [
     currentTime,
     props.videoElement,
-    matchContentSequence,
+    matchContentSequenceOnVideoTimeUpdate,
     setDocumentPlayerStateValues,
-    updateDocumentStyles,
+    updateDocumentAndGuideAreaStyles,
   ]);
 
   const activatePlayer = useCallback(() => {
@@ -289,7 +275,7 @@ export default function DocumentPlayerLiveStreamingContainer(
               height: videoElement.clientHeight + "px",
             }}
             ref={scrollWrapperRef}
-            onScroll={updateDocumentState}
+            onScroll={updateDocumentStateOnScroll}
           >
             <div
               style={{
