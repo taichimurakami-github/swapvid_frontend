@@ -13,11 +13,12 @@ import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
 import DocumentPlayerLiveStreamingContainer from "./DocumentPlayerLiveStreamingContainer";
 import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
-import DocumentCtxInfoShowcaseContainer from "./DocumentCtxInfoShowcaseContainer";
 
 import { TAssetId } from "@/@types/types";
 import { UIELEM_ID_LIST } from "@/app.config";
 import "@/styles/MainPlayerCombinedViewContainer.scss";
+import DebugInfoDialogSqaRespContainer from "./DebugInfoDialogSqaRespContainer";
+import DebugInfoDialogDocumentCtxContainer from "./DebugInfoDialogDocumentCtxContainer";
 
 export default function MainPlayerCombinedViewLSContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
@@ -250,17 +251,9 @@ export default function MainPlayerCombinedViewLSContainer(
         )}
       </div>
 
-      <DocumentCtxInfoShowcaseContainer />
-
-      <div className="p-2 border-white border-2 mx-auto grid gap-4 text-center">
-        <div>
-          <p className="text-white font-bold text-xl">Frame currently sent:</p>
-          <canvas id="frame_capture_showcase"></canvas>
-        </div>
-        <div className="text-white text-lg">
-          <p className="text-white font-bold text-xl">Match location:</p>
-          <p id="sqa_response_showcase"></p>
-        </div>
+      <div className="mt-[50px] grid gap-4">
+        <DebugInfoDialogDocumentCtxContainer />
+        <DebugInfoDialogSqaRespContainer />
       </div>
     </div>
   );
