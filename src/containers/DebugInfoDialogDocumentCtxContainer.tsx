@@ -1,7 +1,7 @@
 import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import React, { useCallback, useState } from "react";
 
-export default function DocumentCtxInfoShowcaseContainer() {
+export default function DebugInfoDialogDocumentCtxContainer() {
   const documentPlayerState = useDocumentPlayerStateCtx();
   const [showcaseActive, setShowcaseActive] = useState(false);
 
@@ -10,9 +10,9 @@ export default function DocumentCtxInfoShowcaseContainer() {
   }, [setShowcaseActive]);
 
   return (
-    <div>
+    <div className="flex-xyc">
       <button
-        className="bg-slate-600 text-white font-bold text-xl p-2 "
+        className="bg-slate-600 text-white font-bold text-xl p-2"
         onClick={handleShowcaseActive}
       >
         [DEBUG] Show Global DocumentState Info

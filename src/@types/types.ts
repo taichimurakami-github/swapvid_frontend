@@ -53,7 +53,7 @@ export type TContextTimeline = {
 
 export type TAssetId = (typeof ASSET_ID_LIST)[number];
 
-export type TInterfaceMode = "parallel" | "combined" | "servertest";
+export type TInterfaceMode = "parallel" | "combined" | "combined-ls";
 
 export type TSubtitlesData = {
   id: number;

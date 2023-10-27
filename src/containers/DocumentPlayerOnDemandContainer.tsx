@@ -28,7 +28,7 @@ import { calcBboxArea, cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
 import { getRangeArray } from "@/utils/common";
 import { calcRectCollision } from "@/utils/collision";
 
-export default function DocumentPlayerContainer(
+export default function DocumentPlayerOnDemandContainer(
   props: PropsWithChildren<{
     videoElement: HTMLVideoElement;
     scrollTimeline: TServerGeneratedScrollTimeline | null;
