@@ -23,7 +23,7 @@ import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
 import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
 import { getRangeArray } from "@/utils/common";
 import useSequenceAnalyzer, {
-  SequenceAnalyzerOkResponse,
+  SequenceAnalyzerOkResponseBody,
 } from "@/hooks/useSequenceAnalyzer";
 
 export default function DocumentPlayerLiveStreamingContainer(
@@ -192,9 +192,10 @@ export default function DocumentPlayerLiveStreamingContainer(
   useEffect(() => {
     if (documentContainerRef.current && scrollWrapperRef.current) {
       matchContentSequenceOnVideoTimeUpdate(currentTime).then((result) => {
-        if (!result || result.status !== 200) return;
+        if (!result || result.status === "ERROR") return;
 
-        const resultContent = result.bodyContent as SequenceAnalyzerOkResponse;
+        const resultContent =
+          result.bodyContent as SequenceAnalyzerOkResponseBody;
 
         const videoViewport = resultContent.estimated_viewport;
         setActiveVideoViewport(videoViewport);

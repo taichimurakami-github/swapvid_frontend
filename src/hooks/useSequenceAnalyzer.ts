@@ -1,7 +1,8 @@
 import { TAssetId, TBoundingBox } from "@/@types/types";
+import { SEQUENCE_ANALYZER_API_ENDPOINT } from "@/app.config";
 import { useCallback, useEffect, useRef } from "react";
 
-export type SequenceAnalyzerOkResponse = {
+export type SequenceAnalyzerOkResponseBody = {
   estimated_viewport: TBoundingBox | null;
   matched_content_vf: string | null;
   matched_content_doc: string | null;
@@ -9,10 +10,20 @@ export type SequenceAnalyzerOkResponse = {
   score_sqmatch: number;
 };
 
-export type SequenceAnalyzerErrorResponse = {
+export type SequenceAnalyzerErrorResponseBody = {
   error_type: string;
   error_message: string;
 };
+
+type MatchContentSequenceResult =
+  | {
+      status: "OK";
+      bodyContent: SequenceAnalyzerOkResponseBody;
+    }
+  | {
+      status: "ERROR";
+      bodyContent: SequenceAnalyzerErrorResponseBody;
+    };
 
 export default function useSequenceAnalyzer(
   assetId: TAssetId,
@@ -20,13 +31,10 @@ export default function useSequenceAnalyzer(
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement("canvas"));
   const prevResReseived = useRef(true);
-  const prevResContent = useRef<null | {
-    status: number;
-    bodyContent: SequenceAnalyzerOkResponse | SequenceAnalyzerErrorResponse;
-  }>(null);
+  const prevResContent = useRef<null | MatchContentSequenceResult>(null);
   const prevSampledCurrentTime = useRef<number>(-Infinity);
 
-  const showSentFrameImage = useCallback((frame_src_dataurl: string) => {
+  const _showSentFrameImage = useCallback((frame_src_dataurl: string) => {
     const img: HTMLImageElement | null = document.querySelector(
       "#frame_capture_showcase"
     );
@@ -36,7 +44,7 @@ export default function useSequenceAnalyzer(
     }
   }, []);
 
-  const showMatchResult = useCallback((matchResult: TBoundingBox | null) => {
+  const _showMatchResult = useCallback((matchResult: TBoundingBox | null) => {
     const showcase: HTMLParagraphElement | null = document.querySelector(
       "#sqa_resp_estimated_viewport_showcase"
     );
@@ -46,7 +54,7 @@ export default function useSequenceAnalyzer(
     showcase.innerHTML = JSON.stringify(matchResult);
   }, []);
 
-  const showMatchScore = useCallback(
+  const _showMatchScore = useCallback(
     (ngramScore: number, sqmatchScore: number) => {
       const showcase: HTMLParagraphElement | null = document.querySelector(
         "#sqa_content_match_score_showcase"
@@ -62,7 +70,7 @@ export default function useSequenceAnalyzer(
     []
   );
 
-  const showMatchContent = useCallback(
+  const _showMatchContent = useCallback(
     (
       contentFromVideoFrame: string,
       contentFromDocument: string,
@@ -90,7 +98,7 @@ export default function useSequenceAnalyzer(
     []
   );
 
-  const getImgDataURLFromVideoSource = useCallback((): string | null => {
+  const _getImgDataURLFromVideoSource = useCallback((): string | null => {
     canvasRef.current.width = videoElement.videoWidth;
     canvasRef.current.height = videoElement.videoHeight;
 
@@ -112,36 +120,53 @@ export default function useSequenceAnalyzer(
   }, [videoElement, canvasRef]);
 
   const matchContentSequence = useCallback(
-    async (imgDataURL: string) => {
+    async (imgDataURL: string): Promise<MatchContentSequenceResult | null> => {
+      // If the previous request is not finished, return the previous result
+      if (!prevResReseived.current) return prevResContent.current;
+
+      // Make a flag for preventing multiple requests
       prevResReseived.current = false;
 
       /** TODO: エラーレスポンスのハンドリング */
-      const result = await fetch(`http://localhost:8881/${assetId}`, {
+      const requestURL = SEQUENCE_ANALYZER_API_ENDPOINT + assetId;
+      const result = await fetch(requestURL, {
         method: "POST",
         headers: {
           "content-type": "text/plain; charset=utf-8",
         },
         body: imgDataURL,
-      }).then(async (res) => {
-        const bodyContent = await res.json();
+      })
+        .then(async (res) => {
+          const bodyContent = await res.json();
 
-        return res.status === 200
-          ? {
-              status: res.status,
-              bodyContent: bodyContent as SequenceAnalyzerOkResponse, // Content of request.body
-            }
-          : {
-              status: res.status as 400,
-              bodyContent: bodyContent as SequenceAnalyzerErrorResponse,
-            };
-      });
+          const result =
+            res.status === 200
+              ? {
+                  status: "OK",
+                  bodyContent: bodyContent as SequenceAnalyzerOkResponseBody, // Content of request.body
+                }
+              : {
+                  status: "ERROR",
+                  bodyContent: bodyContent as SequenceAnalyzerErrorResponseBody,
+                };
 
-      prevResReseived.current = true;
+          return result as MatchContentSequenceResult;
+        })
+        .catch((e) => {
+          console.error(e);
+          return null;
+        })
+        .finally(() => {
+          // Turn off the flag
+          prevResReseived.current = true;
+        });
+
+      // Save the result
       prevResContent.current = result;
 
       return result;
     },
-    [assetId]
+    [assetId, prevResReseived, prevResContent]
   );
 
   const matchContentSequenceOnVideoTimeUpdate = useCallback(
@@ -152,24 +177,24 @@ export default function useSequenceAnalyzer(
 
       prevSampledCurrentTime.current = currentTime;
 
-      const imgDataURL = getImgDataURLFromVideoSource();
+      const imgDataURL = _getImgDataURLFromVideoSource();
 
       if (!imgDataURL) return null;
 
-      showSentFrameImage(imgDataURL);
+      _showSentFrameImage(imgDataURL);
 
       const serverResponsePrevSentTime = Date.now();
       const result = await matchContentSequence(imgDataURL);
       const serverResponseReceivedTime = Date.now();
 
-      if (result && result.status === 200) {
-        showMatchResult(result.bodyContent.estimated_viewport);
-        showMatchContent(
+      if (result && result.status === "OK") {
+        _showMatchResult(result.bodyContent.estimated_viewport);
+        _showMatchContent(
           result.bodyContent.matched_content_vf as string,
           result.bodyContent.matched_content_doc as string,
           serverResponseReceivedTime - serverResponsePrevSentTime
         );
-        showMatchScore(
+        _showMatchScore(
           result.bodyContent.score_ngram,
           result.bodyContent.score_sqmatch
         );
@@ -179,11 +204,11 @@ export default function useSequenceAnalyzer(
     },
     [
       matchContentSequence,
-      showSentFrameImage,
-      showMatchResult,
-      showMatchContent,
-      showMatchScore,
-      getImgDataURLFromVideoSource,
+      _showSentFrameImage,
+      _showMatchResult,
+      _showMatchContent,
+      _showMatchScore,
+      _getImgDataURLFromVideoSource,
     ]
   );
 
