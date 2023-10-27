@@ -95,10 +95,13 @@ export const MainPlayerRootContainer = (
             )}
 
             {interfaceModeState === "combined" && (
-              // <MainPlayerCombinedViewContainer
-              //   assetId={activeAssetIdState}
-              //   enableOverflowMode={props.enableOverflowModeOnCombinedView}
-              // />
+              <MainPlayerCombinedViewContainer
+                assetId={activeAssetIdState}
+                enableOverflowMode={props.enableOverflowModeOnCombinedView}
+              />
+            )}
+
+            {interfaceModeState === "combined-ls" && (
               <MainPlayerCombinedViewLSContainer
                 assetId={activeAssetIdState}
                 enableOverflowMode={props.enableOverflowModeOnCombinedView}
