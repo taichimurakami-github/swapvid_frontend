@@ -15,7 +15,7 @@ export default function DebugInfoDialogDocumentCtxContainer() {
         className="bg-slate-600 text-white font-bold text-xl p-2"
         onClick={handleShowcaseActive}
       >
-        [DEBUG] Show Global DocumentState Info
+        [DEBUG] DocumentState
       </button>
 
       {showcaseActive && (

@@ -15,7 +15,7 @@ export default function DebugInfoDialogSqaRespContainer() {
         className="bg-slate-600 font-bold p-2 "
         onClick={handleShowcaseActive}
       >
-        [DEBUG] Show Sequence Analyzer Response
+        [DEBUG] SQA Response
       </button>
 
       {
