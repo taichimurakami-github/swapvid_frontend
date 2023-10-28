@@ -1,3 +1,4 @@
+import { DOMRectLike } from "@/@types/types";
 import React, { createContext, PropsWithChildren, useState } from "react";
 
 export type TVideoPlayerState = {
@@ -12,8 +13,17 @@ export type TVideoPlayerState = {
   loaded: boolean;
 };
 
+export type TVideoCropArea = {
+  raw: DOMRectLike; // Same as DOMRect
+  videoScale: DOMRectLike; // Same as DOMRect
+} | null;
+
 export type TVideoPlayerStateHandlerCtx = {
   setVideoPlayerState: React.Dispatch<React.SetStateAction<TVideoPlayerState>>;
+};
+
+export type TSetVideoCropAreaCtx = {
+  setVideoCropArea: React.Dispatch<React.SetStateAction<TVideoCropArea>>;
 };
 
 export const VideoPlayerStateCtx =
@@ -23,6 +33,12 @@ export const VideoPlayerStateCtx =
 export const SetVideoPlayerStateCtx =
   //@ts-ignore : 初期値を無視するためのts-ignore
   createContext<TVideoPlayerStateHandlerCtx>();
+
+export const VideoCropAreaCtx = createContext<TVideoCropArea>(null);
+
+export const SetVideoCropAreaCtx =
+  //@ts-ignore : 初期値を無視するためのts-ignore
+  createContext<TSetVideoCropAreaCtx>();
 
 export default function VideoPlayerCtxProvider(
   props: PropsWithChildren<{
@@ -44,10 +60,16 @@ export default function VideoPlayerCtxProvider(
     subtitlesActive: true,
   });
 
+  const [videoCropArea, setVideoCropArea] = useState<TVideoCropArea>(null);
+
   return (
     <SetVideoPlayerStateCtx.Provider value={{ setVideoPlayerState }}>
       <VideoPlayerStateCtx.Provider value={videoPlayerState}>
-        {props.children}
+        <SetVideoCropAreaCtx.Provider value={{ setVideoCropArea }}>
+          <VideoCropAreaCtx.Provider value={videoCropArea}>
+            {props.children}
+          </VideoCropAreaCtx.Provider>
+        </SetVideoCropAreaCtx.Provider>
       </VideoPlayerStateCtx.Provider>
     </SetVideoPlayerStateCtx.Provider>
   );

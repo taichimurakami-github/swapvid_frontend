@@ -153,3 +153,12 @@ export type TInterfaceCombinationPatterns = "A" | "AR" | "B" | "BR";
 export type TPlayerContainerProps = PropsWithChildren<{
   videoElement: HTMLVideoElement;
 }>;
+
+export type DOMRectLike = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+};
