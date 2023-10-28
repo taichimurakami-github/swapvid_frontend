@@ -6,10 +6,6 @@ import React, {
   useState,
 } from "react";
 
-import { pdfjs, Document, Page } from "react-pdf";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
-
 import {
   TAssetId,
   TBoundingBox,
@@ -17,14 +13,17 @@ import {
   TServerGeneratedScrollTimeline,
 } from "@/@types/types";
 import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
-import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
+import {
+  useSetDocumentPlayerStateCtx,
+  useVideoCropAreaCtx,
+} from "@/hooks/useContextConsumer";
 import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
 
 import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
-import { getRangeArray } from "@/utils/common";
 import useSequenceAnalyzer, {
   SequenceAnalyzerOkResponseBody,
 } from "@/hooks/useSequenceAnalyzer";
+import PDFDocumentViewer from "./PDFDocumentViewer";
 
 export default function DocumentPlayerLiveStreamingContainer(
   props: PropsWithChildren<{
@@ -45,12 +44,14 @@ export default function DocumentPlayerLiveStreamingContainer(
   }>
 ) {
   // for element refs
-  const scrollWrapperRef = useRef<HTMLDivElement>(null);
+  const documentWrapperRef = useRef<HTMLDivElement>(null);
   const documentContainerRef = useRef<HTMLImageElement>(null);
   const guideAreaWrapperRef = useRef<HTMLDivElement>(null);
 
   const videoElement = props.videoElement;
   const currentTime = useVideoCurrenttime(props.videoElement);
+  const videoCropArea = useVideoCropAreaCtx();
+
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
   const { matchContentSequenceOnVideoTimeUpdate } = useSequenceAnalyzer(
     props.assetId,
@@ -79,27 +80,18 @@ export default function DocumentPlayerLiveStreamingContainer(
     height: 0,
   });
 
-  const [docNumPages, setDocNumPages] = useState<number>(0);
-
   const playerActive = props.playerActive;
   const playerStandby = activeVideoViewport;
 
-  const onDocumentLoadSuccess = useCallback(
-    ({ numPages }: { numPages: number }): void => {
-      setDocNumPages(numPages);
-    },
-    [setDocNumPages]
-  );
-
   const updateDocumentStateOnScroll = useCallback(() => {
-    if (documentContainerRef.current && scrollWrapperRef.current) {
+    if (documentContainerRef.current && documentWrapperRef.current) {
       const documentWidth = documentContainerRef.current.clientWidth;
       const documentHeight = documentContainerRef.current.clientHeight;
-      const playerViewportWidth = scrollWrapperRef.current.clientWidth;
-      const playerViewportHeight = scrollWrapperRef.current.clientHeight;
+      const playerViewportWidth = documentWrapperRef.current.clientWidth;
+      const playerViewportHeight = documentWrapperRef.current.clientHeight;
 
-      const currDocLeft = scrollWrapperRef.current.scrollLeft / documentWidth;
-      const currDocTop = scrollWrapperRef.current.scrollTop / documentHeight;
+      const currDocLeft = documentWrapperRef.current.scrollLeft / documentWidth;
+      const currDocTop = documentWrapperRef.current.scrollTop / documentHeight;
       const currDocWidth = playerViewportWidth / documentWidth;
       const currDocHeight = playerViewportHeight / documentHeight;
 
@@ -117,71 +109,78 @@ export default function DocumentPlayerLiveStreamingContainer(
         baseImgSrc: props.documentBaseImageSrc,
         documentViewport: documentViewport,
         wrapperScrollHeight: documentContainerRef.current.clientHeight,
-        wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
+        wrapperWindowHeight: documentWrapperRef.current.clientHeight,
         // activeTimes,
       });
     }
   }, [
-    scrollWrapperRef,
+    documentWrapperRef,
     props.documentBaseImageSrc,
     // getPlaytimeFromInDocScrollY,
     // getPlaytimeFromCurrentDocumentViewport,
     setDocumentPlayerStateValues,
   ]);
 
-  const updateDocumentAndGuideAreaStyles = useCallback(
+  const updateDocumentAndGuideAreaStylesOnVideoTimeUpdate = useCallback(
     (
       currentVideoViewport: TBoundingBox,
       documentWidth: number,
       documentHeight: number,
       scrollWrapperElem: HTMLElement
     ) => {
-      const [r_areaWidth] = cvtToWHArray(currentVideoViewport);
-      const [r_top, r_left, r_width, r_height] =
-        cvtToTLWHArray(currentVideoViewport);
+      if (documentWrapperRef.current) {
+        const [r_areaWidth] = cvtToWHArray(currentVideoViewport);
+        const [r_top, r_left, r_width, r_height] =
+          cvtToTLWHArray(currentVideoViewport);
 
-      const zoomRate = r_areaWidth > 0 ? 1 / r_areaWidth : 1.0;
-      const currDocumentStyles = {
-        scrollTop: documentHeight * r_top,
-        scrollLeft: documentWidth * r_left,
-        scale: zoomRate,
-        standby: true,
-      };
+        const zoomRate = r_areaWidth > 0 ? 1 / r_areaWidth : 1.0;
+        const currDocumentStyles = {
+          scrollTop: documentHeight * r_top,
+          scrollLeft: documentWidth * r_left,
+          scale: zoomRate,
+          standby: true,
+          width: documentWrapperRef.current.clientWidth * zoomRate,
+        };
 
-      // Update document styles
-      setDocumentStyles((b) => ({
-        ...currDocumentStyles,
-        // Set width only when player is unactive
-        // because width change make <Page /> component to re-render pdf
-        // due to using HTML Canvas API
-        width: !playerActive ? videoElement.clientWidth * zoomRate : b.width,
-      }));
+        // Update document styles
+        setDocumentStyles((b) => ({
+          ...currDocumentStyles,
+          // Set width only when player is unactive
+          // because width change make <Page /> component to re-render pdf due to HTML Canvas API
+          // which can cause performance issue.
+          //
+          // width: !playerActive ? videoElement.clientWidth * zoomRate : b.width,
+          width: !playerActive
+            ? currDocumentStyles.width
+            : // ? documentWrapperRef.current?.clientWidth ??
+              //   videoElement.clientWidth * zoomRate
+              b.width,
+        }));
 
-      // Update document guide area styles
-      setGuideAreaStyles({
-        top: r_top * documentHeight + "px",
-        left: r_left * documentWidth + "px",
-        width: r_width * documentWidth + "px",
-        height: r_height * documentHeight + "px",
-      });
+        // Update document guide area styles
+        setGuideAreaStyles({
+          top: r_top * documentHeight + "px",
+          left: r_left * documentWidth + "px",
+          width: r_width * documentWidth + "px",
+          height: r_height * documentHeight + "px",
+        });
 
-      // Syncronize document player scroll position
-      if (!playerActive) {
-        scrollWrapperElem.scrollTop = currDocumentStyles.scrollTop;
-        scrollWrapperElem.scrollLeft = currDocumentStyles.scrollLeft;
+        // Syncronize document player scroll position
+        if (!playerActive) {
+          scrollWrapperElem.scrollTop = currDocumentStyles.scrollTop;
+          scrollWrapperElem.scrollLeft = currDocumentStyles.scrollLeft;
+        }
       }
     },
     [
       playerActive,
-      videoElement.clientWidth,
+      documentWrapperRef,
+      videoCropArea,
+      // videoElement.clientWidth,
       setDocumentStyles,
       setGuideAreaStyles,
     ]
   );
-
-  useEffect(() => {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-  }, []);
 
   /**
    * DocPlayer state updation hooks (Video Current Time driven)
@@ -190,7 +189,7 @@ export default function DocumentPlayerLiveStreamingContainer(
    * 3. Dispatch changes depending on specific conditions
    */
   useEffect(() => {
-    if (documentContainerRef.current && scrollWrapperRef.current) {
+    if (documentContainerRef.current && documentWrapperRef.current) {
       matchContentSequenceOnVideoTimeUpdate(currentTime).then((result) => {
         if (!result || result.status === "ERROR") return;
 
@@ -208,30 +207,20 @@ export default function DocumentPlayerLiveStreamingContainer(
         // console.log(`Video viewport updated: ${videoViewport}`);
 
         videoViewport &&
-          updateDocumentAndGuideAreaStyles(
+          updateDocumentAndGuideAreaStylesOnVideoTimeUpdate(
             videoViewport,
             (documentContainerRef.current as HTMLDivElement).clientWidth,
             (documentContainerRef.current as HTMLDivElement).clientHeight,
-            scrollWrapperRef.current as HTMLDivElement
+            documentWrapperRef.current as HTMLDivElement
           );
       });
     }
-
-    // const videoViewport = matchResult?.videoViewport;
-    // const standby = !!matchResult && !!matchResult?.videoViewport;
-
-    // setDocumentPlayerStateValues({
-    //   videoViewport,
-    //   standby,
-    // });
-
-    // matchResult?.videoViewport &&
   }, [
     currentTime,
     props.videoElement,
     matchContentSequenceOnVideoTimeUpdate,
     setDocumentPlayerStateValues,
-    updateDocumentAndGuideAreaStyles,
+    updateDocumentAndGuideAreaStylesOnVideoTimeUpdate,
   ]);
 
   const activatePlayer = useCallback(() => {
@@ -241,9 +230,17 @@ export default function DocumentPlayerLiveStreamingContainer(
   }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
 
   return (
-    <Document
-      file={props.pdfSrc}
-      onLoadSuccess={onDocumentLoadSuccess}
+    <div
+      id="document_viewer_wrapper"
+      className="w-full h-full original-player-container"
+      style={{
+        pointerEvents: playerStandby || playerActive ? "all" : "none",
+      }}
+      onClick={() => {
+        props.enableDispatchVideoElementClickEvent &&
+          !playerActive &&
+          videoElement.click();
+      }}
       onWheel={activatePlayer}
       onTouchStart={activatePlayer}
       onMouseDown={(e: React.MouseEvent) => {
@@ -256,59 +253,54 @@ export default function DocumentPlayerLiveStreamingContainer(
       }}
     >
       <div
-        id="document_viewer_wrapper"
-        className="w-full h-full original-player-container bg-white"
-        onClick={() => {
-          props.enableDispatchVideoElementClickEvent &&
-            !playerActive &&
-            videoElement.click();
+        /**
+         * Document Scrolling Wrapper
+         * Define area for rendering document viewer.
+         */
+        id="document_viewer_scroll_wrapper"
+        className="relative overflow-scroll scrollbar-hidden bg-white"
+        style={{
+          width: videoCropArea
+            ? videoCropArea.videoScale.width
+            : videoElement.clientWidth,
+          height: videoCropArea
+            ? videoCropArea.videoScale.height
+            : videoElement.clientHeight,
+          top: videoCropArea ? videoCropArea.videoScale.top : 0,
+          left: videoCropArea ? videoCropArea.videoScale.left : 0,
         }}
+        ref={documentWrapperRef}
+        onScroll={updateDocumentStateOnScroll}
       >
         <div
-          id="document_viewer_container"
-          className="relative w-full h-full overflow-hidden"
+          /**
+           * Document Container
+           * Render whole document without hiding overflow part.
+           */
+          style={{
+            width: documentStyles.width + "px",
+          }}
+          ref={documentContainerRef}
         >
-          <div
-            id="document_viewer_scroll_wrapper"
-            className="relative w-full h-full overflow-scroll scrollbar-hidden"
-            style={{
-              width: videoElement.clientWidth + "px",
-              height: videoElement.clientHeight + "px",
-            }}
-            ref={scrollWrapperRef}
-            onScroll={updateDocumentStateOnScroll}
-          >
-            <div
-              style={{
-                width: documentStyles.width + "px",
-                pointerEvents: playerStandby || playerActive ? "all" : "none",
-              }}
-              ref={documentContainerRef}
-            >
-              {getRangeArray(docNumPages, 1).map((i) => (
-                <Page
-                  width={documentStyles.width}
-                  pageNumber={i}
-                  renderTextLayer
-                />
-              ))}
-            </div>
-            <div
-              className="absolute top-0 left-0 w-full h-full"
-              ref={guideAreaWrapperRef}
-            >
-              {guideAreaStyles && (
-                <OnDocumentGuideArea
-                  {...guideAreaStyles}
-                  docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
-                  docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
-                  active={true}
-                ></OnDocumentGuideArea>
-              )}
-            </div>
-          </div>
+          <PDFDocumentViewer
+            pdfSrc={props.pdfSrc}
+            pageWidth={documentStyles.width}
+          />
+        </div>
+        <div
+          className="absolute top-0 left-0 w-full h-full"
+          ref={guideAreaWrapperRef}
+        >
+          {guideAreaStyles && (
+            <OnDocumentGuideArea
+              {...guideAreaStyles}
+              docViewerWidth={documentWrapperRef.current?.clientWidth ?? 0}
+              docViewerHeight={documentWrapperRef.current?.clientHeight ?? 0}
+              active={true}
+            ></OnDocumentGuideArea>
+          )}
         </div>
       </div>
-    </Document>
+    </div>
   );
 }

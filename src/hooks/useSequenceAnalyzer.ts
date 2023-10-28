@@ -1,6 +1,7 @@
 import { TAssetId, TBoundingBox } from "@/@types/types";
 import { SEQUENCE_ANALYZER_API_ENDPOINT } from "@/app.config";
 import { useCallback, useEffect, useRef } from "react";
+import { useVideoCropAreaCtx } from "./useContextConsumer";
 
 export type SequenceAnalyzerOkResponseBody = {
   estimated_viewport: TBoundingBox | null;
@@ -33,6 +34,8 @@ export default function useSequenceAnalyzer(
   const prevResReseived = useRef(true);
   const prevResContent = useRef<null | MatchContentSequenceResult>(null);
   const prevSampledCurrentTime = useRef<number>(-Infinity);
+
+  const videoCropArea = useVideoCropAreaCtx();
 
   const _showSentFrameImage = useCallback((frame_src_dataurl: string) => {
     const img: HTMLImageElement | null = document.querySelector(
@@ -99,25 +102,46 @@ export default function useSequenceAnalyzer(
   );
 
   const _getImgDataURLFromVideoSource = useCallback((): string | null => {
-    canvasRef.current.width = videoElement.videoWidth;
-    canvasRef.current.height = videoElement.videoHeight;
+    canvasRef.current.width = videoCropArea
+      ? (videoElement.videoWidth * videoCropArea.videoScale.width) /
+        videoElement.clientWidth
+      : videoElement.videoWidth;
+    canvasRef.current.height = videoCropArea
+      ? (videoElement.videoHeight * videoCropArea.videoScale.height) /
+        videoElement.clientHeight
+      : videoElement.videoHeight;
 
     const ctx = canvasRef.current.getContext("2d");
 
     if (!ctx) return null;
 
-    ctx.drawImage(
-      videoElement,
+    /** Params for source video */
+
+    const [sx, sy, sw, sh] = videoCropArea
+      ? [
+          (videoElement.videoWidth * videoCropArea.videoScale.left) /
+            videoElement.clientWidth,
+          (videoElement.videoHeight * videoCropArea.videoScale.top) /
+            videoElement.clientHeight, // sy
+          (videoElement.videoWidth * videoCropArea.videoScale.width) /
+            videoElement.clientWidth, // sw
+          (videoElement.videoHeight * videoCropArea.videoScale.height) /
+            videoElement.clientHeight, // sh
+        ]
+      : [0, 0, videoElement.videoWidth, videoElement.videoHeight];
+
+    /** Params for destination canvas */
+    const [dx, dy, dw, dh] = [
       0,
       0,
-      videoElement.videoWidth,
-      videoElement.videoHeight
-    );
+      canvasRef.current.width,
+      canvasRef.current.height,
+    ];
+    ctx.drawImage(videoElement, sx, sy, sw, sh, dx, dy, dw, dh);
 
     const imgDataURL = canvasRef.current.toDataURL();
-
     return imgDataURL;
-  }, [videoElement, canvasRef]);
+  }, [videoElement, canvasRef, videoCropArea]);
 
   const matchContentSequence = useCallback(
     async (imgDataURL: string): Promise<MatchContentSequenceResult | null> => {

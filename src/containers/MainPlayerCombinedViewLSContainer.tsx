@@ -1,4 +1,10 @@
-import { PropsWithChildren, useCallback, useEffect, useState } from "react";
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
 import { LoadingScreen } from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/ui/VideoSeekbar";
@@ -7,6 +13,7 @@ import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
+  useVideoCropAreaCtx,
 } from "@/hooks/useContextConsumer";
 import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
 
@@ -14,18 +21,20 @@ import DocumentPlayerLiveStreamingContainer from "./DocumentPlayerLiveStreamingC
 import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
 
-import { TAssetId } from "@/@types/types";
+import { DOMRectLike, TAssetId } from "@/@types/types";
 import { UIELEM_ID_LIST } from "@/app.config";
 import "@/styles/MainPlayerCombinedViewContainer.scss";
 import DebugInfoDialogSqaRespContainer from "./DebugInfoDialogSqaRespContainer";
-import DebugInfoDialogDocumentCtxContainer from "./DebugInfoDialogDocumentCtxContainer";
+// import DebugInfoDialogDocumentCtxContainer from "./DebugInfoDialogDocumentCtxContainer";
+import { useDesktopCapture } from "@/hooks/useDesktopCapture";
+import RenderedElementCropperContainer from "./RenderedElementCropperContainer";
 
 export default function MainPlayerCombinedViewLSContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
 ) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
-    videoRef,
     assetDataState,
     handleOnWating,
     handleOnCanPlay,
@@ -35,7 +44,10 @@ export default function MainPlayerCombinedViewLSContainer(
     handleVideoElementMuted,
     handleVideoElementPaused,
     handleVideoSubtitlesActive,
-  } = useVideoPlayerCore(props.assetId);
+  } = useVideoPlayerCore(videoRef);
+
+  const { startCaptureDesktop } = useDesktopCapture(videoRef);
+  const videoCropArea = useVideoCropAreaCtx();
 
   const [documentOverviewActive, setDocumentOverviewActive] = useState(false);
   const handleDocumentOverviewActive = useCallback(() => {
@@ -56,6 +68,22 @@ export default function MainPlayerCombinedViewLSContainer(
     setDraggableVideoActive((b) => !b);
   }, [setDraggableVideoActive]);
 
+  const [cropperActive, setCropperActive] = useState(false);
+  const handleCropperActive = useCallback(
+    (value?: boolean) => {
+      value !== undefined
+        ? setCropperActive(value)
+        : setCropperActive((b) => !b);
+    },
+    [setCropperActive]
+  );
+  const handleCropperSubmit = useCallback(
+    (cropArea: { raw: DOMRectLike; videoScale: DOMRectLike }) => {
+      console.log(cropArea);
+    },
+    []
+  );
+
   const animationTriggerClassname = documentPlayerState.active
     ? "active"
     : "unactive";
@@ -73,6 +101,7 @@ export default function MainPlayerCombinedViewLSContainer(
   }
 
   return (
+    // {/* <div className="video-player-container w-screen h-screen flex-col items-center justify-center pt-[100px]"></div> */}
     <div className="video-player-container w-screen h-screen flex-xyc flex-col">
       <div className="grid relative max-w-[1440px] max-h-[90%] z-0">
         <video
@@ -92,6 +121,18 @@ export default function MainPlayerCombinedViewLSContainer(
           onPause={handleOnPause}
           onPlay={handleOnPlay}
         />
+
+        {videoRef.current && videoCropArea && (
+          <div
+            className="absolute pointer-events-none bg-[rgba(0,0,0,0.35)] border-4 border-white border-blue-400 border-dashed"
+            style={{
+              top: videoCropArea.videoScale.top,
+              left: videoCropArea.videoScale.left,
+              width: videoCropArea.videoScale.width,
+              height: videoCropArea.videoScale.height,
+            }}
+          ></div>
+        )}
 
         {
           // Document Player
@@ -195,6 +236,7 @@ export default function MainPlayerCombinedViewLSContainer(
             >
               {assetDataState.assetsReady && (
                 <VideoSeekbar
+                  active={videoRef.current.duration !== Infinity}
                   zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}
@@ -228,7 +270,6 @@ export default function MainPlayerCombinedViewLSContainer(
             </div>
           </div>
         )}
-
         {documentPlayerState.active && !documentOverviewActive && (
           <div
             className="absolute top-0 left-0 flex-xyc flex-col h-full w-[50px] opacity-0 hover:bg-black hover:opacity-90 text-white font-bold text-xl select-none"
@@ -243,7 +284,6 @@ export default function MainPlayerCombinedViewLSContainer(
             </span>
           </div>
         )}
-
         {!videoPlayerState.loading && !assetDataState.assetsReady && (
           <div className="absolute top-0 left-0 w-full h-screen z-50 loading-screen-wrapper">
             <LoadingScreen />
@@ -251,10 +291,34 @@ export default function MainPlayerCombinedViewLSContainer(
         )}
       </div>
 
-      <div className="mt-[50px] grid gap-4">
-        <DebugInfoDialogDocumentCtxContainer />
+      <div className="mt-[50px] flex gap-4">
+        <button
+          className="p-2 bg-blue-600 text-white text-xl font-bold"
+          onClick={() => handleCropperActive(true)}
+        >
+          Crop Video Area
+        </button>
+        <button
+          className="p-2 bg-blue-600 text-white text-xl font-bold"
+          onClick={startCaptureDesktop}
+        >
+          Capture Desktop
+        </button>
+        {/* <DebugInfoDialogDocumentCtxContainer /> */}
         <DebugInfoDialogSqaRespContainer />
       </div>
+
+      <RenderedElementCropperContainer
+        active={cropperActive}
+        videoRef={videoRef}
+        handleSubmitCropArea={handleCropperSubmit}
+        handleCropperActive={handleCropperActive}
+      />
+
+      {/* <div className="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 bg-slate-400 grid gap-4 z-90 pointer-events-none">
+        <canvas id="dbg_canvas_01" />
+        <canvas id="dbg_canvas_02" />
+      </div> */}
     </div>
   );
 }

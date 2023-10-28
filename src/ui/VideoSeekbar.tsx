@@ -9,6 +9,7 @@ import { UIELEM_ID_LIST } from "@/app.config";
 import usePreviewDummyVideo from "@/hooks/usePreviewDummyVideo";
 
 export default function VideoSeekbar(props: {
+  active: boolean;
   videoElement: HTMLVideoElement;
   documentPlayerActive: boolean;
   documentActiveTimes: [number, number, number][];
@@ -46,8 +47,9 @@ export default function VideoSeekbar(props: {
       className={`relative w-full flex bg-gray-400 cursor-pointer select-none`}
       ref={seekbarWrapperRef}
       style={{
+        visibility: props.active ? "visible" : "hidden",
         zIndex: props.zIndex,
-        height: seekbarHeight,
+        height: props.active ? seekbarHeight : 0,
       }}
       onTouchStart={(e) => {
         props.onHandleSetPlayerActive(false); //シークバークリック時にdocumentPlayerを消す

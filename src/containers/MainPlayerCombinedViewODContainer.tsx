@@ -1,4 +1,10 @@
-import { PropsWithChildren, useCallback, useEffect, useState } from "react";
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
 import { LoadingScreen } from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/ui/VideoSeekbar";
@@ -21,9 +27,9 @@ import "@/styles/MainPlayerCombinedViewContainer.scss";
 export default function MainPlayerCombinedViewContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
 ) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
-    videoRef,
     assetDataState,
     handleOnWating,
     handleOnCanPlay,
@@ -33,7 +39,7 @@ export default function MainPlayerCombinedViewContainer(
     handleVideoElementMuted,
     handleVideoElementPaused,
     handleVideoSubtitlesActive,
-  } = useVideoPlayerCore(props.assetId);
+  } = useVideoPlayerCore(videoRef);
 
   const [documentOverviewActive, setDocumentOverviewActive] = useState(false);
   const handleDocumentOverviewActive = useCallback(() => {
@@ -192,6 +198,7 @@ export default function MainPlayerCombinedViewContainer(
             >
               {assetDataState.assetsReady && (
                 <VideoSeekbar
+                  active
                   zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}

@@ -1,8 +1,5 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback } from "react";
 import { useKeyboardInputForVideoPlayer } from "@/hooks/useKeyboardInput";
-import useAssetData from "@/hooks/useAssetData";
-
-import { TAssetId } from "@/@types/types";
 import {
   useAssetDataCtx,
   useSetVideoPlayerStateCtx,
@@ -10,8 +7,9 @@ import {
 } from "./useContextConsumer";
 import { TVideoPlayerState } from "@/providers/VideoPlayerCtxProvider";
 
-export function useVideoPlayerCore(assetId: TAssetId) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+export function useVideoPlayerCore(
+  videoRef: React.RefObject<HTMLVideoElement>
+) {
   const videoPlayerState = useVideoPlayerStateCtx();
   const { setVideoPlayerState } = useSetVideoPlayerStateCtx();
 

@@ -77,7 +77,7 @@ export default function VideoToolbar(
           <li className="flex items-center text-lg h-full select-none px-4">
             <VideoToolbarCurrenttimeContainer
               videoElement={props.videoElement}
-              enableLiveMode={false}
+              enableLiveMode={props.videoElement.duration === Infinity}
             />
           </li>
 
