@@ -45,9 +45,19 @@ export const MainPlayerRootContainer = (
   //   []
   // );
 
-  const handleOnClickAssetChangeFormVisibleBtn = useCallback(() => {
-    setAssetChangeFormVisible((b) => !b);
-  }, [setAssetChangeFormVisible]);
+  const handleOnClickAssetChangeFormVisibleBtn = useCallback(
+    (value?: boolean) => {
+      setAssetChangeFormVisible((b) => (value !== undefined ? value : !b));
+    },
+    [setAssetChangeFormVisible]
+  );
+
+  const handleOnClickInterfaceMode = useCallback(
+    (value: TInterfaceMode) => {
+      setInterfaceModeState(value);
+    },
+    [setInterfaceModeState]
+  );
 
   const handleOnChangeAssetState = useCallback(
     (assetId: TAssetId) => {
@@ -57,7 +67,7 @@ export const MainPlayerRootContainer = (
       setDocumentPlayerStateValues({ active: false });
       // location.reload();
     },
-    [setAssetChangeFormVisible, setActiveIdState]
+    [setAssetChangeFormVisible, setActiveIdState, setDocumentPlayerStateValues]
   );
 
   const handleFullScreen = useCallback(() => {
@@ -118,16 +128,28 @@ export const MainPlayerRootContainer = (
                   </p>
                   <button
                     className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-                    onClick={handleOnClickAssetChangeFormVisibleBtn}
+                    onClick={() => handleOnClickAssetChangeFormVisibleBtn()}
                   >
                     Change Asset
                   </button>
                   <button
                     className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+                    onClick={() => handleOnClickInterfaceMode("combined-ls")}
+                  >
+                    Use cb-LS
+                  </button>
+                  <button
+                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+                    onClick={() => handleOnClickInterfaceMode("combined")}
+                  >
+                    Use cb-OD
+                  </button>
+                  {/* <button
+                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
                     onClick={handleFullScreen}
                   >
                     {isFullScreen ? "Exit full screen" : "Request full screen"}
-                  </button>
+                  </button> */}
                 </h1>
                 {/* <button
                 className={
@@ -159,7 +181,7 @@ export const MainPlayerRootContainer = (
           {assetChangeFormVisible && (
             <div
               className="absolute z-90 top-0 left-0 w-full h-full bg-black-transparent-01 flex-xyc"
-              onClick={handleOnClickAssetChangeFormVisibleBtn}
+              onClick={() => handleOnClickAssetChangeFormVisibleBtn()}
             >
               <div
                 className="bg-gray-200 rounded-md p-[50px] font-bold text-xl text-center"

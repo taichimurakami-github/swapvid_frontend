@@ -170,7 +170,7 @@ export default function MainPlayerCombinedViewLSContainer(
                 </div>
 
                 {documentPlayerState.active && documentOverviewActive && (
-                  <div className="absolute left-0 top-0 w-full h-full bg-black opacity-30 pointer-events-none"></div>
+                  <div className="absolute left-0 top-0 w-full h-full bg-black opacity-10 pointer-events-none"></div>
                 )}
 
                 <div
