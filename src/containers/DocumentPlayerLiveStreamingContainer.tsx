@@ -172,14 +172,7 @@ export default function DocumentPlayerLiveStreamingContainer(
         }
       }
     },
-    [
-      playerActive,
-      documentWrapperRef,
-      videoCropArea,
-      // videoElement.clientWidth,
-      setDocumentStyles,
-      setGuideAreaStyles,
-    ]
+    [playerActive, documentWrapperRef, setDocumentStyles, setGuideAreaStyles]
   );
 
   /**
