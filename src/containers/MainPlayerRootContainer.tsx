@@ -1,13 +1,17 @@
 import React, { PropsWithChildren, useCallback, useState } from "react";
 import { TAssetId, TInterfaceMode } from "@/@types/types";
-import MainPlayerParallelViewContainer from "./MainPlayerParallelViewContainer";
-import MainPlayerCombinedViewContainer from "./MainPlayerCombinedViewODContainer";
+import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
+
 import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
-import { ACTIVE_ASSET_ID_LS_CACHE_KEY, ASSET_ID_LIST } from "@/app.config";
+
 import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
-import MainPlayerCombinedViewLSContainer from "./MainPlayerCombinedViewLSContainer";
+
+import MainPlayerParallelViewContainer from "@/containers/MainPlayerParallelViewContainer";
+import MainPlayerCombinedViewContainer from "@/containers/MainPlayerCombinedViewODContainer";
+import MainPlayerCombinedViewLSContainer from "@/containers/MainPlayerCombinedViewLSContainer";
+import { AppTopMenuContainer } from "@/containers/AppTopMenuContainer";
 
 export const MainPlayerRootContainer = (
   props: PropsWithChildren<{
@@ -45,21 +49,21 @@ export const MainPlayerRootContainer = (
   //   []
   // );
 
-  const handleOnClickAssetChangeFormVisibleBtn = useCallback(
+  const handleChangeAssetSelectFormActive = useCallback(
     (value?: boolean) => {
       setAssetChangeFormVisible((b) => (value !== undefined ? value : !b));
     },
     [setAssetChangeFormVisible]
   );
 
-  const handleOnClickInterfaceMode = useCallback(
+  const handleChangeInterfaceMode = useCallback(
     (value: TInterfaceMode) => {
       setInterfaceModeState(value);
     },
     [setInterfaceModeState]
   );
 
-  const handleOnChangeAssetState = useCallback(
+  const handleChangeActiveAssetId = useCallback(
     (assetId: TAssetId) => {
       setAssetChangeFormVisible(false);
       setActiveIdState(assetId);
@@ -121,101 +125,13 @@ export const MainPlayerRootContainer = (
             {props.disableAppMenu && <div className="h-[15vh]"></div>}
 
             {!props.disableAppMenu && (
-              <div className="absolute top-0 left-0 flex-xyc gap-4 text-center text-white text-md p-2">
-                <h1 className="flex-xyc gap-4 bg-neutral-800 text-center text-white">
-                  <p className="flex-xyc gap-2">
-                    Playing: <b>{activeAssetIdState}</b>
-                  </p>
-                  <button
-                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-                    onClick={() => handleOnClickAssetChangeFormVisibleBtn()}
-                  >
-                    Change Asset
-                  </button>
-                  <button
-                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-                    onClick={() => handleOnClickInterfaceMode("combined-ls")}
-                  >
-                    Use cb-LS
-                  </button>
-                  <button
-                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-                    onClick={() => handleOnClickInterfaceMode("combined")}
-                  >
-                    Use cb-OD
-                  </button>
-                  {/* <button
-                    className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-                    onClick={handleFullScreen}
-                  >
-                    {isFullScreen ? "Exit full screen" : "Request full screen"}
-                  </button> */}
-                </h1>
-                {/* <button
-                className={
-                  interfaceModeState === "parallel"
-                    ? "p-2 rounded-md font-bold bg-red-600 cursor-auto"
-                    : "p-2 rounded-md font-bold hover:bg-slate-500"
-                }
-                onClick={() => {
-                  handleOnChangeInterfaceMode("parallel");
-                }}
-              >
-                Parallel View
-              </button>
-              <button
-                className={
-                  interfaceModeState === "combined"
-                    ? "p-2 rounded-md font-bold bg-red-600 cursor-auto"
-                    : "p-2 rounded-md font-bold hover:bg-slate-500"
-                }
-                onClick={() => {
-                  handleOnChangeInterfaceMode("combined");
-                }}
-              >
-                Combined View
-              </button> */}
-              </div>
+              <AppTopMenuContainer
+                activeAssetId={activeAssetIdState}
+                handleChangeActiveAssetId={handleChangeActiveAssetId}
+                handleChangeInterfaceMode={handleChangeInterfaceMode}
+              />
             )}
           </div>
-          {assetChangeFormVisible && (
-            <div
-              className="absolute z-90 top-0 left-0 w-full h-full bg-black-transparent-01 flex-xyc"
-              onClick={() => handleOnClickAssetChangeFormVisibleBtn()}
-            >
-              <div
-                className="bg-gray-200 rounded-md p-[50px] font-bold text-xl text-center"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <h3 className="mb-10">
-                  <p className="font-bold underline">
-                    表示する動画素材を選んでください
-                  </p>
-                </h3>
-                <ul className="grid gap-4 text-2xl">
-                  {ASSET_ID_LIST.map((v) => (
-                    <button
-                      id={`new_asset_selector#${v}`}
-                      className={`p-2 ${
-                        activeAssetIdState === v
-                          ? "bg-gray-400 text-white pointer-events-none"
-                          : "hover:bg-slate-600 hover:text-white"
-                      }
-                      `}
-                      onClick={() => {
-                        handleOnChangeAssetState(v as TAssetId);
-                      }}
-                    >
-                      {v}
-                      {activeAssetIdState === v && " (playing)"}
-                    </button>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
         </DocumentPlayerCtxProvider>
       </VideoPlayerCtxProvider>
     </AssetDataCtxProvider>
