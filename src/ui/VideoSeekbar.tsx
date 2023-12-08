@@ -14,6 +14,8 @@ export default function VideoSeekbar(props: {
   documentPlayerActive: boolean;
   documentActiveTimes: [number, number, number][];
   zIndex?: number;
+  disableSeekbarHighlight?: boolean;
+  disableViewportEffectOnSeekbarHighlight?: boolean;
   onHandleSetPlayerActive: (v: boolean) => void;
 }) {
   const currentTime = useVideoCurrenttime(props.videoElement);
@@ -62,12 +64,17 @@ export default function VideoSeekbar(props: {
       onMouseMove={seekbarWrapperProps.onMouseMove}
       onMouseLeave={seekbarWrapperProps.onMouseLeave}
     >
-      <SeekbarHighlightContainer
-        videoElement={props.videoElement}
-        documentPlayerActive={props.documentPlayerActive}
-        documentActiveTimes={props.documentActiveTimes}
-        onHandleSetDocumentPlayerActive={props.onHandleSetPlayerActive}
-      ></SeekbarHighlightContainer>
+      {!props.disableSeekbarHighlight && (
+        <SeekbarHighlightContainer
+          videoElement={props.videoElement}
+          documentPlayerActive={props.documentPlayerActive}
+          documentActiveTimes={props.documentActiveTimes}
+          onHandleSetDocumentPlayerActive={props.onHandleSetPlayerActive}
+          disableViewportEffectOnSeekbarHighlight={
+            props.disableViewportEffectOnSeekbarHighlight
+          }
+        ></SeekbarHighlightContainer>
+      )}
       <div
         id={UIELEM_ID_LIST.system.videoPlayer.dragger}
         className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 dragger cursor-pointer bg-white border-2 border-black rounded-full"

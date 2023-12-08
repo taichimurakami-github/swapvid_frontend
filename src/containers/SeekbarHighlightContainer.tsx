@@ -11,6 +11,7 @@ export default function SeekbarHighlightContainer(
     documentActiveTimes: [number, number, number][];
     documentPlayerActive: boolean;
     onHandleSetDocumentPlayerActive: (v: boolean) => void;
+    disableViewportEffectOnSeekbarHighlight?: boolean;
   }>
 ) {
   const videoElement = props.videoElement;
@@ -38,7 +39,7 @@ export default function SeekbarHighlightContainer(
               width_pct={width_pct}
               visible={props.documentPlayerActive}
               time={[v[0], v[1]]}
-              opacity={v[2]}
+              opacity={props.disableViewportEffectOnSeekbarHighlight ? 1 : v[2]}
               onHandleSetDocumentPlayerActive={
                 props.onHandleSetDocumentPlayerActive
               }
