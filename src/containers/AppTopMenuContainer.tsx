@@ -34,45 +34,46 @@ export const AppTopMenuContainer = (
   );
 
   return (
-    <div className="absolute top-0 left-0 flex-xyc gap-4 text-center text-white text-md p-2">
-      <h1 className="flex-xyc gap-4 bg-neutral-800 text-center text-white">
-        <p className="flex-xyc gap-2">
-          Playing: <b>{props.activeAssetId}</b>
-        </p>
-        <button
-          className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-          onClick={() => {
-            handleChangeAssetSelectFormActive();
-          }}
-        >
-          Change Asset
-        </button>
-        <button
-          className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-          onClick={handleClickInterfaceModeToCombinedLSBtn}
-        >
-          Combined (Live)
-        </button>
-        <button
-          className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
-          onClick={handleClickInterfaceModeToCombinedBtn}
-        >
-          Combined (Local)
-        </button>
-        <button
-          className={"p-2 rounded-md font-bold bg-slate-600 cursor-auto"}
-          onClick={handleClickInterfaceModeToParallelBtn}
-        >
-          Parallel (Local)
-        </button>
-        {/* <button
+    <>
+      <div className="absolute top-0 left-0 flex-xyc gap-4 text-center text-white text-md p-2">
+        <h1 className="flex-xyc gap-4 bg-neutral-800 text-center text-white">
+          <p className="flex-xyc gap-2">
+            Playing: <b>{props.activeAssetId}</b>
+          </p>
+          <button
+            className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+            onClick={() => {
+              handleChangeAssetSelectFormActive();
+            }}
+          >
+            Change Asset
+          </button>
+          <button
+            className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+            onClick={handleClickInterfaceModeToCombinedLSBtn}
+          >
+            Combined (Live)
+          </button>
+          <button
+            className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
+            onClick={handleClickInterfaceModeToCombinedBtn}
+          >
+            Combined (Local)
+          </button>
+          <button
+            className={"p-2 rounded-md font-bold bg-slate-600 cursor-auto"}
+            onClick={handleClickInterfaceModeToParallelBtn}
+          >
+            Parallel (Local)
+          </button>
+          {/* <button
                     className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
                     onClick={handleFullScreen}
                   >
                     {isFullScreen ? "Exit full screen" : "Request full screen"}
                   </button> */}
-      </h1>
-      {/* <button
+        </h1>
+        {/* <button
                 className={
                   interfaceModeState === "parallel"
                     ? "p-2 rounded-md font-bold bg-red-600 cursor-auto"
@@ -96,10 +97,10 @@ export const AppTopMenuContainer = (
               >
                 Combined View
               </button> */}
-
+      </div>
       {assetChangeFormVisible && (
         <div
-          className="fixed z-90 top-0 left-0 w-full h-full bg-black-transparent-01 flex-xyc"
+          className="fixed z-90 top-0 left-0 w-full h-full bg-black-transparent-01 flex-xyc z-10"
           onClick={() => handleChangeAssetSelectFormActive()}
         >
           <div
@@ -135,6 +136,6 @@ export const AppTopMenuContainer = (
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
