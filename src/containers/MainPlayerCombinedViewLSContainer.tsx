@@ -251,30 +251,28 @@ export default function MainPlayerCombinedViewLSContainer(
                   documentPlayerActive={documentPlayerState.active}
                 />
               )}
-              {
-                <VideoToolbar
-                  zIndex={10}
-                  videoElement={videoRef.current}
-                  videoElementPaused={videoPlayerState.paused}
-                  videoElementMuted={videoPlayerState.muted}
-                  documentAvairable={documentPlayerState.documentAvairable}
-                  documentPlayerActive={documentPlayerState.active}
-                  documentPlayerStandby={documentPlayerState.standby}
-                  documentOverviewActive={documentOverviewActive}
-                  draggableVideoActive={draggableVideoActive}
-                  videoSubtitlesActive={
-                    assetDataState.subtitlesDataReady &&
-                    videoPlayerState.subtitlesActive
-                  }
-                  onHandleMuteButtonClick={handleVideoElementMuted}
-                  onHandleDocumentOverviewButtonClick={
-                    handleDocumentOverviewActive
-                  }
-                  onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
-                  onSubtitlesButtonClick={handleVideoSubtitlesActive}
-                  onDraggableVideoButtonClick={handleDraggableVideoButtonClick}
-                />
-              }
+              <VideoToolbar
+                zIndex={10}
+                videoElement={videoRef.current}
+                videoElementPaused={videoPlayerState.paused}
+                videoElementMuted={videoPlayerState.muted}
+                documentAvailable={documentPlayerState.documentAvailable}
+                documentPlayerActive={documentPlayerState.active}
+                documentPlayerStandby={documentPlayerState.standby}
+                documentOverviewActive={documentOverviewActive}
+                draggableVideoActive={draggableVideoActive}
+                videoSubtitlesActive={
+                  assetDataState.subtitlesDataReady &&
+                  videoPlayerState.subtitlesActive
+                }
+                onHandleMuteButtonClick={handleVideoElementMuted}
+                onHandleDocumentOverviewButtonClick={
+                  handleDocumentOverviewActive
+                }
+                onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
+                onSubtitlesButtonClick={handleVideoSubtitlesActive}
+                onDraggableVideoButtonClick={handleDraggableVideoButtonClick}
+              />
             </div>
           </div>
         )}
