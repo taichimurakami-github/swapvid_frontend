@@ -1,7 +1,4 @@
-import {
-  useDocumentPlayerStateCtx,
-  useVideoPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
+import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import { faFileInvoice, faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, {
@@ -17,7 +14,11 @@ import React, {
 
 const DocumentOverviewContainer = React.memo(
   function _DocumentOverviewContainer(
-    props: PropsWithChildren<{ active: boolean; height?: number }>
+    props: PropsWithChildren<{
+      active: boolean;
+      widthPx?: number;
+      heightPx?: number;
+    }>
   ) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const documentViewportAreaRef = useRef<HTMLDivElement>(null);
@@ -30,7 +31,7 @@ const DocumentOverviewContainer = React.memo(
     );
 
     const documentPlayerState = useDocumentPlayerStateCtx();
-    const videoPlayerState = useVideoPlayerStateCtx();
+    // const videoPlayerState = useVideoPlayerStateCtx();
 
     const videoArea: { [key: string]: number | null } = {
       left: null,
@@ -73,17 +74,26 @@ const DocumentOverviewContainer = React.memo(
        * DocumentArea is rendered as a VideoArea scale
        */
 
-      const documentAreaLeft = documentPlayerState.documentViewport[0][0];
-      const documentAreaTop = documentPlayerState.documentViewport[0][1];
-      const documentAreaRight = documentPlayerState.documentViewport[1][0];
+      // const documentAreaLeft = documentPlayerState.documentViewport[0][0];
+      // const documentAreaTop = documentPlayerState.documentViewport[0][1];
+      // const documentAreaRight = documentPlayerState.documentViewport[1][0];
+      // const documentAreaBottom = documentPlayerState.documentViewport[1][1];
+
+      const [
+        [documentAreaLeft, documentAreaTop],
+        [documentAreaRight, documentAreaBottom],
+      ] = documentPlayerState.documentViewport;
 
       const documentAreaWidth = wrapperRef.current
         ? (documentAreaRight - documentAreaLeft) *
           wrapperRef.current.clientWidth
         : 0;
 
-      const documentAreaHeight =
-        documentAreaWidth * (videoPlayerState.height / videoPlayerState.width);
+      const documentAreaHeight = wrapperRef.current
+        ? (documentAreaBottom - documentAreaTop) *
+          wrapperRef.current.clientHeight
+        : 0;
+      // documentAreaWidth * (videoPlayerState.height / videoPlayerState.width);
 
       if (backgroundImgRef.current && wrapperRef.current) {
         setDocumentAreaStyle({
@@ -158,10 +168,11 @@ const DocumentOverviewContainer = React.memo(
     return (
       <div
         id="document_overview_container_wrapper"
-        className="relative overflow-hidden scrollbar-hidden bg-white select-none"
+        className="relative overflow-hidden scrollbar-hidden bg-black select-none"
         style={{
           visibility: props.active ? "visible" : "hidden",
-          height: props.height ? props.height : "100%",
+          width: props.widthPx ? props.widthPx : "100%",
+          height: props.heightPx ? props.heightPx : "auto",
         }}
         ref={wrapperRef}
         onWheel={handleWheel}

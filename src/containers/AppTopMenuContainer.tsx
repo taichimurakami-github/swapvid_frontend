@@ -1,6 +1,6 @@
+import React, { PropsWithChildren, useCallback, useState } from "react";
 import { TAssetId, TInterfaceMode } from "@/@types/types";
 import { ASSET_ID_LIST } from "@/app.config";
-import React, { PropsWithChildren, useCallback, useState } from "react";
 
 export const AppTopMenuContainer = (
   props: PropsWithChildren<{
@@ -28,10 +28,10 @@ export const AppTopMenuContainer = (
     [props]
   );
 
-  // const handleClickInterfaceModeToParallelLsBtn = useCallback(
-  //   () => props.handleChangeInterfaceMode("parallel"),
-  //   [props]
-  // );
+  const handleClickInterfaceModeToParallelBtn = useCallback(
+    () => props.handleChangeInterfaceMode("parallel"),
+    [props]
+  );
 
   return (
     <div className="absolute top-0 left-0 flex-xyc gap-4 text-center text-white text-md p-2">
@@ -51,13 +51,19 @@ export const AppTopMenuContainer = (
           className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
           onClick={handleClickInterfaceModeToCombinedLSBtn}
         >
-          Use cb-LS
+          Combined (Live)
         </button>
         <button
           className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"
           onClick={handleClickInterfaceModeToCombinedBtn}
         >
-          Use cb-OD
+          Combined (Local)
+        </button>
+        <button
+          className={"p-2 rounded-md font-bold bg-slate-600 cursor-auto"}
+          onClick={handleClickInterfaceModeToParallelBtn}
+        >
+          Parallel (Local)
         </button>
         {/* <button
                     className="p-2 rounded-md font-bold bg-slate-600 hover:bg-slate-500"

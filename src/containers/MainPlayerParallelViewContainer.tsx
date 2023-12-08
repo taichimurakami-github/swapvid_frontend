@@ -5,35 +5,33 @@ import { LoadingScreen } from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/ui/VideoSeekbar";
 import VideoToolbar from "@/ui/VideoToolbar";
 
-import {
-  TAssetId,
-  // TServerGeneratedActivityTimeline,
-  TServerGeneratedScrollTimeline,
-} from "@/@types/types";
+import { TAssetId } from "@/@types/types";
 
 import { UIELEM_ID_LIST } from "@/app.config";
-import { PropsWithChildren, useCallback, useEffect, useMemo } from "react";
+import { PropsWithChildren, useEffect, useRef } from "react";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
+// import DocumentPlayerContainer from "@/containers/DocumentPlayerOnDemandContainer";
+import DocumentPlayerContainer from "@/containers/DocumentPlayerParallelContainer";
 
 // 一時的にアセットを直接インポートする
 // import EdanMeyerVptActivityTimeline from "@/assets/EdanMeyerVpt/EdanMeyerVpt.activities.json";
-import EdanMeyerVptBaseImg from "@/assets/EdanMeyerVpt/EdanMeyerVpt.concat.png";
-import DocumentPlayerContainer from "./DocumentPlayerContainerFromImg";
+// import EdanMeyerVptBaseImg from "@/assets/EdanMeyerVpt/EdanMeyerVpt.concat.png";
+// import DocumentPlayerContainer from "./DocumentPlayerContainerFromImg";
 
-export default function MainPlayerPVServerComponentTest(
+export default function MainPlayerParallelViewContainer(
   props: PropsWithChildren<{
     assetId: TAssetId;
     invidActivitiesReenactmentActive?: boolean;
   }>
 ) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
-    videoRef,
     assetDataState,
     // setVideoPlayerState,
     handleOnWating,
@@ -44,16 +42,18 @@ export default function MainPlayerPVServerComponentTest(
     handleVideoElementMuted,
     handleVideoElementPaused,
     handleVideoSubtitlesActive,
-  } = useVideoPlayerCore(props.assetId);
+  } = useVideoPlayerCore(videoRef);
 
   const { documentPlayerAssets } = useAssetDataCtx();
 
   const documentPlayerState = useDocumentPlayerStateCtx();
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
 
-  const setDocumentPlayerStateActive = useCallback((value: boolean) => {
-    setDocumentPlayerStateValues({ active: value });
-  }, []);
+  const documentAreaWrapperRef = useRef<HTMLDivElement>(null);
+
+  // const setDocumentPlayerStateActive = useCallback((value: boolean) => {
+  //   setDocumentPlayerStateValues({ active: value });
+  // }, []);
 
   useEffect(() => {
     setDocumentPlayerStateValues({ active: true });
@@ -67,9 +67,9 @@ export default function MainPlayerPVServerComponentTest(
    */
 
   return (
-    <div className="parallel-view-container flex-xyc gap-4">
+    <div className="parallel-view-container flex-xyc gap-8">
       <div className="video-player-container">
-        <div className="relative  max-w-[1440px] z-0">
+        <div className="relative max-w-[1440px] z-0 w-[1fr]">
           <video
             id={UIELEM_ID_LIST.system.videoPlayer.videoElement}
             className="max-w-full"
@@ -77,7 +77,7 @@ export default function MainPlayerPVServerComponentTest(
             width={1920}
             ref={videoRef}
             loop={false}
-            autoPlay={false}
+            autoPlay={true}
             onClick={(e) => {
               e.preventDefault();
               handleVideoElementPaused(!e.currentTarget.paused);
@@ -108,50 +108,69 @@ export default function MainPlayerPVServerComponentTest(
 
         {videoRef.current && assetDataState.assetsReady && (
           <VideoSeekbar
+            active={true}
             videoElement={videoRef.current}
-            onHandleSetPlayerActive={(_v: boolean) => {
+            documentPlayerActive={documentPlayerState.active}
+            documentActiveTimes={documentPlayerState.activeTimes}
+            onHandleSetPlayerActive={(_) => {
               return;
             }}
-            documentActiveTimes={documentPlayerState.activeTimes}
-            documentPlayerActive={documentPlayerState.active}
           />
         )}
+
         {videoRef.current && (
           <VideoToolbar
             videoElement={videoRef.current}
             videoElementPaused={videoPlayerState.paused}
             videoElementMuted={videoPlayerState.muted}
-            documentPlayerActive={false}
-            documentPlayerStandby={false}
-            videoSubtitlesActive={
-              assetDataState.subtitlesDataReady &&
-              videoPlayerState.subtitlesActive
-            }
-            onHandleMuteButtonClick={handleVideoElementMuted}
-            onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
+            videoSubtitlesActive={videoPlayerState.subtitlesActive}
+            documentAvailable={true}
+            documentPlayerActive={documentPlayerState.active}
+            documentPlayerStandby={documentPlayerState.standby}
+            documentOverviewActive={false}
+            draggableVideoActive={false}
+            onHandlePlayAndPauseButtonClick={handleVideoElementPaused}
             onSubtitlesButtonClick={handleVideoSubtitlesActive}
+            onHandleMuteButtonClick={handleVideoElementMuted}
+            // onHandleSetPlayerActive={setDocumentPlayerStateActive}
+            // onHandleVideoElementMuted={handleVideoElementMuted}
+            // onHandleVideoElementPaused={handleVideoElementPaused}
+            // onHandleVideoSubtitlesActive={handleVideoSubtitlesActive}
           />
         )}
       </div>
-      <div className="document-player-container relative w-[50%] h-screen flex-xyc gap-2">
-        {videoRef.current && <DocumentOverviewContainer active={true} />}
-        {
-          // Document Player
-          videoRef.current && (
-            <div className="w-full h-full">
-              <DocumentPlayerContainer
-                videoElement={videoRef.current}
-                playerActive={true} //PlayerActive always must be true when ParallelView is enabled
-                documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
-                scrollTimeline={documentPlayerAssets.scrollTl}
-                activityTimeline={documentPlayerAssets.activityTl}
-                enableInvidActivitiesReenactment={
-                  props.invidActivitiesReenactmentActive
-                }
-              ></DocumentPlayerContainer>
-            </div>
-          )
-        }
+
+      <div
+        className="document-player-container relative w-[50%] h-screen flex-xyc gap-2"
+        ref={documentAreaWrapperRef}
+      >
+        {documentAreaWrapperRef.current && (
+          <>
+            {videoRef.current && (
+              <div className="w-full h-full">
+                <DocumentPlayerContainer
+                  widthPx={documentAreaWrapperRef.current.clientWidth - 350}
+                  heightPx={documentAreaWrapperRef.current.clientHeight}
+                  videoElement={videoRef.current}
+                  documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
+                  pdfSrc={documentPlayerAssets.pdfSrc}
+                  enableCombinedView={true}
+                  scrollTimeline={documentPlayerAssets.scrollTl}
+                  activityTimeline={documentPlayerAssets.activityTl}
+                  enableDispatchVideoElementClickEvent={true}
+                  playerActive={documentPlayerState.active}
+                  enableCenteredScrollYBaseline={true}
+                ></DocumentPlayerContainer>
+              </div>
+            )}
+
+            <DocumentOverviewContainer
+              active={true}
+              widthPx={350}
+              // heightPx={documentAreaWrapperRef.current.clientHeight}
+            />
+          </>
+        )}
       </div>
     </div>
   );
