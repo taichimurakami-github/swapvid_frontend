@@ -29,7 +29,7 @@ export type TDocumentPlayerStateCtx = {
   gapBetweenImagesPx: number;
   type: "document" | "slide";
   timelineData: TDocumentTimeline;
-  documentAvairable: boolean;
+  documentAvailable: boolean;
 };
 
 export type TDocumentPlayerSetterArguments = Partial<TDocumentPlayerStateCtx>;
@@ -88,7 +88,7 @@ export default function DocumentPlayerCtxProvider(
       unableScrollTo: 0,
       timelineData: [],
       gapBetweenImagesPx: 0,
-      documentAvairable: false,
+      documentAvailable: false,
     });
 
   const setDocumentPlayerStateValues = useCallback(
