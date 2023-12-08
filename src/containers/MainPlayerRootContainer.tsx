@@ -28,7 +28,7 @@ export const MainPlayerRootContainer = (
   }>
 ) => {
   const [interfaceModeState, setInterfaceModeState] =
-    useState<TInterfaceMode>("combined");
+    useState<TInterfaceMode>("combined-ls");
   const [activeAssetIdState, setActiveIdState] = useState<TAssetId>(
     props.initialAssetId
   );

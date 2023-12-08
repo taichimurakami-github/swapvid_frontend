@@ -40,7 +40,7 @@ export default function RenderedElementCropperContainer(
   props: PropsWithChildren<{
     active: boolean;
     videoRef: React.RefObject<HTMLVideoElement>;
-    handleCropperActive: (active?: boolean) => void;
+    handleComponentActive: (active?: boolean) => void;
     handleSubmitCropArea: (cropArea: {
       raw: DOMRectLike; // Same as DOMRect
       videoScale: DOMRectLike; // Same as DOMRect
@@ -212,7 +212,7 @@ export default function RenderedElementCropperContainer(
     // props.handleSubmitCropArea({ raw, videoScale });
 
     setVideoCropArea({ raw, videoScale });
-    props.handleCropperActive(false);
+    props.handleComponentActive(false);
   }, [dragAreaRect, wrapperRef, props, setVideoCropArea]);
 
   if (!props.videoRef.current || !props.active) return <></>;
@@ -262,7 +262,7 @@ export default function RenderedElementCropperContainer(
       <button
         className="absolute right-4 top-4 p-2 rounded-md bg-slate-600 text-white font-bold text-xl"
         onClick={() => {
-          props.handleCropperActive(false);
+          props.handleComponentActive(false);
         }}
       >
         切り抜きモードを終了

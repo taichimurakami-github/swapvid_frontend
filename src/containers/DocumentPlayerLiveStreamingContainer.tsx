@@ -177,9 +177,7 @@ export default function DocumentPlayerLiveStreamingContainer(
 
   /**
    * DocPlayer state updation hooks (Video Current Time driven)
-   * 1. Get active timeline section
-   * 2. Calculate new document states
-   * 3. Dispatch changes depending on specific conditions
+   * Use sequence analyzer to get current video viewport and update document player state.
    */
   useEffect(() => {
     if (documentContainerRef.current && documentWrapperRef.current) {
@@ -195,6 +193,7 @@ export default function DocumentPlayerLiveStreamingContainer(
         setDocumentPlayerStateValues({
           videoViewport,
           standby: !!videoViewport,
+          documentAvairable: resultContent.document_available,
         });
 
         // console.log(`Video viewport updated: ${videoViewport}`);

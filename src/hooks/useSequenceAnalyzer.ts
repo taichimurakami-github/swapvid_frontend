@@ -1,9 +1,10 @@
 import { TAssetId, TBoundingBox } from "@/@types/types";
-import { SEQUENCE_ANALYZER_API_ENDPOINT } from "@/app.config";
+import { SEQUENCE_ANALYZER_API_ENDPOINT_HTTP } from "@/app.config";
 import { useCallback, useEffect, useRef } from "react";
 import { useVideoCropAreaCtx } from "./useContextConsumer";
 
 export type SequenceAnalyzerOkResponseBody = {
+  document_available: boolean;
   estimated_viewport: TBoundingBox | null;
   matched_content_vf: string | null;
   matched_content_doc: string | null;
@@ -145,6 +146,7 @@ export default function useSequenceAnalyzer(
 
   const matchContentSequence = useCallback(
     async (imgDataURL: string): Promise<MatchContentSequenceResult | null> => {
+      // return null; /** temporaliry out */
       // If the previous request is not finished, return the previous result
       if (!prevResReseived.current) return prevResContent.current;
 
@@ -152,7 +154,7 @@ export default function useSequenceAnalyzer(
       prevResReseived.current = false;
 
       /** TODO: エラーレスポンスのハンドリング */
-      const requestURL = SEQUENCE_ANALYZER_API_ENDPOINT + assetId;
+      const requestURL = SEQUENCE_ANALYZER_API_ENDPOINT_HTTP + assetId;
       const result = await fetch(requestURL, {
         method: "POST",
         headers: {

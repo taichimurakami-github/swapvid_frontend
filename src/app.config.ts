@@ -4,8 +4,10 @@
 
 export const ACTIVE_ASSET_ID_LS_CACHE_KEY = "__lastActiveAssetId";
 
-// export const SEQUENCE_ANALYZER_API_ENDPOINT = "http://localhost:8881/";
-export const SEQUENCE_ANALYZER_API_ENDPOINT = "http://0.0.0.0:8881/";
+// export const SEQUENCE_ANALYZER_API_ENDPOINT_HTTP = "http://localhost:8881/";
+export const SEQUENCE_ANALYZER_API_ENDPOINT_HTTP = "http://0.0.0.0:8881/";
+export const PDF_RECEIVER_API_ENDPOINT_HTTP = "http://0.0.0.0:8882/";
+export const PDF_ANALYZER_API_ENDPOINT_WS = "ws://0.0.0.0:8883/";
 
 export const ASSET_ID_LIST = [
   /**

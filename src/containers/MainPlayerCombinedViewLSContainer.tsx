@@ -28,6 +28,7 @@ import DebugInfoDialogSqaRespContainer from "./DebugInfoDialogSqaRespContainer";
 // import DebugInfoDialogDocumentCtxContainer from "./DebugInfoDialogDocumentCtxContainer";
 import { useDesktopCapture } from "@/hooks/useDesktopCapture";
 import RenderedElementCropperContainer from "./RenderedElementCropperContainer";
+import PDFUplorderContainer from "./PDFUplorderContainer";
 
 export default function MainPlayerCombinedViewLSContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
@@ -68,15 +69,21 @@ export default function MainPlayerCombinedViewLSContainer(
     setDraggableVideoActive((b) => !b);
   }, [setDraggableVideoActive]);
 
+  const [pdfUploaderActive, setPdfUploaderActive] = useState(false);
+
+  const handlePdfUploaderActive = useCallback((value?: boolean) => {
+    setPdfUploaderActive((b) => (value !== undefined ? value : !b));
+  }, []);
+
   const [cropperActive, setCropperActive] = useState(false);
+
   const handleCropperActive = useCallback(
     (value?: boolean) => {
-      value !== undefined
-        ? setCropperActive(value)
-        : setCropperActive((b) => !b);
+      setCropperActive((b) => (value !== undefined ? value : !b));
     },
     [setCropperActive]
   );
+
   const handleCropperSubmit = useCallback(
     (cropArea: { raw: DOMRectLike; videoScale: DOMRectLike }) => {
       console.log(cropArea);
@@ -250,6 +257,7 @@ export default function MainPlayerCombinedViewLSContainer(
                   videoElement={videoRef.current}
                   videoElementPaused={videoPlayerState.paused}
                   videoElementMuted={videoPlayerState.muted}
+                  documentAvairable={documentPlayerState.documentAvairable}
                   documentPlayerActive={documentPlayerState.active}
                   documentPlayerStandby={documentPlayerState.standby}
                   documentOverviewActive={documentOverviewActive}
@@ -304,15 +312,26 @@ export default function MainPlayerCombinedViewLSContainer(
         >
           Capture Desktop
         </button>
+        <button
+          className="p-2 bg-blue-600 text-white text-xl font-bold"
+          onClick={() => handlePdfUploaderActive(true)}
+        >
+          Upload PDF
+        </button>
         {/* <DebugInfoDialogDocumentCtxContainer /> */}
         <DebugInfoDialogSqaRespContainer />
       </div>
+
+      <PDFUplorderContainer
+        active={pdfUploaderActive}
+        handleComponentActive={handlePdfUploaderActive}
+      />
 
       <RenderedElementCropperContainer
         active={cropperActive}
         videoRef={videoRef}
         handleSubmitCropArea={handleCropperSubmit}
-        handleCropperActive={handleCropperActive}
+        handleComponentActive={handleCropperActive}
       />
 
       {/* <div className="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 bg-slate-400 grid gap-4 z-90 pointer-events-none">
