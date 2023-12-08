@@ -152,6 +152,7 @@ export default function PoCUserStudyBaselineViewContainer() {
               enableDispatchVideoElementClickEvent={true}
               playerActive={documentPlayerState.active}
               enableCenteredScrollYBaseline={true}
+              disableTextLayer
             ></DocumentPlayerContainer>
           </div>
         )}
