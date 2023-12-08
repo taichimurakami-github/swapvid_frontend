@@ -12,10 +12,16 @@ export default function SeekbarHighlightContainer(
     documentPlayerActive: boolean;
     onHandleSetDocumentPlayerActive: (v: boolean) => void;
     disableViewportEffectOnSeekbarHighlight?: boolean;
+    disableSmoothingSeekbarHighlightGap?: boolean;
+    samplingRateSec?: number;
   }>
 ) {
   const videoElement = props.videoElement;
-  const AREA_MIN_WIDTH_PCT = 0.667;
+
+  // const AREA_MIN_WIDTH_PCT = 0.667;
+  const AREA_MIN_WIDTH_PCT = 0;
+  const SAMPLING_RATE_SEC = props.samplingRateSec ?? 1;
+  const VIEWPORT_INCLUSION_THRESHOLD = 0.5;
 
   const t_max = videoElement.duration;
   const dt_min = (t_max * AREA_MIN_WIDTH_PCT) / 100;
@@ -23,9 +29,9 @@ export default function SeekbarHighlightContainer(
   return (
     <>
       {videoElement &&
-        props.documentActiveTimes.map((v) => {
+        props.documentActiveTimes.map((v, i) => {
           //1. セクション幅をシークバーの幅に対するパーセントの割合として定義する
-          //（ただし，最低幅が AREA_MIN_WIDTH_PCTとなる様に補正する）
+          //（ただし，最低幅が AREA_MIN_WIDTH_PCTとなる様に補正する） -> 無効化
           const temp_dt = v[1] - v[0];
           const dt = temp_dt > dt_min ? temp_dt : dt_min;
           const width_pct = (100 * dt) / t_max;
@@ -33,13 +39,30 @@ export default function SeekbarHighlightContainer(
           //2. 親コンポーネント左端からの，セクションの左端の距離を総体指定で求める
           const left_pct = (100 * v[0]) / t_max;
 
+          //3. シークバーのハイライトエリアの表示・非表示を決定する
+          const opacity = !props.disableViewportEffectOnSeekbarHighlight
+            ? v[2]
+            : v[2] > VIEWPORT_INCLUSION_THRESHOLD
+            ? 1
+            : 0;
+
+          //4. gapを埋めるための補正項の計算
+          const isContenious =
+            i > 0 &&
+            v[0] - props.documentActiveTimes[i - 1][1] <= SAMPLING_RATE_SEC;
+
+          const gap_pct =
+            !props.disableSmoothingSeekbarHighlightGap && isContenious
+              ? (100 * SAMPLING_RATE_SEC) / t_max
+              : 0;
+
           return (
             <SeekbarHighlightArea
-              left_pct={left_pct}
-              width_pct={width_pct}
+              left_pct={left_pct - gap_pct}
+              width_pct={width_pct + gap_pct}
               visible={props.documentPlayerActive}
               time={[v[0], v[1]]}
-              opacity={props.disableViewportEffectOnSeekbarHighlight ? 1 : v[2]}
+              opacity={opacity}
               onHandleSetDocumentPlayerActive={
                 props.onHandleSetDocumentPlayerActive
               }

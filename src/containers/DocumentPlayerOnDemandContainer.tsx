@@ -43,11 +43,14 @@ export default function DocumentPlayerOnDemandContainer(
     enableCenteredScrollYBaseline?: boolean;
     enableInvidActivitiesReenactment?: boolean;
     disableUnactiveAnimation?: boolean;
+    disableTextLayer?: boolean;
+    enableScrollToActivateWhenScrollTimelineUnavailable?: boolean;
+    scrollWrapperDsizePx?: [number, number];
   }>
 ) {
   // for player animation when on/off
-  const animateEffectActive = useRef(false);
-  const animating = useRef(false);
+  // const animateEffectActive = useRef(false);
+  // const animating = useRef(false);
 
   // for element refs
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
@@ -296,13 +299,16 @@ export default function DocumentPlayerOnDemandContainer(
   }, [currentTime]);
 
   const activatePlayer = useCallback(() => {
-    !playerActive &&
-      playerStandby &&
-      setDocumentPlayerStateValues({ active: true });
+    const readyForActivation =
+      props.enableScrollToActivateWhenScrollTimelineUnavailable ||
+      (!playerActive && playerStandby);
+
+    readyForActivation && setDocumentPlayerStateValues({ active: true });
   }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
 
   return (
     <Document
+      className="h-full"
       file={props.pdfSrc}
       onLoadSuccess={onDocumentLoadSuccess}
       onWheel={activatePlayer}
@@ -350,7 +356,7 @@ export default function DocumentPlayerOnDemandContainer(
                 <Page
                   width={documentStyles.width}
                   pageNumber={i}
-                  renderTextLayer
+                  renderTextLayer={!props.disableTextLayer}
                 />
               ))}
             </div>
