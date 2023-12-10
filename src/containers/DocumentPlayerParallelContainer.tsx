@@ -38,15 +38,17 @@ export default function DocumentPlayerOnDemandContainer(
     playerActive: boolean;
     pdfSrc: string;
     documentBaseImageSrc: string;
+    pageZoomRate?: number;
     scrollWrapperId?: string;
-    enableDispatchVideoElementClickEvent?: boolean;
-    enableCombinedView?: boolean;
     scrollWrapperOpacityWhenUnactive?: number;
+    showScrollBar?: boolean;
+    forceToActivatePlayerByUserManipulation?: boolean;
+    enableDispatchVideoElementClickEvent?: boolean;
     enableCenteredScrollYBaseline?: boolean;
     enableInvidActivitiesReenactment?: boolean;
     disableUnactiveAnimation?: boolean;
     disableTextLayer?: boolean;
-    enableScrollToActivateWhenScrollTimelineUnavailable?: boolean;
+    disableVideoViewportVisualization?: boolean;
   }>
 ) {
   // for player animation when on/off
@@ -119,7 +121,7 @@ export default function DocumentPlayerOnDemandContainer(
   );
 
   const getActiveTlSectionFromPlaytime = useCallback(
-    (time: number, maxScrollY: number): TDocumentTimeline[0] | null => {
+    (time: number): TDocumentTimeline[0] | null => {
       const currentSection =
         timeline.find((v) => v.time[0] <= time && time < v.time[1]) ?? null;
 
@@ -249,10 +251,7 @@ export default function DocumentPlayerOnDemandContainer(
    */
   useEffect(() => {
     if (documentContainerRef.current && scrollWrapperRef.current) {
-      const activeTlSection = getActiveTlSectionFromPlaytime(
-        currentTime,
-        documentContainerRef.current.clientHeight
-      );
+      const activeTlSection = getActiveTlSectionFromPlaytime(currentTime);
 
       setActiveScrollTl(activeTlSection);
       setDocumentPlayerStateValues({
@@ -304,7 +303,9 @@ export default function DocumentPlayerOnDemandContainer(
         >
           <div
             id="document_viewer_scroll_wrapper"
-            className="relative w-full h-full overflow-scroll scrollbar-hidden"
+            className={`relative w-full h-full overflow-scroll ${
+              props.showScrollBar ? "" : "scrollbar-hidden"
+            }`}
             style={{
               width: props.widthPx + "px",
               height: props.heightPx + "px",
@@ -321,25 +322,29 @@ export default function DocumentPlayerOnDemandContainer(
             >
               {getRangeArray(docNumPages, 1).map((i) => (
                 <Page
-                  width={props.widthPx}
+                  width={props.widthPx * (props.pageZoomRate ?? 1)}
                   pageNumber={i}
                   renderTextLayer={!props.disableTextLayer}
                 />
               ))}
             </div>
-            <div
-              className="absolute top-0 left-0 w-full h-full"
-              ref={guideAreaWrapperRef}
-            >
-              {guideAreaStyles && (
-                <OnDocumentGuideArea
-                  {...guideAreaStyles}
-                  docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
-                  docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
-                  active={true}
-                ></OnDocumentGuideArea>
-              )}
-            </div>
+            {!props.disableVideoViewportVisualization && (
+              <div
+                className="absolute top-0 left-0 w-full h-full"
+                ref={guideAreaWrapperRef}
+              >
+                {guideAreaStyles && (
+                  <OnDocumentGuideArea
+                    {...guideAreaStyles}
+                    docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
+                    docViewerHeight={
+                      scrollWrapperRef.current?.clientHeight ?? 0
+                    }
+                    active={true}
+                  ></OnDocumentGuideArea>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

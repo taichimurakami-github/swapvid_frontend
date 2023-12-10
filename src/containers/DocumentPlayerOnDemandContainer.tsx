@@ -43,8 +43,9 @@ export default function DocumentPlayerOnDemandContainer(
     enableCenteredScrollYBaseline?: boolean;
     enableInvidActivitiesReenactment?: boolean;
     disableUnactiveAnimation?: boolean;
+    disableVideoViewportVisualization?: boolean;
     disableTextLayer?: boolean;
-    enableScrollToActivateWhenScrollTimelineUnavailable?: boolean;
+    forceToActivatePlayerByUserManipulation?: boolean;
     scrollWrapperDsizePx?: [number, number];
   }>
 ) {
@@ -300,7 +301,7 @@ export default function DocumentPlayerOnDemandContainer(
 
   const activatePlayer = useCallback(() => {
     const readyForActivation =
-      props.enableScrollToActivateWhenScrollTimelineUnavailable ||
+      props.forceToActivatePlayerByUserManipulation ||
       (!playerActive && playerStandby);
 
     readyForActivation && setDocumentPlayerStateValues({ active: true });
@@ -360,19 +361,23 @@ export default function DocumentPlayerOnDemandContainer(
                 />
               ))}
             </div>
-            <div
-              className="absolute top-0 left-0 w-full h-full"
-              ref={guideAreaWrapperRef}
-            >
-              {guideAreaStyles && (
-                <OnDocumentGuideArea
-                  {...guideAreaStyles}
-                  docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
-                  docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
-                  active={true}
-                ></OnDocumentGuideArea>
-              )}
-            </div>
+            {!props.disableVideoViewportVisualization && (
+              <div
+                className="absolute top-0 left-0 w-full h-full"
+                ref={guideAreaWrapperRef}
+              >
+                {guideAreaStyles && (
+                  <OnDocumentGuideArea
+                    {...guideAreaStyles}
+                    docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
+                    docViewerHeight={
+                      scrollWrapperRef.current?.clientHeight ?? 0
+                    }
+                    active={true}
+                  ></OnDocumentGuideArea>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
