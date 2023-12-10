@@ -5,10 +5,8 @@ import { LoadingScreen } from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/ui/VideoSeekbar";
 import VideoToolbar from "@/ui/VideoToolbar";
 
-import { TAssetId } from "@/@types/types";
-
 import { UIELEM_ID_LIST } from "@/app.config";
-import { PropsWithChildren, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
@@ -16,19 +14,14 @@ import {
 } from "@/hooks/useContextConsumer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
 // import DocumentPlayerContainer from "@/containers/DocumentPlayerOnDemandContainer";
-import DocumentPlayerContainer from "@/containers/DocumentPlayerParallelContainer";
+import DocumentPlayerOnDemandContainer from "@/containers/DocumentPlayerParallelContainer";
 
 // 一時的にアセットを直接インポートする
 // import EdanMeyerVptActivityTimeline from "@/assets/EdanMeyerVpt/EdanMeyerVpt.activities.json";
 // import EdanMeyerVptBaseImg from "@/assets/EdanMeyerVpt/EdanMeyerVpt.concat.png";
 // import DocumentPlayerContainer from "./DocumentPlayerContainerFromImg";
 
-export default function MainPlayerParallelViewContainer(
-  props: PropsWithChildren<{
-    assetId: TAssetId;
-    invidActivitiesReenactmentActive?: boolean;
-  }>
-) {
+export default function MainPlayerParallelViewContainer() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
@@ -148,19 +141,18 @@ export default function MainPlayerParallelViewContainer(
           <>
             {videoRef.current && (
               <div className="w-full h-full">
-                <DocumentPlayerContainer
+                <DocumentPlayerOnDemandContainer
                   widthPx={documentAreaWrapperRef.current.clientWidth - 350}
                   heightPx={documentAreaWrapperRef.current.clientHeight}
                   videoElement={videoRef.current}
                   documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
                   pdfSrc={documentPlayerAssets.pdfSrc}
-                  enableCombinedView={true}
                   scrollTimeline={documentPlayerAssets.scrollTl}
                   activityTimeline={documentPlayerAssets.activityTl}
                   enableDispatchVideoElementClickEvent={true}
                   playerActive={documentPlayerState.active}
                   enableCenteredScrollYBaseline={true}
-                ></DocumentPlayerContainer>
+                ></DocumentPlayerOnDemandContainer>
               </div>
             )}
 

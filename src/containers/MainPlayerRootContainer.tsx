@@ -36,9 +36,7 @@ export const MainPlayerRootContainer = (
   const [activeAssetIdState, setActiveIdState] = useState<TAssetId>(
     props.initialAssetId
   );
-  const [isFullScreen, setIsFullScreen] = useState(false);
-
-  const [assetChangeFormVisible, setAssetChangeFormVisible] = useState(false);
+  // const [isFullScreen, setIsFullScreen] = useState(false);
 
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
 
@@ -49,13 +47,6 @@ export const MainPlayerRootContainer = (
   //   []
   // );
 
-  const handleChangeAssetSelectFormActive = useCallback(
-    (value?: boolean) => {
-      setAssetChangeFormVisible((b) => (value !== undefined ? value : !b));
-    },
-    [setAssetChangeFormVisible]
-  );
-
   const handleChangeInterfaceMode = useCallback(
     (value: TInterfaceMode) => {
       setInterfaceModeState(value);
@@ -65,21 +56,20 @@ export const MainPlayerRootContainer = (
 
   const handleChangeActiveAssetId = useCallback(
     (assetId: TAssetId) => {
-      setAssetChangeFormVisible(false);
       setActiveIdState(assetId);
       localStorage.setItem(ACTIVE_ASSET_ID_LS_CACHE_KEY, assetId);
       setDocumentPlayerStateValues({ active: false });
       // location.reload();
     },
-    [setAssetChangeFormVisible, setActiveIdState, setDocumentPlayerStateValues]
+    [setActiveIdState, setDocumentPlayerStateValues]
   );
 
-  const handleFullScreen = useCallback(() => {
-    const screenState = isFullScreen
-      ? document.exitFullscreen()
-      : document.body.requestFullscreen();
-    screenState.then((_) => setIsFullScreen((b) => !b));
-  }, [isFullScreen, setIsFullScreen]);
+  // const handleFullScreen = useCallback(() => {
+  //   const screenState = isFullScreen
+  //     ? document.exitFullscreen()
+  //     : document.body.requestFullscreen();
+  //   screenState.then((_) => setIsFullScreen((b) => !b));
+  // }, [isFullScreen, setIsFullScreen]);
 
   // const handleSetActiveAssetId = useCallback(
   //   (v: TAssetId) => setActiveIdState(v),
@@ -105,7 +95,7 @@ export const MainPlayerRootContainer = (
         >
           <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc flex-col px-4 pt-4">
             {interfaceModeState === "parallel" && (
-              <MainPlayerParallelViewContainer assetId={activeAssetIdState} />
+              <MainPlayerParallelViewContainer />
             )}
 
             {interfaceModeState === "combined" && (
