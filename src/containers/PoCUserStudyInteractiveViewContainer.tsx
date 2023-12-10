@@ -19,7 +19,6 @@ import { LoadingScreen } from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/ui/VideoSeekbar";
 import VideoToolbar from "@/ui/VideoToolbar";
 
-import { TAssetId } from "@/@types/types";
 import { UIELEM_ID_LIST } from "@/app.config";
 
 import "@/styles/MainPlayerCombinedViewContainer.scss";

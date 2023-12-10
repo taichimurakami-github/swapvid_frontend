@@ -1,4 +1,4 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 
 import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
 
@@ -7,8 +7,6 @@ import { LoadingScreen } from "@/ui/LoadingScreen";
 import VideoSeekbar from "@/ui/VideoSeekbar";
 import VideoToolbar from "@/ui/VideoToolbar";
 
-import { TAssetId } from "@/@types/types";
-
 import { UIELEM_ID_LIST } from "@/app.config";
 import { useEffect, useRef } from "react";
 import {
@@ -16,9 +14,14 @@ import {
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
-import DocumentPlayerContainer from "@/containers/DocumentPlayerParallelContainer";
+import DocumentPlayerParallelContainer from "@/containers/DocumentPlayerParallelContainer";
 
-export default function PoCUserStudyBaselineViewContainer() {
+export default function PoCUserStudyBaselineViewContainer(
+  props: PropsWithChildren<{
+    videoWidthPx?: number;
+    documentWidthPx?: number;
+  }>
+) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
@@ -41,10 +44,6 @@ export default function PoCUserStudyBaselineViewContainer() {
 
   const documentAreaWrapperRef = useRef<HTMLDivElement>(null);
 
-  // const setDocumentPlayerStateActive = useCallback((value: boolean) => {
-  //   setDocumentPlayerStateValues({ active: value });
-  // }, []);
-
   useEffect(() => {
     setDocumentPlayerStateValues({ active: true });
   }, []);
@@ -64,7 +63,7 @@ export default function PoCUserStudyBaselineViewContainer() {
             id={UIELEM_ID_LIST.system.videoPlayer.videoElement}
             className="max-w-full"
             src={assetDataState.movieSrc}
-            width={1920}
+            width={props.videoWidthPx ?? 1920}
             ref={videoRef}
             loop={false}
             autoPlay={true}
@@ -125,35 +124,35 @@ export default function PoCUserStudyBaselineViewContainer() {
             onHandleMuteButtonClick={handleVideoElementMuted}
             enablePoCUserStudyBaselineMode
             disableAmbientBackground
-
-            // onHandleSetPlayerActive={setDocumentPlayerStateActive}
-            // onHandleVideoElementMuted={handleVideoElementMuted}
-            // onHandleVideoElementPaused={handleVideoElementPaused}
-            // onHandleVideoSubtitlesActive={handleVideoSubtitlesActive}
           />
         )}
       </div>
 
       <div
-        className="document-player-container relative w-[50%] h-screen flex-xyc gap-2"
+        className="document-player-container relative h-screen flex-xyc gap-2"
         ref={documentAreaWrapperRef}
+        style={{
+          width: props.documentWidthPx ?? "45vw",
+        }}
       >
         {documentAreaWrapperRef.current && videoRef.current && (
           <div className="w-full h-full">
-            <DocumentPlayerContainer
+            <DocumentPlayerParallelContainer
               widthPx={documentAreaWrapperRef.current.clientWidth}
               heightPx={documentAreaWrapperRef.current.clientHeight}
               videoElement={videoRef.current}
               documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
               pdfSrc={documentPlayerAssets.pdfSrc}
-              enableCombinedView={true}
               scrollTimeline={documentPlayerAssets.scrollTl}
               activityTimeline={documentPlayerAssets.activityTl}
               enableDispatchVideoElementClickEvent={true}
               playerActive={documentPlayerState.active}
               enableCenteredScrollYBaseline={true}
+              pageZoomRate={1.2}
+              showScrollBar
               disableTextLayer
-            ></DocumentPlayerContainer>
+              disableVideoViewportVisualization
+            ></DocumentPlayerParallelContainer>
           </div>
         )}
       </div>
