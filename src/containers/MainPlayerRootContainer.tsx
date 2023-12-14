@@ -1,6 +1,9 @@
 import React, { PropsWithChildren, useCallback, useState } from "react";
 import { TAssetId, TInterfaceMode } from "@/types/swapvid";
-import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
+import {
+  ACTIVE_ASSET_ID_LS_CACHE_KEY,
+  ACTIVE_VIEW_MODE_LS_CACHE_KEY,
+} from "@/app.config";
 
 import DocumentPlayerCtxProvider from "@providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@providers/VideoPlayerCtxProvider";
@@ -31,8 +34,9 @@ export const MainPlayerRootContainer = (
     disableAppMenu?: boolean;
   }>
 ) => {
-  const [interfaceModeState, setInterfaceModeState] =
-    useState<TInterfaceMode>("combined-ls");
+  const [interfaceModeState, setInterfaceModeState] = useState<TInterfaceMode>(
+    props.initialInterfaceMode
+  );
   const [activeAssetIdState, setActiveIdState] = useState<TAssetId>(
     props.initialAssetId
   );
@@ -48,8 +52,9 @@ export const MainPlayerRootContainer = (
   // );
 
   const handleChangeInterfaceMode = useCallback(
-    (value: TInterfaceMode) => {
-      setInterfaceModeState(value);
+    (interfaceMode: TInterfaceMode) => {
+      localStorage.setItem(ACTIVE_VIEW_MODE_LS_CACHE_KEY, interfaceMode);
+      setInterfaceModeState(interfaceMode);
     },
     [setInterfaceModeState]
   );
