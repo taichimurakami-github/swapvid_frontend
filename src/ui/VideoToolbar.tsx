@@ -57,13 +57,15 @@ export const VideoToolbar = (props: PropsWithChildren<VideoToolbarProps>) => (
   >
     {!props.enablePoCUserStudyInteractiveMode &&
     !props.enablePoCUserStudyBaselineMode ? (
+      // TODO: Refactoring conditional branches to control background styles. Currently too complicated.
       <div
-        className={`bg-toolbar flex justify-between h-[60px] py-2 ${
-          !props.documentAvailable
+        className={`bg-toolbar flex justify-between h-[60px] py-2
+        ${
+          !props.documentAvailable && !props.disableAmbientBackground
             ? "document-pdf-none"
-            : props.documentPlayerActive
+            : props.documentPlayerActive && !props.disableAmbientBackground
             ? "active"
-            : props.documentPlayerStandby
+            : props.documentPlayerStandby && !props.disableAmbientBackground
             ? "standby"
             : ""
         }`}
@@ -94,11 +96,10 @@ export const VideoToolbar = (props: PropsWithChildren<VideoToolbarProps>) => (
         />
       </div>
     ) : (
+      // TODO: Refactoring conditional branches to control background styles. Currently too complicated.
       <div
         className={`bg-toolbar flex justify-between h-[60px] py-2 ${
-          props.disableAmbientBackground
-            ? ""
-            : props.documentPlayerActive
+          props.documentPlayerActive && !props.disableAmbientBackground
             ? "active"
             : ""
         }`}

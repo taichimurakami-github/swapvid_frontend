@@ -124,6 +124,7 @@ export default function MainPlayerParallelViewContainer() {
             onHandlePlayAndPauseButtonClick={handleVideoElementPaused}
             onSubtitlesButtonClick={handleVideoSubtitlesActive}
             onHandleMuteButtonClick={handleVideoElementMuted}
+            disableAmbientBackground
             // onHandleSetPlayerActive={setDocumentPlayerStateActive}
             // onHandleVideoElementMuted={handleVideoElementMuted}
             // onHandleVideoElementPaused={handleVideoElementPaused}
@@ -133,7 +134,7 @@ export default function MainPlayerParallelViewContainer() {
       </div>
 
       <div
-        className="document-player-container relative w-[50%] h-screen flex-xyc gap-2"
+        className="document-player-container relative w-[50vw] h-screen flex-xyc gap-2"
         ref={documentAreaWrapperRef}
       >
         {documentAreaWrapperRef.current && (
@@ -158,7 +159,7 @@ export default function MainPlayerParallelViewContainer() {
             <DocumentOverviewContainer
               active={true}
               widthPx={350}
-              // heightPx={documentAreaWrapperRef.current.clientHeight}
+              heightPx={documentAreaWrapperRef.current.clientHeight}
             />
           </>
         )}
