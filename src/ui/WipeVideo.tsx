@@ -1,4 +1,4 @@
-import useInteractJS from "@/hooks/useInteractJS";
+import useInteractJS from "@hooks/useInteractJS";
 import React, { PropsWithChildren } from "react";
 
 export default function WipeVideo(props: PropsWithChildren) {

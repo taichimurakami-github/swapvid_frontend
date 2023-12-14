@@ -1,4 +1,4 @@
-import { TSlideTimeline_IEEEVR2022 } from "@/@types/types";
+import { TSlideTimeline_IEEEVR2022 } from "@/types/swapvid";
 
 export class SlidePlaytimeIndexer {
   readonly indexData: {

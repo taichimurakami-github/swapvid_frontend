@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useRef } from "react";
-import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
+import { useDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 

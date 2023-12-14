@@ -1,29 +1,41 @@
-import { PropsWithChildren, useCallback, useEffect, useState } from "react";
-import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
-import VideoToolbar from "@/ui/VideoToolbar";
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
-import DocumentPlayerContainer from "./DocumentPlayerOnDemandContainer";
-import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
+  useVideoCropAreaCtx,
+} from "@hooks/useContextConsumer";
+import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
+
+import DocumentPlayerCombinedLiveContainer from "./DocumentPlayerCombinedLiveContainer";
+import DraggableVideoContainer from "@containers/DraggableVideoContainer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
-import DocumentCtxInfoShowcaseContainer from "./DebugInfoDialogDocumentCtxContainer";
 
-import { TAssetId } from "@/@types/types";
+import { DOMRectLike, TAssetId } from "@/types/swapvid";
 import { UIELEM_ID_LIST } from "@/app.config";
-import "@/styles/MainPlayerCombinedViewContainer.scss";
+import "@styles/MainPlayerCombinedViewContainer.scss";
+import DebugInfoDialogSqaRespContainer from "./DebugInfoDialogSqaRespContainer";
+// import DebugInfoDialogDocumentCtxContainer from "./DebugInfoDialogDocumentCtxContainer";
+import { useDesktopCapture } from "@hooks/useDesktopCapture";
+import RenderedElementCropperContainer from "./RenderedElementCropperContainer";
+import PDFUplorderContainer from "./PDFUplorderContainer";
 
-export default function MainPlayerCombinedViewContainer(
+export default function MainPlayerCombinedViewLiveContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
 ) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
-    videoRef,
     assetDataState,
     handleOnWating,
     handleOnCanPlay,
@@ -33,7 +45,10 @@ export default function MainPlayerCombinedViewContainer(
     handleVideoElementMuted,
     handleVideoElementPaused,
     handleVideoSubtitlesActive,
-  } = useVideoPlayerCore(props.assetId);
+  } = useVideoPlayerCore(videoRef);
+
+  const { startCaptureDesktop } = useDesktopCapture(videoRef);
+  const videoCropArea = useVideoCropAreaCtx();
 
   const [documentOverviewActive, setDocumentOverviewActive] = useState(false);
   const handleDocumentOverviewActive = useCallback(() => {
@@ -54,6 +69,28 @@ export default function MainPlayerCombinedViewContainer(
     setDraggableVideoActive((b) => !b);
   }, [setDraggableVideoActive]);
 
+  const [pdfUploaderActive, setPdfUploaderActive] = useState(false);
+
+  const handlePdfUploaderActive = useCallback((value?: boolean) => {
+    setPdfUploaderActive((b) => (value !== undefined ? value : !b));
+  }, []);
+
+  const [cropperActive, setCropperActive] = useState(false);
+
+  const handleCropperActive = useCallback(
+    (value?: boolean) => {
+      setCropperActive((b) => (value !== undefined ? value : !b));
+    },
+    [setCropperActive]
+  );
+
+  const handleCropperSubmit = useCallback(
+    (cropArea: { raw: DOMRectLike; videoScale: DOMRectLike }) => {
+      console.log(cropArea);
+    },
+    []
+  );
+
   const animationTriggerClassname = documentPlayerState.active
     ? "active"
     : "unactive";
@@ -71,6 +108,7 @@ export default function MainPlayerCombinedViewContainer(
   }
 
   return (
+    // {/* <div className="video-player-container w-screen h-screen flex-col items-center justify-center pt-[100px]"></div> */}
     <div className="video-player-container w-screen h-screen flex-xyc flex-col">
       <div className="grid relative max-w-[1440px] max-h-[90%] z-0">
         <video
@@ -90,6 +128,18 @@ export default function MainPlayerCombinedViewContainer(
           onPause={handleOnPause}
           onPlay={handleOnPlay}
         />
+
+        {videoRef.current && videoCropArea && (
+          <div
+            className="absolute pointer-events-none bg-[rgba(0,0,0,0.35)] border-4 border-white border-blue-400 border-dashed"
+            style={{
+              top: videoCropArea.videoScale.top,
+              left: videoCropArea.videoScale.left,
+              width: videoCropArea.videoScale.width,
+              height: videoCropArea.videoScale.height,
+            }}
+          ></div>
+        )}
 
         {
           // Document Player
@@ -112,8 +162,9 @@ export default function MainPlayerCombinedViewContainer(
                     height: props.enableOverflowMode ? "100vh" : "100%",
                   }}
                 >
-                  <DocumentPlayerContainer
+                  <DocumentPlayerCombinedLiveContainer
                     videoElement={videoRef.current}
+                    assetId={props.assetId}
                     documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
                     pdfSrc={documentPlayerAssets.pdfSrc}
                     enableCombinedView={true}
@@ -122,11 +173,11 @@ export default function MainPlayerCombinedViewContainer(
                     enableDispatchVideoElementClickEvent={true}
                     playerActive={documentPlayerState.active}
                     enableCenteredScrollYBaseline={true}
-                  ></DocumentPlayerContainer>
+                  ></DocumentPlayerCombinedLiveContainer>
                 </div>
 
                 {documentPlayerState.active && documentOverviewActive && (
-                  <div className="absolute left-0 top-0 w-full h-full bg-black opacity-30 pointer-events-none"></div>
+                  <div className="absolute left-0 top-0 w-full h-full bg-black opacity-10 pointer-events-none"></div>
                 )}
 
                 <div
@@ -140,7 +191,7 @@ export default function MainPlayerCombinedViewContainer(
                       active={
                         documentPlayerState.active && documentOverviewActive
                       }
-                      height={videoRef.current.clientHeight}
+                      heightPx={videoRef.current.clientHeight}
                     />
                   )}
                 </div>
@@ -192,6 +243,7 @@ export default function MainPlayerCombinedViewContainer(
             >
               {assetDataState.assetsReady && (
                 <VideoSeekbar
+                  active={videoRef.current.duration !== Infinity}
                   zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}
@@ -199,33 +251,31 @@ export default function MainPlayerCombinedViewContainer(
                   documentPlayerActive={documentPlayerState.active}
                 />
               )}
-              {
-                <VideoToolbar
-                  zIndex={10}
-                  videoElement={videoRef.current}
-                  videoElementPaused={videoPlayerState.paused}
-                  videoElementMuted={videoPlayerState.muted}
-                  documentPlayerActive={documentPlayerState.active}
-                  documentPlayerStandby={documentPlayerState.standby}
-                  documentOverviewActive={documentOverviewActive}
-                  draggableVideoActive={draggableVideoActive}
-                  videoSubtitlesActive={
-                    assetDataState.subtitlesDataReady &&
-                    videoPlayerState.subtitlesActive
-                  }
-                  onHandleMuteButtonClick={handleVideoElementMuted}
-                  onHandleDocumentOverviewButtonClick={
-                    handleDocumentOverviewActive
-                  }
-                  onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
-                  onSubtitlesButtonClick={handleVideoSubtitlesActive}
-                  onDraggableVideoButtonClick={handleDraggableVideoButtonClick}
-                />
-              }
+              <VideoToolbar
+                zIndex={10}
+                videoElement={videoRef.current}
+                videoElementPaused={videoPlayerState.paused}
+                videoElementMuted={videoPlayerState.muted}
+                documentAvailable={documentPlayerState.documentAvailable}
+                documentPlayerActive={documentPlayerState.active}
+                documentPlayerStandby={documentPlayerState.standby}
+                documentOverviewActive={documentOverviewActive}
+                draggableVideoActive={draggableVideoActive}
+                videoSubtitlesActive={
+                  assetDataState.subtitlesDataReady &&
+                  videoPlayerState.subtitlesActive
+                }
+                onHandleMuteButtonClick={handleVideoElementMuted}
+                onHandleDocumentOverviewButtonClick={
+                  handleDocumentOverviewActive
+                }
+                onDocumentPlayerButtonClick={setDocumentPlayerStateActive}
+                onSubtitlesButtonClick={handleVideoSubtitlesActive}
+                onDraggableVideoButtonClick={handleDraggableVideoButtonClick}
+              />
             </div>
           </div>
         )}
-
         {documentPlayerState.active && !documentOverviewActive && (
           <div
             className="absolute top-0 left-0 flex-xyc flex-col h-full w-[50px] opacity-0 hover:bg-black hover:opacity-90 text-white font-bold text-xl select-none"
@@ -240,7 +290,6 @@ export default function MainPlayerCombinedViewContainer(
             </span>
           </div>
         )}
-
         {!videoPlayerState.loading && !assetDataState.assetsReady && (
           <div className="absolute top-0 left-0 w-full h-screen z-50 loading-screen-wrapper">
             <LoadingScreen />
@@ -248,7 +297,45 @@ export default function MainPlayerCombinedViewContainer(
         )}
       </div>
 
-      <DocumentCtxInfoShowcaseContainer />
+      <div className="mt-[50px] flex gap-4">
+        <button
+          className="p-2 bg-blue-600 text-white text-xl font-bold"
+          onClick={() => handleCropperActive(true)}
+        >
+          Crop Video Area
+        </button>
+        <button
+          className="p-2 bg-blue-600 text-white text-xl font-bold"
+          onClick={startCaptureDesktop}
+        >
+          Capture Desktop
+        </button>
+        <button
+          className="p-2 bg-blue-600 text-white text-xl font-bold"
+          onClick={() => handlePdfUploaderActive(true)}
+        >
+          Upload PDF
+        </button>
+        {/* <DebugInfoDialogDocumentCtxContainer /> */}
+        <DebugInfoDialogSqaRespContainer />
+      </div>
+
+      <PDFUplorderContainer
+        active={pdfUploaderActive}
+        handleComponentActive={handlePdfUploaderActive}
+      />
+
+      <RenderedElementCropperContainer
+        active={cropperActive}
+        videoRef={videoRef}
+        handleSubmitCropArea={handleCropperSubmit}
+        handleComponentActive={handleCropperActive}
+      />
+
+      {/* <div className="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 bg-slate-400 grid gap-4 z-90 pointer-events-none">
+        <canvas id="dbg_canvas_01" />
+        <canvas id="dbg_canvas_02" />
+      </div> */}
     </div>
   );
 }

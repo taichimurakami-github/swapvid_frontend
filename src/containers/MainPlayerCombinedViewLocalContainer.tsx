@@ -1,31 +1,35 @@
-import { PropsWithChildren, useCallback, useEffect, useState } from "react";
-import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
-import VideoToolbar from "@/ui/VideoToolbar";
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
+} from "@hooks/useContextConsumer";
+import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
+import DocumentPlayerContainer from "@/containers/DocumentPlayerCombinedLocalContainer";
+import DraggableVideoContainer from "@containers/DraggableVideoContainer";
+import DocumentOverviewContainer from "@containers/DocumentOverviewContainer";
+import DocumentCtxInfoShowcaseContainer from "./DebugInfoDialogDocumentCtxContainer";
 
-import DocumentPlayerLiveStreamingContainer from "./DocumentPlayerLiveStreamingContainer";
-import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
-import DocumentOverviewContainer from "./DocumentOverviewContainer";
-
-import { TAssetId } from "@/@types/types";
+import { TAssetId } from "@/types/swapvid";
 import { UIELEM_ID_LIST } from "@/app.config";
-import "@/styles/MainPlayerCombinedViewContainer.scss";
-import DebugInfoDialogSqaRespContainer from "./DebugInfoDialogSqaRespContainer";
-import DebugInfoDialogDocumentCtxContainer from "./DebugInfoDialogDocumentCtxContainer";
+import "@styles/MainPlayerCombinedViewContainer.scss";
 
-export default function MainPlayerCombinedViewLSContainer(
+export default function MainPlayerCombinedViewLocalContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
 ) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
-    videoRef,
     assetDataState,
     handleOnWating,
     handleOnCanPlay,
@@ -35,7 +39,7 @@ export default function MainPlayerCombinedViewLSContainer(
     handleVideoElementMuted,
     handleVideoElementPaused,
     handleVideoSubtitlesActive,
-  } = useVideoPlayerCore(props.assetId);
+  } = useVideoPlayerCore(videoRef);
 
   const [documentOverviewActive, setDocumentOverviewActive] = useState(false);
   const handleDocumentOverviewActive = useCallback(() => {
@@ -114,18 +118,16 @@ export default function MainPlayerCombinedViewLSContainer(
                     height: props.enableOverflowMode ? "100vh" : "100%",
                   }}
                 >
-                  <DocumentPlayerLiveStreamingContainer
+                  <DocumentPlayerContainer
                     videoElement={videoRef.current}
-                    assetId={props.assetId}
                     documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
                     pdfSrc={documentPlayerAssets.pdfSrc}
                     enableCombinedView={true}
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
-                    enableDispatchVideoElementClickEvent={true}
                     playerActive={documentPlayerState.active}
-                    enableCenteredScrollYBaseline={true}
-                  ></DocumentPlayerLiveStreamingContainer>
+                    enableCenteredScrollYBaseline
+                  ></DocumentPlayerContainer>
                 </div>
 
                 {documentPlayerState.active && documentOverviewActive && (
@@ -143,7 +145,7 @@ export default function MainPlayerCombinedViewLSContainer(
                       active={
                         documentPlayerState.active && documentOverviewActive
                       }
-                      height={videoRef.current.clientHeight}
+                      heightPx={videoRef.current.clientHeight}
                     />
                   )}
                 </div>
@@ -195,6 +197,7 @@ export default function MainPlayerCombinedViewLSContainer(
             >
               {assetDataState.assetsReady && (
                 <VideoSeekbar
+                  active
                   zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}
@@ -208,6 +211,7 @@ export default function MainPlayerCombinedViewLSContainer(
                   videoElement={videoRef.current}
                   videoElementPaused={videoPlayerState.paused}
                   videoElementMuted={videoPlayerState.muted}
+                  documentAvailable={true} // Always true because the document player loads local file
                   documentPlayerActive={documentPlayerState.active}
                   documentPlayerStandby={documentPlayerState.standby}
                   documentOverviewActive={documentOverviewActive}
@@ -251,10 +255,7 @@ export default function MainPlayerCombinedViewLSContainer(
         )}
       </div>
 
-      <div className="mt-[50px] grid gap-4">
-        <DebugInfoDialogDocumentCtxContainer />
-        <DebugInfoDialogSqaRespContainer />
-      </div>
+      <DocumentCtxInfoShowcaseContainer />
     </div>
   );
 }

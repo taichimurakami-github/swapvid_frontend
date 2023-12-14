@@ -1,17 +1,15 @@
-import React, { useCallback, useRef } from "react";
-import { useKeyboardInputForVideoPlayer } from "@/hooks/useKeyboardInput";
-import useAssetData from "@/hooks/useAssetData";
-
-import { TAssetId } from "@/@types/types";
+import React, { useCallback } from "react";
+import { useKeyboardInputForVideoPlayer } from "@hooks/useKeyboardInput";
 import {
   useAssetDataCtx,
   useSetVideoPlayerStateCtx,
   useVideoPlayerStateCtx,
 } from "./useContextConsumer";
-import { TVideoPlayerState } from "@/providers/VideoPlayerCtxProvider";
+import { TVideoPlayerState } from "@providers/VideoPlayerCtxProvider";
 
-export function useVideoPlayerCore(assetId: TAssetId) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+export function useVideoPlayerCore(
+  videoRefStore: React.RefObject<HTMLVideoElement>
+) {
   const videoPlayerState = useVideoPlayerStateCtx();
   const { setVideoPlayerState } = useSetVideoPlayerStateCtx();
 
@@ -40,7 +38,7 @@ export function useVideoPlayerCore(assetId: TAssetId) {
   }, []);
 
   const handleOnLoadedData = useCallback(() => {
-    const video = videoRef.current as HTMLVideoElement;
+    const video = videoRefStore.current as HTMLVideoElement;
     setVideoPlayerState((b: TVideoPlayerState) => ({
       ...b,
       loaded: true,
@@ -59,13 +57,14 @@ export function useVideoPlayerCore(assetId: TAssetId) {
 
   const handleVideoElementMuted = useCallback(
     (nextVideoElementMuted: boolean) => {
-      if (!videoRef.current) {
+      if (!videoRefStore.current) {
         return;
       }
-      videoRef.current.muted = nextVideoElementMuted ?? !videoRef.current.muted;
+      videoRefStore.current.muted =
+        nextVideoElementMuted ?? !videoRefStore.current.muted;
       setVideoPlayerState((s) => ({
         ...s,
-        muted: (videoRef.current as HTMLVideoElement).muted,
+        muted: (videoRefStore.current as HTMLVideoElement).muted,
       }));
     },
     []
@@ -73,16 +72,16 @@ export function useVideoPlayerCore(assetId: TAssetId) {
 
   const handleVideoElementPaused = useCallback(
     (nextVideoElementPaused: boolean) => {
-      if (!videoRef.current) {
+      if (!videoRefStore.current) {
         return;
       }
       nextVideoElementPaused
-        ? videoRef.current.pause()
-        : videoRef.current.play();
+        ? videoRefStore.current.pause()
+        : videoRefStore.current.play();
 
       setVideoPlayerState((s) => ({
         ...s,
-        paused: (videoRef.current as HTMLVideoElement).paused,
+        paused: (videoRefStore.current as HTMLVideoElement).paused,
       }));
     },
     []
@@ -99,11 +98,11 @@ export function useVideoPlayerCore(assetId: TAssetId) {
   );
 
   // キーボードショートカットの設定
-  useKeyboardInputForVideoPlayer(videoRef);
+  useKeyboardInputForVideoPlayer(videoRefStore);
 
   return {
     videoPlayerState,
-    videoRef,
+    videoRefStore,
     assetDataState,
     setVideoPlayerState,
     handleOnPlay,

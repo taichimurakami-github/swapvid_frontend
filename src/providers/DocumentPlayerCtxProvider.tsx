@@ -9,7 +9,7 @@ import {
   TBoundingBox,
   TDocumentTimeline,
   TInterfaceMode,
-} from "@/@types/types";
+} from "@/types/swapvid";
 
 export type TDocumentPlayerStateCtx = {
   mode: TInterfaceMode;
@@ -29,6 +29,7 @@ export type TDocumentPlayerStateCtx = {
   gapBetweenImagesPx: number;
   type: "document" | "slide";
   timelineData: TDocumentTimeline;
+  documentAvailable: boolean;
 };
 
 export type TDocumentPlayerSetterArguments = Partial<TDocumentPlayerStateCtx>;
@@ -87,6 +88,7 @@ export default function DocumentPlayerCtxProvider(
       unableScrollTo: 0,
       timelineData: [],
       gapBetweenImagesPx: 0,
+      documentAvailable: false,
     });
 
   const setDocumentPlayerStateValues = useCallback(

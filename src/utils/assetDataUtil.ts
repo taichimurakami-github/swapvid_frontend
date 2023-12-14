@@ -1,4 +1,4 @@
-import { TAssetId } from "@/@types/types";
+import { TAssetId } from "@/types/swapvid";
 
 /**
  * Helper for assets importing
@@ -14,7 +14,7 @@ export const loadAssetData = <T>(
   // and "." between filename and extension.
   // Also, "import" syntax needs literal string, not valiable of string.
   //
-  return import(`@/assets/${assetId}/${filenameWoExt}.${ext}`)
+  return import(`@assets/${assetId}/${filenameWoExt}.${ext}`)
     .then((v) => v.default as T)
     .catch((e) => {
       console.log(e);

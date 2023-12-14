@@ -1,4 +1,4 @@
-import { TDocumentTimeline } from "../@types/types";
+import { TDocumentTimeline } from "../types/swapvid";
 
 export const getDocumentTimelineData = (
   startAt: number,

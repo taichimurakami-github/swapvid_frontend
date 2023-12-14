@@ -1,4 +1,4 @@
-import { TContentTimeline } from "@/@types/types";
+import { TContentTimeline } from "@/types/swapvid";
 
 export const getCurrentTimelineId = (
   timeline: TContentTimeline[],

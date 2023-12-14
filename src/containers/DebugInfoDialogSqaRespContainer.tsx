@@ -1,8 +1,6 @@
-import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import React, { useCallback, useState } from "react";
 
 export default function DebugInfoDialogSqaRespContainer() {
-  const documentPlayerState = useDocumentPlayerStateCtx();
   const [showcaseActive, setShowcaseActive] = useState(false);
 
   const handleShowcaseActive = useCallback(() => {
@@ -15,7 +13,7 @@ export default function DebugInfoDialogSqaRespContainer() {
         className="bg-slate-600 font-bold p-2 "
         onClick={handleShowcaseActive}
       >
-        [DEBUG] Show Sequence Analyzer Response
+        [DEBUG] SQA Response
       </button>
 
       {

@@ -1,4 +1,4 @@
-import { TInterfaceMode } from "@/@types/types";
+import { TInterfaceMode } from "@/types/swapvid";
 import React, { useState } from "react";
 
 export default function useDocumentPlayerCore(mode: TInterfaceMode) {

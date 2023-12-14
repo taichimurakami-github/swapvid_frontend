@@ -15,20 +15,20 @@ import {
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
-} from "@/@types/types";
-import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
-import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
-import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
+} from "@/types/swapvid";
+import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
+import { useSetDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import OnDocumentGuideArea from "@ui/OnDocumentGuideArea";
 import {
   useDocumentActivityTimeline,
   useDocumentScrollTimeline,
-} from "@/hooks/useDocumentTimeline";
+} from "@hooks/useDocumentTimeline";
 
-import { calcBboxArea, cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
-import { getRangeArray } from "@/utils/common";
-import { calcRectCollision } from "@/utils/collision";
+import { calcBboxArea, cvtToTLWHArray, cvtToWHArray } from "@utils/bboxUtil";
+import { getRangeArray } from "@utils/common";
+import { calcRectCollision } from "@utils/collision";
 
-export default function DocumentPlayerOnDemandContainer(
+export default function DocumentPlayerCombinedLocalContainer(
   props: PropsWithChildren<{
     videoElement: HTMLVideoElement;
     scrollTimeline: TServerGeneratedScrollTimeline | null;
@@ -37,17 +37,23 @@ export default function DocumentPlayerOnDemandContainer(
     pdfSrc: string;
     documentBaseImageSrc: string;
     scrollWrapperId?: string;
-    enableDispatchVideoElementClickEvent?: boolean;
+    disableDispatchVideoElementClickEvent?: boolean;
+    disableDispatchClickEventToVideoElement?: boolean;
     enableCombinedView?: boolean;
     scrollWrapperOpacityWhenUnactive?: number;
     enableCenteredScrollYBaseline?: boolean;
     enableInvidActivitiesReenactment?: boolean;
     disableUnactiveAnimation?: boolean;
+    disableVideoViewportVisualization?: boolean;
+    disableTextLayer?: boolean;
+    forceToActivatePlayerByUserManipulation?: boolean;
+    forceToDispatchClickEventToVideoElementOnDocumentPlayer?: boolean;
+    scrollWrapperDsizePx?: [number, number];
   }>
 ) {
   // for player animation when on/off
-  const animateEffectActive = useRef(false);
-  const animating = useRef(false);
+  // const animateEffectActive = useRef(false);
+  // const animating = useRef(false);
 
   // for element refs
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
@@ -296,13 +302,16 @@ export default function DocumentPlayerOnDemandContainer(
   }, [currentTime]);
 
   const activatePlayer = useCallback(() => {
-    !playerActive &&
-      playerStandby &&
-      setDocumentPlayerStateValues({ active: true });
+    const readyForActivation =
+      props.forceToActivatePlayerByUserManipulation ||
+      (!playerActive && playerStandby);
+
+    readyForActivation && setDocumentPlayerStateValues({ active: true });
   }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
 
   return (
     <Document
+      className="h-full"
       file={props.pdfSrc}
       onLoadSuccess={onDocumentLoadSuccess}
       onWheel={activatePlayer}
@@ -320,9 +329,22 @@ export default function DocumentPlayerOnDemandContainer(
         id="document_viewer_wrapper"
         className="w-full h-full original-player-container bg-white"
         onClick={() => {
-          props.enableDispatchVideoElementClickEvent &&
-            !playerActive &&
+          if (props.disableDispatchVideoElementClickEvent) {
+            return;
+          }
+
+          if (playerActive) {
+            props.forceToDispatchClickEventToVideoElementOnDocumentPlayer &&
+              videoElement.click();
+          }
+
+          if (!playerActive) {
             videoElement.click();
+          }
+
+          // props.enableDispatchVideoElementClickEvent &&
+          //   !playerActive &&
+          //   videoElement.click();
         }}
       >
         <div
@@ -350,23 +372,27 @@ export default function DocumentPlayerOnDemandContainer(
                 <Page
                   width={documentStyles.width}
                   pageNumber={i}
-                  renderTextLayer
+                  renderTextLayer={!props.disableTextLayer}
                 />
               ))}
             </div>
-            <div
-              className="absolute top-0 left-0 w-full h-full"
-              ref={guideAreaWrapperRef}
-            >
-              {guideAreaStyles && (
-                <OnDocumentGuideArea
-                  {...guideAreaStyles}
-                  docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
-                  docViewerHeight={scrollWrapperRef.current?.clientHeight ?? 0}
-                  active={true}
-                ></OnDocumentGuideArea>
-              )}
-            </div>
+            {!props.disableVideoViewportVisualization && (
+              <div
+                className="absolute top-0 left-0 w-full h-full"
+                ref={guideAreaWrapperRef}
+              >
+                {guideAreaStyles && (
+                  <OnDocumentGuideArea
+                    {...guideAreaStyles}
+                    docViewerWidth={scrollWrapperRef.current?.clientWidth ?? 0}
+                    docViewerHeight={
+                      scrollWrapperRef.current?.clientHeight ?? 0
+                    }
+                    active={true}
+                  ></OnDocumentGuideArea>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

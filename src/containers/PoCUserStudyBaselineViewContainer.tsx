@@ -1,26 +1,29 @@
-import { useEffect, useRef } from "react";
+import React, { PropsWithChildren } from "react";
 
 import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
+
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
+
+import { UIELEM_ID_LIST } from "@/app.config";
+import { useEffect, useRef } from "react";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
 } from "@hooks/useContextConsumer";
-
-import DocumentOverviewContainer from "@containers/DocumentOverviewContainer";
 import DocumentPlayerParallelContainer from "@/containers/DocumentPlayerParallelLocalContainer";
-import VideoSubtitle from "@containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@ui/LoadingScreen";
-import VideoSeekbar from "@ui/VideoSeekbar";
-import VideoToolbar from "@ui/VideoToolbar";
-import { UIELEM_ID_LIST } from "@/app.config";
+import { TAssetId } from "@/types/swapvid";
 
-// 一時的にアセットを直接インポートする
-// import EdanMeyerVptActivityTimeline from "@assets/EdanMeyerVpt/EdanMeyerVpt.activities.json";
-// import EdanMeyerVptBaseImg from "@assets/EdanMeyerVpt/EdanMeyerVpt.concat.png";
-// import DocumentPlayerContainer from "./DocumentPlayerContainerFromImg";
-
-export default function MainPlayerParallelViewContainer() {
+export default function PoCUserStudyBaselineViewContainer(
+  props: PropsWithChildren<{
+    assetId: TAssetId;
+    videoWidthPx?: number;
+    documentWidthPx?: number;
+  }>
+) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const {
     videoPlayerState,
@@ -43,10 +46,6 @@ export default function MainPlayerParallelViewContainer() {
 
   const documentAreaWrapperRef = useRef<HTMLDivElement>(null);
 
-  // const setDocumentPlayerStateActive = useCallback((value: boolean) => {
-  //   setDocumentPlayerStateValues({ active: value });
-  // }, []);
-
   useEffect(() => {
     setDocumentPlayerStateValues({ active: true });
   }, []);
@@ -59,14 +58,14 @@ export default function MainPlayerParallelViewContainer() {
    */
 
   return (
-    <div className="parallel-view-container flex-xyc gap-8">
+    <div className="parallel-view-container flex-xyc gap-[100px]">
       <div className="video-player-container">
         <div className="relative max-w-[1440px] z-0 w-[1fr]">
           <video
             id={UIELEM_ID_LIST.system.videoPlayer.videoElement}
             className="max-w-full"
             src={assetDataState.movieSrc}
-            width={1920}
+            width={props.videoWidthPx ?? 1920}
             ref={videoRef}
             loop={false}
             autoPlay={true}
@@ -107,6 +106,7 @@ export default function MainPlayerParallelViewContainer() {
             onHandleSetPlayerActive={(_) => {
               return;
             }}
+            disableSeekbarHighlight
           />
         )}
 
@@ -124,44 +124,42 @@ export default function MainPlayerParallelViewContainer() {
             onHandlePlayAndPauseButtonClick={handleVideoElementPaused}
             onSubtitlesButtonClick={handleVideoSubtitlesActive}
             onHandleMuteButtonClick={handleVideoElementMuted}
+            enablePoCUserStudyBaselineMode
             disableAmbientBackground
-            // onHandleSetPlayerActive={setDocumentPlayerStateActive}
-            // onHandleVideoElementMuted={handleVideoElementMuted}
-            // onHandleVideoElementPaused={handleVideoElementPaused}
-            // onHandleVideoSubtitlesActive={handleVideoSubtitlesActive}
           />
         )}
       </div>
 
       <div
-        className="document-player-container relative w-[50vw] h-screen flex-xyc gap-2"
+        className="document-player-container relative h-screen flex-xyc gap-2"
         ref={documentAreaWrapperRef}
+        style={{
+          width: props.documentWidthPx ?? "45vw",
+        }}
       >
-        {documentAreaWrapperRef.current && (
-          <>
-            {videoRef.current && (
-              <div className="w-full h-full">
-                <DocumentPlayerParallelContainer
-                  widthPx={documentAreaWrapperRef.current.clientWidth - 350}
-                  heightPx={documentAreaWrapperRef.current.clientHeight}
-                  videoElement={videoRef.current}
-                  documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
-                  pdfSrc={documentPlayerAssets.pdfSrc}
-                  scrollTimeline={documentPlayerAssets.scrollTl}
-                  activityTimeline={documentPlayerAssets.activityTl}
-                  enableDispatchVideoElementClickEvent={true}
-                  playerActive={documentPlayerState.active}
-                  enableCenteredScrollYBaseline={true}
-                ></DocumentPlayerParallelContainer>
-              </div>
-            )}
-
-            <DocumentOverviewContainer
-              active={true}
-              widthPx={350}
+        {documentAreaWrapperRef.current && videoRef.current && (
+          <div className="w-full h-full">
+            <DocumentPlayerParallelContainer
+              widthPx={documentAreaWrapperRef.current.clientWidth}
               heightPx={documentAreaWrapperRef.current.clientHeight}
-            />
-          </>
+              videoElement={videoRef.current}
+              documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
+              pdfSrc={documentPlayerAssets.pdfSrc}
+              scrollTimeline={documentPlayerAssets.scrollTl}
+              activityTimeline={documentPlayerAssets.activityTl}
+              enableDispatchVideoElementClickEvent={true}
+              playerActive={documentPlayerState.active}
+              enableCenteredScrollYBaseline={true}
+              pageZoomRate={
+                ["EdanMeyerVpt", "EdanMeyerAlphaCode"].includes(props.assetId)
+                  ? 1.3
+                  : 1
+              }
+              showScrollBar
+              disableTextLayer
+              disableVideoViewportVisualization
+            ></DocumentPlayerParallelContainer>
+          </div>
         )}
       </div>
     </div>

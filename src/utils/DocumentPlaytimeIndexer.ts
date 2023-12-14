@@ -1,4 +1,4 @@
-import { TDocumentTimeline } from "@/@types/types";
+import { TDocumentTimeline } from "@/types/swapvid";
 import Validate from "./validate";
 
 export class DocumentPlaytimeIndexer {

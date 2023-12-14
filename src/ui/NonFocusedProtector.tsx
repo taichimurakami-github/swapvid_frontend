@@ -1,5 +1,5 @@
 import { UIELEM_ID_LIST } from "@/app.config";
-import { useAppCommonCtx } from "@/hooks/useAppContext";
+import { useAppCommonCtx } from "@hooks/useAppContext";
 
 export const NonFocusedProtector = () => {
   const { focused } = useAppCommonCtx();

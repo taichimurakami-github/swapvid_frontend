@@ -1,18 +1,21 @@
 import React, { useRef } from "react";
-import useVideoSeekbar from "@/hooks/useVideoSeekbar";
-import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
+import useVideoSeekbar from "@hooks/useVideoSeekbar";
+import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
 
-import SeekbarHighlightContainer from "@/containers/SeekbarHighlightContainer";
+import SeekbarHighlightContainer from "@containers/SeekbarHighlightContainer";
 
-import { getHMFormatCurrentTime } from "@/utils/getHMFormatCurrentTime";
+import { getHMFormatCurrentTime } from "@utils/getHMFormatCurrentTime";
 import { UIELEM_ID_LIST } from "@/app.config";
-import usePreviewDummyVideo from "@/hooks/usePreviewDummyVideo";
+import usePreviewDummyVideo from "@hooks/usePreviewDummyVideo";
 
 export default function VideoSeekbar(props: {
+  active: boolean;
   videoElement: HTMLVideoElement;
   documentPlayerActive: boolean;
   documentActiveTimes: [number, number, number][];
   zIndex?: number;
+  disableSeekbarHighlight?: boolean;
+  disableViewportEffectOnSeekbarHighlight?: boolean;
   onHandleSetPlayerActive: (v: boolean) => void;
 }) {
   const currentTime = useVideoCurrenttime(props.videoElement);
@@ -46,8 +49,9 @@ export default function VideoSeekbar(props: {
       className={`relative w-full flex bg-gray-400 cursor-pointer select-none`}
       ref={seekbarWrapperRef}
       style={{
+        visibility: props.active ? "visible" : "hidden",
         zIndex: props.zIndex,
-        height: seekbarHeight,
+        height: props.active ? seekbarHeight : 0,
       }}
       onTouchStart={(e) => {
         props.onHandleSetPlayerActive(false); //シークバークリック時にdocumentPlayerを消す
@@ -60,12 +64,17 @@ export default function VideoSeekbar(props: {
       onMouseMove={seekbarWrapperProps.onMouseMove}
       onMouseLeave={seekbarWrapperProps.onMouseLeave}
     >
-      <SeekbarHighlightContainer
-        videoElement={props.videoElement}
-        documentPlayerActive={props.documentPlayerActive}
-        documentActiveTimes={props.documentActiveTimes}
-        onHandleSetDocumentPlayerActive={props.onHandleSetPlayerActive}
-      ></SeekbarHighlightContainer>
+      {!props.disableSeekbarHighlight && (
+        <SeekbarHighlightContainer
+          videoElement={props.videoElement}
+          documentPlayerActive={props.documentPlayerActive}
+          documentActiveTimes={props.documentActiveTimes}
+          onHandleSetDocumentPlayerActive={props.onHandleSetPlayerActive}
+          disableViewportEffectOnSeekbarHighlight={
+            props.disableViewportEffectOnSeekbarHighlight
+          }
+        ></SeekbarHighlightContainer>
+      )}
       <div
         id={UIELEM_ID_LIST.system.videoPlayer.dragger}
         className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 dragger cursor-pointer bg-white border-2 border-black rounded-full"
