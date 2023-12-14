@@ -91,7 +91,7 @@ const DocumentOverviewContainer = React.memo(
 
       const documentAreaHeight = wrapperRef.current
         ? (documentAreaBottom - documentAreaTop) *
-          wrapperRef.current.clientHeight
+          wrapperRef.current.scrollHeight
         : 0;
       // documentAreaWidth * (videoPlayerState.height / videoPlayerState.width);
 
