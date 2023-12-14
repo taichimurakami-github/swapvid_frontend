@@ -193,7 +193,7 @@ export default function DocumentPlayerLiveStreamingContainer(
         setDocumentPlayerStateValues({
           videoViewport,
           standby: !!videoViewport,
-          documentAvairable: resultContent.document_available,
+          documentAvailable: resultContent.document_available,
         });
 
         // console.log(`Video viewport updated: ${videoViewport}`);

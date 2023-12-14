@@ -8,7 +8,7 @@ import {
 import { TVideoPlayerState } from "@/providers/VideoPlayerCtxProvider";
 
 export function useVideoPlayerCore(
-  videoRef: React.RefObject<HTMLVideoElement>
+  videoRefStore: React.RefObject<HTMLVideoElement>
 ) {
   const videoPlayerState = useVideoPlayerStateCtx();
   const { setVideoPlayerState } = useSetVideoPlayerStateCtx();
@@ -38,7 +38,7 @@ export function useVideoPlayerCore(
   }, []);
 
   const handleOnLoadedData = useCallback(() => {
-    const video = videoRef.current as HTMLVideoElement;
+    const video = videoRefStore.current as HTMLVideoElement;
     setVideoPlayerState((b: TVideoPlayerState) => ({
       ...b,
       loaded: true,
@@ -57,13 +57,14 @@ export function useVideoPlayerCore(
 
   const handleVideoElementMuted = useCallback(
     (nextVideoElementMuted: boolean) => {
-      if (!videoRef.current) {
+      if (!videoRefStore.current) {
         return;
       }
-      videoRef.current.muted = nextVideoElementMuted ?? !videoRef.current.muted;
+      videoRefStore.current.muted =
+        nextVideoElementMuted ?? !videoRefStore.current.muted;
       setVideoPlayerState((s) => ({
         ...s,
-        muted: (videoRef.current as HTMLVideoElement).muted,
+        muted: (videoRefStore.current as HTMLVideoElement).muted,
       }));
     },
     []
@@ -71,16 +72,16 @@ export function useVideoPlayerCore(
 
   const handleVideoElementPaused = useCallback(
     (nextVideoElementPaused: boolean) => {
-      if (!videoRef.current) {
+      if (!videoRefStore.current) {
         return;
       }
       nextVideoElementPaused
-        ? videoRef.current.pause()
-        : videoRef.current.play();
+        ? videoRefStore.current.pause()
+        : videoRefStore.current.play();
 
       setVideoPlayerState((s) => ({
         ...s,
-        paused: (videoRef.current as HTMLVideoElement).paused,
+        paused: (videoRefStore.current as HTMLVideoElement).paused,
       }));
     },
     []
@@ -97,11 +98,11 @@ export function useVideoPlayerCore(
   );
 
   // キーボードショートカットの設定
-  useKeyboardInputForVideoPlayer(videoRef);
+  useKeyboardInputForVideoPlayer(videoRefStore);
 
   return {
     videoPlayerState,
-    videoRef,
+    videoRefStore,
     assetDataState,
     setVideoPlayerState,
     handleOnPlay,

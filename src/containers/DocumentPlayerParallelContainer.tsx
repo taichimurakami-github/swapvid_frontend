@@ -33,22 +33,22 @@ export default function DocumentPlayerOnDemandContainer(
     videoElement: HTMLVideoElement;
     scrollTimeline: TServerGeneratedScrollTimeline | null;
     activityTimeline: TServerGeneratedActivityTimeline | null;
+    widthPx: number;
+    heightPx: number;
     playerActive: boolean;
     pdfSrc: string;
     documentBaseImageSrc: string;
+    pageZoomRate?: number;
     scrollWrapperId?: string;
-    disableDispatchVideoElementClickEvent?: boolean;
-    disableDispatchClickEventToVideoElement?: boolean;
-    enableCombinedView?: boolean;
     scrollWrapperOpacityWhenUnactive?: number;
+    showScrollBar?: boolean;
+    forceToActivatePlayerByUserManipulation?: boolean;
+    enableDispatchVideoElementClickEvent?: boolean;
     enableCenteredScrollYBaseline?: boolean;
     enableInvidActivitiesReenactment?: boolean;
     disableUnactiveAnimation?: boolean;
-    disableVideoViewportVisualization?: boolean;
     disableTextLayer?: boolean;
-    forceToActivatePlayerByUserManipulation?: boolean;
-    forceToDispatchClickEventToVideoElementOnDocumentPlayer?: boolean;
-    scrollWrapperDsizePx?: [number, number];
+    disableVideoViewportVisualization?: boolean;
   }>
 ) {
   // for player animation when on/off
@@ -67,13 +67,6 @@ export default function DocumentPlayerOnDemandContainer(
   const [activeScrollTl, setActiveScrollTl] = useState<
     TDocumentTimeline[0] | null
   >(null);
-
-  const [documentStyles, setDocumentStyles] = useState({
-    scrollTop: 0,
-    scrollLeft: 0,
-    width: videoElement.clientWidth,
-    scale: 1.0,
-  });
 
   const [guideAreaStyles, setGuideAreaStyles] = useState<{
     top: number | string;
@@ -128,7 +121,7 @@ export default function DocumentPlayerOnDemandContainer(
   );
 
   const getActiveTlSectionFromPlaytime = useCallback(
-    (time: number, maxScrollY: number): TDocumentTimeline[0] | null => {
+    (time: number): TDocumentTimeline[0] | null => {
       const currentSection =
         timeline.find((v) => v.time[0] <= time && time < v.time[1]) ?? null;
 
@@ -156,13 +149,15 @@ export default function DocumentPlayerOnDemandContainer(
           if (!collidedRect) return null; //ビューポートと衝突していない区間はハイライトしない
 
           const collidedArea = calcBboxArea(collidedRect);
+          const videoArea = calcBboxArea(v.videoViewport);
+
+          const areaRatioCollidedPerViewport =
+            collidedArea / Math.min(videoArea, viewportArea); // parallel viewのように，doc viewport > video viewportの場合に対応
 
           const sectionTimeRange =
             videoDuration < v.time[1] //time[1]がInfinityの場合，ビデオの終了まで位置が持続するとみなす
               ? [v.time[0], videoDuration] //time[start, videoEnd]に置換
               : v.time; //time[start, end] をそのまま代入
-
-          const areaRatioCollidedPerViewport = collidedArea / viewportArea;
 
           return [...sectionTimeRange, areaRatioCollidedPerViewport];
         })
@@ -227,15 +222,6 @@ export default function DocumentPlayerOnDemandContainer(
         standby: true,
       };
 
-      // Update document styles
-      setDocumentStyles((b) => ({
-        ...currDocumentStyles,
-        // Set width only when player is unactive
-        // because width change make <Page /> component to re-render pdf
-        // due to using HTML Canvas API
-        width: !playerActive ? videoElement.clientWidth * zoomRate : b.width,
-      }));
-
       // Update document guide area styles
       setGuideAreaStyles({
         top: r_top * documentHeight + "px",
@@ -250,7 +236,7 @@ export default function DocumentPlayerOnDemandContainer(
         scrollWrapperElem.scrollLeft = currDocumentStyles.scrollLeft;
       }
     },
-    [playerActive, setDocumentStyles, setGuideAreaStyles]
+    [playerActive, setGuideAreaStyles]
   );
 
   useEffect(() => {
@@ -265,10 +251,7 @@ export default function DocumentPlayerOnDemandContainer(
    */
   useEffect(() => {
     if (documentContainerRef.current && scrollWrapperRef.current) {
-      const activeTlSection = getActiveTlSectionFromPlaytime(
-        currentTime,
-        documentContainerRef.current.clientHeight
-      );
+      const activeTlSection = getActiveTlSectionFromPlaytime(currentTime);
 
       setActiveScrollTl(activeTlSection);
       setDocumentPlayerStateValues({
@@ -278,13 +261,11 @@ export default function DocumentPlayerOnDemandContainer(
 
       // Failed to found active section from scroll timeline
       if (!activeTlSection) {
-        setDocumentStyles((b) => ({ ...b, standby: false }));
         return;
       }
 
       // Found activeTlSection but section doesn't record onFocusArea
       if (!activeTlSection.videoViewport) {
-        setDocumentStyles((b) => ({ ...b, standby: false }));
         return;
       }
 
@@ -301,76 +282,47 @@ export default function DocumentPlayerOnDemandContainer(
     }
   }, [currentTime]);
 
-  const activatePlayer = useCallback(() => {
-    const readyForActivation =
-      props.forceToActivatePlayerByUserManipulation ||
-      (!playerActive && playerStandby);
-
-    readyForActivation && setDocumentPlayerStateValues({ active: true });
-  }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
-
   return (
-    <Document
-      className="h-full"
-      file={props.pdfSrc}
-      onLoadSuccess={onDocumentLoadSuccess}
-      onWheel={activatePlayer}
-      onTouchStart={activatePlayer}
-      onMouseDown={(e: React.MouseEvent) => {
-        if (!playerActive) {
-          const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
-          const isTextClicked =
-            onClickNode.nodeName === "SPAN" && !!onClickNode.innerText;
-          isTextClicked && activatePlayer();
-        }
-      }}
-    >
+    <Document file={props.pdfSrc} onLoadSuccess={onDocumentLoadSuccess}>
       <div
         id="document_viewer_wrapper"
-        className="w-full h-full original-player-container bg-white"
+        className="w-full h-full original-player-container"
         onClick={() => {
-          if (props.disableDispatchVideoElementClickEvent) {
-            return;
-          }
-
-          if (playerActive) {
-            props.forceToDispatchClickEventToVideoElementOnDocumentPlayer &&
-              videoElement.click();
-          }
-
-          if (!playerActive) {
+          props.enableDispatchVideoElementClickEvent &&
+            !playerActive &&
             videoElement.click();
-          }
-
-          // props.enableDispatchVideoElementClickEvent &&
-          //   !playerActive &&
-          //   videoElement.click();
         }}
       >
         <div
           id="document_viewer_container"
-          className="relative w-full h-full overflow-hidden"
+          className="relative overflow-hidden  mx-auto"
+          style={{
+            width: props.widthPx + "px",
+            height: props.heightPx + "px",
+          }}
         >
           <div
             id="document_viewer_scroll_wrapper"
-            className="relative w-full h-full overflow-scroll scrollbar-hidden"
+            className={`relative w-full h-full overflow-scroll ${
+              props.showScrollBar ? "" : "scrollbar-hidden"
+            }`}
             style={{
-              width: videoElement.clientWidth + "px",
-              height: videoElement.clientHeight + "px",
+              width: props.widthPx + "px",
+              height: props.heightPx + "px",
             }}
             ref={scrollWrapperRef}
             onScroll={updateDocumentState}
           >
             <div
               style={{
-                width: documentStyles.width + "px",
+                width: props.widthPx + "px",
                 pointerEvents: playerStandby || playerActive ? "all" : "none",
               }}
               ref={documentContainerRef}
             >
               {getRangeArray(docNumPages, 1).map((i) => (
                 <Page
-                  width={documentStyles.width}
+                  width={props.widthPx * (props.pageZoomRate ?? 1)}
                   pageNumber={i}
                   renderTextLayer={!props.disableTextLayer}
                 />

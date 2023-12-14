@@ -1,19 +1,19 @@
+import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import React, { PropsWithChildren, useCallback, useState } from "react";
-import { TAssetId, TInterfaceMode } from "@/@types/types";
-import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
 
 import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
 
-import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
+import PoCUserStudyBaselineViewContainer from "@/containers/PoCUserStudyBaselineViewContainer";
+import PoCUserStudyInteractiveViewContainer from "@/containers/PoCUserStudyInteractiveViewContainer";
 
-import MainPlayerParallelViewContainer from "@/containers/MainPlayerParallelViewContainer";
-import MainPlayerCombinedViewContainer from "@/containers/MainPlayerCombinedViewODContainer";
-import MainPlayerCombinedViewLSContainer from "@/containers/MainPlayerCombinedViewLSContainer";
 import { AppTopMenuContainer } from "@/containers/AppTopMenuContainer";
+import { TAssetId, TInterfaceMode } from "@/@types/types";
+import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
+import { PoCUserStudyTaskSubmissionForm } from "@/ui/PoCUserStudyTaskSubmissionForm";
 
-export const MainPlayerRootContainer = (
+export default function PoCUserStudyPlayerRootContainer(
   props: PropsWithChildren<{
     initialInterfaceMode: TInterfaceMode;
     initialAssetId: TAssetId;
@@ -30,22 +30,17 @@ export const MainPlayerRootContainer = (
     disablePauseAndPlay?: boolean;
     disableAppMenu?: boolean;
   }>
-) => {
-  const [interfaceModeState, setInterfaceModeState] =
-    useState<TInterfaceMode>("combined-ls");
+) {
+  const [interfaceModeState, setInterfaceModeState] = useState<TInterfaceMode>(
+    props.initialInterfaceMode
+  );
   const [activeAssetIdState, setActiveIdState] = useState<TAssetId>(
     props.initialAssetId
   );
-  // const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const [taskSubmitFormVisible, setTaskSubmitFormVisible] = useState(false);
 
   const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
-
-  // const handleOnChangeInterfaceMode = useCallback(
-  //   (nextInterfaceState: TInterfaceMode) => {
-  //     setInterfaceModeState(nextInterfaceState);
-  //   },
-  //   []
-  // );
 
   const handleChangeInterfaceMode = useCallback(
     (value: TInterfaceMode) => {
@@ -64,28 +59,6 @@ export const MainPlayerRootContainer = (
     [setActiveIdState, setDocumentPlayerStateValues]
   );
 
-  // const handleFullScreen = useCallback(() => {
-  //   const screenState = isFullScreen
-  //     ? document.exitFullscreen()
-  //     : document.body.requestFullscreen();
-  //   screenState.then((_) => setIsFullScreen((b) => !b));
-  // }, [isFullScreen, setIsFullScreen]);
-
-  // const handleSetActiveAssetId = useCallback(
-  //   (v: TAssetId) => setActiveIdState(v),
-  //   [setActiveIdState]
-  // );
-
-  // const handleClickNewAssetButton = useCallback(
-  //   (e: React.MouseEvent<HTMLAnchorElement>) => {
-  //     if (e.currentTarget.id) {
-  //       const newAssetId = e.currentTarget.id as TAssetId;
-  //       handleSetActiveAssetId(newAssetId);
-  //     }
-  //   },
-  //   [handleSetActiveAssetId]
-  // );
-
   return (
     <AssetDataCtxProvider assetId={activeAssetIdState}>
       <VideoPlayerCtxProvider>
@@ -95,35 +68,43 @@ export const MainPlayerRootContainer = (
         >
           <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc flex-col px-4 pt-4">
             {interfaceModeState === "parallel" && (
-              <MainPlayerParallelViewContainer />
+              <PoCUserStudyBaselineViewContainer
+                assetId={activeAssetIdState}
+                videoWidthPx={1280}
+              />
             )}
 
             {interfaceModeState === "combined" && (
-              <MainPlayerCombinedViewContainer
-                assetId={activeAssetIdState}
-                enableOverflowMode={props.enableOverflowModeOnCombinedView}
-              />
+              <PoCUserStudyInteractiveViewContainer />
             )}
-
-            {interfaceModeState === "combined-ls" && (
-              <MainPlayerCombinedViewLSContainer
-                assetId={activeAssetIdState}
-                enableOverflowMode={props.enableOverflowModeOnCombinedView}
-              />
-            )}
-
-            {props.disableAppMenu && <div className="h-[15vh]"></div>}
 
             {!props.disableAppMenu && (
               <AppTopMenuContainer
                 activeAssetId={activeAssetIdState}
                 handleChangeActiveAssetId={handleChangeActiveAssetId}
                 handleChangeInterfaceMode={handleChangeInterfaceMode}
+                hideCombinedLiveViewButton
               />
             )}
           </div>
+          <button
+            className="fixed left-0 bottom-0 flex-xyc w-full h-[50px] text-2xl font-bold bg-black-transparent-01 text-white hover:bg-slate-600 hover:font-bold"
+            onClick={() => {
+              setTaskSubmitFormVisible(true);
+            }}
+          >
+            Click here to submit this task
+          </button>
+
+          {taskSubmitFormVisible && (
+            <PoCUserStudyTaskSubmissionForm
+              handleCloseForm={() => {
+                setTaskSubmitFormVisible(false);
+              }}
+            />
+          )}
         </DocumentPlayerCtxProvider>
       </VideoPlayerCtxProvider>
     </AssetDataCtxProvider>
   );
-};
+}

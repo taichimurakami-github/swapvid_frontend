@@ -15,9 +15,9 @@ import {
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
 import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
-import DocumentPlayerContainer from "./DocumentPlayerOnDemandContainer";
+import DocumentPlayerContainer from "@/containers/DocumentPlayerOnDemandContainer";
 import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
-import DocumentOverviewContainer from "./DocumentOverviewContainer";
+import DocumentOverviewContainer from "@/containers/DocumentOverviewContainer";
 import DocumentCtxInfoShowcaseContainer from "./DebugInfoDialogDocumentCtxContainer";
 
 import { TAssetId } from "@/@types/types";
@@ -125,9 +125,8 @@ export default function MainPlayerCombinedViewContainer(
                     enableCombinedView={true}
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
-                    enableDispatchVideoElementClickEvent={true}
                     playerActive={documentPlayerState.active}
-                    enableCenteredScrollYBaseline={true}
+                    enableCenteredScrollYBaseline
                   ></DocumentPlayerContainer>
                 </div>
 
@@ -146,7 +145,7 @@ export default function MainPlayerCombinedViewContainer(
                       active={
                         documentPlayerState.active && documentOverviewActive
                       }
-                      height={videoRef.current.clientHeight}
+                      heightPx={videoRef.current.clientHeight}
                     />
                   )}
                 </div>
@@ -212,6 +211,7 @@ export default function MainPlayerCombinedViewContainer(
                   videoElement={videoRef.current}
                   videoElementPaused={videoPlayerState.paused}
                   videoElementMuted={videoPlayerState.muted}
+                  documentAvailable={true} // Always true because the document player loads local file
                   documentPlayerActive={documentPlayerState.active}
                   documentPlayerStandby={documentPlayerState.standby}
                   documentOverviewActive={documentOverviewActive}
