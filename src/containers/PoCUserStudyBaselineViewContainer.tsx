@@ -15,9 +15,11 @@ import {
   useSetDocumentPlayerStateCtx,
 } from "@/hooks/useContextConsumer";
 import DocumentPlayerParallelContainer from "@/containers/DocumentPlayerParallelContainer";
+import { TAssetId } from "@/@types/types";
 
 export default function PoCUserStudyBaselineViewContainer(
   props: PropsWithChildren<{
+    assetId: TAssetId;
     videoWidthPx?: number;
     documentWidthPx?: number;
   }>
@@ -56,7 +58,7 @@ export default function PoCUserStudyBaselineViewContainer(
    */
 
   return (
-    <div className="parallel-view-container flex-xyc gap-8">
+    <div className="parallel-view-container flex-xyc gap-[100px]">
       <div className="video-player-container">
         <div className="relative max-w-[1440px] z-0 w-[1fr]">
           <video
@@ -148,7 +150,11 @@ export default function PoCUserStudyBaselineViewContainer(
               enableDispatchVideoElementClickEvent={true}
               playerActive={documentPlayerState.active}
               enableCenteredScrollYBaseline={true}
-              pageZoomRate={1.2}
+              pageZoomRate={
+                ["EdanMeyerVpt", "EdanMeyerAlphaCode"].includes(props.assetId)
+                  ? 1.3
+                  : 1
+              }
               showScrollBar
               disableTextLayer
               disableVideoViewportVisualization

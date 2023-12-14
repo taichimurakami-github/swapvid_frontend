@@ -37,7 +37,8 @@ export default function DocumentPlayerOnDemandContainer(
     pdfSrc: string;
     documentBaseImageSrc: string;
     scrollWrapperId?: string;
-    enableDispatchVideoElementClickEvent?: boolean;
+    disableDispatchVideoElementClickEvent?: boolean;
+    disableDispatchClickEventToVideoElement?: boolean;
     enableCombinedView?: boolean;
     scrollWrapperOpacityWhenUnactive?: number;
     enableCenteredScrollYBaseline?: boolean;
@@ -46,6 +47,7 @@ export default function DocumentPlayerOnDemandContainer(
     disableVideoViewportVisualization?: boolean;
     disableTextLayer?: boolean;
     forceToActivatePlayerByUserManipulation?: boolean;
+    forceToDispatchClickEventToVideoElementOnDocumentPlayer?: boolean;
     scrollWrapperDsizePx?: [number, number];
   }>
 ) {
@@ -327,9 +329,22 @@ export default function DocumentPlayerOnDemandContainer(
         id="document_viewer_wrapper"
         className="w-full h-full original-player-container bg-white"
         onClick={() => {
-          props.enableDispatchVideoElementClickEvent &&
-            !playerActive &&
+          if (props.disableDispatchVideoElementClickEvent) {
+            return;
+          }
+
+          if (playerActive) {
+            props.forceToDispatchClickEventToVideoElementOnDocumentPlayer &&
+              videoElement.click();
+          }
+
+          if (!playerActive) {
             videoElement.click();
+          }
+
+          // props.enableDispatchVideoElementClickEvent &&
+          //   !playerActive &&
+          //   videoElement.click();
         }}
       >
         <div

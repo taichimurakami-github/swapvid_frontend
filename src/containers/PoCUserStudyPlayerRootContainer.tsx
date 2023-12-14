@@ -68,7 +68,10 @@ export default function PoCUserStudyPlayerRootContainer(
         >
           <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc flex-col px-4 pt-4">
             {interfaceModeState === "parallel" && (
-              <PoCUserStudyBaselineViewContainer videoWidthPx={1280} />
+              <PoCUserStudyBaselineViewContainer
+                assetId={activeAssetIdState}
+                videoWidthPx={1280}
+              />
             )}
 
             {interfaceModeState === "combined" && (
@@ -80,17 +83,18 @@ export default function PoCUserStudyPlayerRootContainer(
                 activeAssetId={activeAssetIdState}
                 handleChangeActiveAssetId={handleChangeActiveAssetId}
                 handleChangeInterfaceMode={handleChangeInterfaceMode}
+                hideCombinedLiveViewButton
               />
             )}
           </div>
-          <div
+          <button
             className="fixed left-0 bottom-0 flex-xyc w-full h-[50px] text-2xl font-bold bg-black-transparent-01 text-white hover:bg-slate-600 hover:font-bold"
             onClick={() => {
               setTaskSubmitFormVisible(true);
             }}
           >
             Click here to submit this task
-          </div>
+          </button>
 
           {taskSubmitFormVisible && (
             <PoCUserStudyTaskSubmissionForm

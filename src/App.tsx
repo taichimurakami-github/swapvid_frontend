@@ -1,10 +1,10 @@
 import { MainPlayerRootContainer } from "@/containers/MainPlayerRootContainer";
-import { TAssetId } from "@/@types/types";
+import { TAssetId, TInterfaceMode } from "@/@types/types";
 import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
 import PoCUserStudyPlayerRootContainer from "@/containers/PoCUserStudyPlayerRootContainer";
 
-const defaultAssetId = "EdanMeyerVpt";
-const defaultInterfaceMode = "combined";
+const defaultAssetId: TAssetId = "EdanMeyerVpt";
+const defaultInterfaceMode: TInterfaceMode = "combined";
 
 export type TAppMode = "PoCUserStudy" | "SwapVid";
 
@@ -35,7 +35,6 @@ export default function App() {
             defaultAssetId
           }
           enableOverflowModeOnCombinedView={false}
-          disableAppMenu={false}
         />
       );
   }

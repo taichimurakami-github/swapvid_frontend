@@ -73,10 +73,11 @@ export default function PoCUserStudyInteractiveViewContainer() {
 
   return (
     <div className="video-player-container w-screen h-screen flex-xyc flex-col">
-      <div className="grid relative max-w-[1440px] max-h-[90%] z-0">
+      <div className="grid relative max-h-[90%] z-0">
         <video
           id={UIELEM_ID_LIST.system.videoPlayer.videoElement}
           className="max-h-[75vh] z-0"
+          width={1920}
           src={assetDataState.movieSrc}
           ref={videoRef}
           loop={false}
@@ -128,9 +129,10 @@ export default function PoCUserStudyInteractiveViewContainer() {
                     activityTimeline={documentPlayerAssets.activityTl}
                     playerActive={documentPlayerState.active}
                     enableCombinedView
-                    enableDispatchVideoElementClickEvent
                     enableCenteredScrollYBaseline
+                    forceToActivatePlayerByUserManipulation
                     disableTextLayer
+                    disableVideoViewportVisualization
                   ></DocumentPlayerOnDemandContainer>
                 </div>
 
@@ -195,20 +197,6 @@ export default function PoCUserStudyInteractiveViewContainer() {
                 enablePoCUserStudyInteractiveMode
               />
             </div>
-          </div>
-        )}
-        {documentPlayerState.active && !documentOverviewActive && (
-          <div
-            className="absolute top-0 left-0 flex-xyc flex-col h-full w-[50px] opacity-0 hover:bg-black hover:opacity-90 text-white font-bold text-xl select-none"
-            onClick={handleDocumentOverviewActive}
-          >
-            <span
-              style={{
-                writingMode: "vertical-rl",
-              }}
-            >
-              &gt;&gt; Show Overview
-            </span>
           </div>
         )}
         {!videoPlayerState.loading && !assetDataState.assetsReady && (

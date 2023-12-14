@@ -100,8 +100,6 @@ export const VideoToolbar = (props: PropsWithChildren<VideoToolbarProps>) => (
             ? ""
             : props.documentPlayerActive
             ? "active"
-            : props.documentPlayerStandby
-            ? "standby"
             : ""
         }`}
       >

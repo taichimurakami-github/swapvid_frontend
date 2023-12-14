@@ -125,9 +125,8 @@ export default function MainPlayerCombinedViewContainer(
                     enableCombinedView={true}
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
-                    enableDispatchVideoElementClickEvent={true}
                     playerActive={documentPlayerState.active}
-                    enableCenteredScrollYBaseline={true}
+                    enableCenteredScrollYBaseline
                   ></DocumentPlayerContainer>
                 </div>
 
