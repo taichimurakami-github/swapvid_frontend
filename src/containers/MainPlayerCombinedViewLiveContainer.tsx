@@ -5,32 +5,32 @@ import {
   useRef,
   useState,
 } from "react";
-import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
-import VideoToolbar from "@/ui/VideoToolbar";
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
   useVideoCropAreaCtx,
-} from "@/hooks/useContextConsumer";
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
+} from "@hooks/useContextConsumer";
+import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
 
-import DocumentPlayerLiveStreamingContainer from "./DocumentPlayerLiveStreamingContainer";
-import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
+import DocumentPlayerCombinedLiveContainer from "./DocumentPlayerCombinedLiveContainer";
+import DraggableVideoContainer from "@containers/DraggableVideoContainer";
 import DocumentOverviewContainer from "./DocumentOverviewContainer";
 
-import { DOMRectLike, TAssetId } from "@/@types/types";
+import { DOMRectLike, TAssetId } from "@/types/swapvid";
 import { UIELEM_ID_LIST } from "@/app.config";
-import "@/styles/MainPlayerCombinedViewContainer.scss";
+import "@styles/MainPlayerCombinedViewContainer.scss";
 import DebugInfoDialogSqaRespContainer from "./DebugInfoDialogSqaRespContainer";
 // import DebugInfoDialogDocumentCtxContainer from "./DebugInfoDialogDocumentCtxContainer";
-import { useDesktopCapture } from "@/hooks/useDesktopCapture";
+import { useDesktopCapture } from "@hooks/useDesktopCapture";
 import RenderedElementCropperContainer from "./RenderedElementCropperContainer";
 import PDFUplorderContainer from "./PDFUplorderContainer";
 
-export default function MainPlayerCombinedViewLSContainer(
+export default function MainPlayerCombinedViewLiveContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
 ) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -162,7 +162,7 @@ export default function MainPlayerCombinedViewLSContainer(
                     height: props.enableOverflowMode ? "100vh" : "100%",
                   }}
                 >
-                  <DocumentPlayerLiveStreamingContainer
+                  <DocumentPlayerCombinedLiveContainer
                     videoElement={videoRef.current}
                     assetId={props.assetId}
                     documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
@@ -173,7 +173,7 @@ export default function MainPlayerCombinedViewLSContainer(
                     enableDispatchVideoElementClickEvent={true}
                     playerActive={documentPlayerState.active}
                     enableCenteredScrollYBaseline={true}
-                  ></DocumentPlayerLiveStreamingContainer>
+                  ></DocumentPlayerCombinedLiveContainer>
                 </div>
 
                 {documentPlayerState.active && documentOverviewActive && (
@@ -191,7 +191,7 @@ export default function MainPlayerCombinedViewLSContainer(
                       active={
                         documentPlayerState.active && documentOverviewActive
                       }
-                      height={videoRef.current.clientHeight}
+                      heightPx={videoRef.current.clientHeight}
                     />
                   )}
                 </div>

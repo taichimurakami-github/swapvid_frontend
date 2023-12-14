@@ -15,20 +15,20 @@ import {
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
-} from "@/@types/types";
-import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
-import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
-import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
+} from "@/types/swapvid";
+import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
+import { useSetDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import OnDocumentGuideArea from "@ui/OnDocumentGuideArea";
 import {
   useDocumentActivityTimeline,
   useDocumentScrollTimeline,
-} from "@/hooks/useDocumentTimeline";
+} from "@hooks/useDocumentTimeline";
 
-import { calcBboxArea, cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
-import { getRangeArray } from "@/utils/common";
-import { calcRectCollision } from "@/utils/collision";
+import { calcBboxArea, cvtToTLWHArray, cvtToWHArray } from "@utils/bboxUtil";
+import { getRangeArray } from "@utils/common";
+import { calcRectCollision } from "@utils/collision";
 
-export default function DocumentPlayerOnDemandContainer(
+export default function DocumentPlayerCombinedLocalContainer(
   props: PropsWithChildren<{
     videoElement: HTMLVideoElement;
     scrollTimeline: TServerGeneratedScrollTimeline | null;

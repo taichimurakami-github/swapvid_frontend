@@ -5,26 +5,26 @@ import {
   useRef,
   useState,
 } from "react";
-import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
-import VideoToolbar from "@/ui/VideoToolbar";
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
-import DocumentPlayerContainer from "@/containers/DocumentPlayerOnDemandContainer";
-import DraggableVideoContainer from "@/containers/DraggableVideoContainer";
-import DocumentOverviewContainer from "@/containers/DocumentOverviewContainer";
+} from "@hooks/useContextConsumer";
+import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
+import DocumentPlayerContainer from "@/containers/DocumentPlayerCombinedLocalContainer";
+import DraggableVideoContainer from "@containers/DraggableVideoContainer";
+import DocumentOverviewContainer from "@containers/DocumentOverviewContainer";
 import DocumentCtxInfoShowcaseContainer from "./DebugInfoDialogDocumentCtxContainer";
 
-import { TAssetId } from "@/@types/types";
+import { TAssetId } from "@/types/swapvid";
 import { UIELEM_ID_LIST } from "@/app.config";
-import "@/styles/MainPlayerCombinedViewContainer.scss";
+import "@styles/MainPlayerCombinedViewContainer.scss";
 
-export default function MainPlayerCombinedViewContainer(
+export default function MainPlayerCombinedViewLocalContainer(
   props: PropsWithChildren<{ assetId: TAssetId; enableOverflowMode?: boolean }>
 ) {
   const videoRef = useRef<HTMLVideoElement>(null);

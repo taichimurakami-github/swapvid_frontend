@@ -1,6 +1,6 @@
 import React from "react";
-import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
-import { getHMFormatCurrentTime } from "@/utils/getHMFormatCurrentTime";
+import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
+import { getHMFormatCurrentTime } from "@utils/getHMFormatCurrentTime";
 
 /**
  * Use standalone container for video toolbar current time container

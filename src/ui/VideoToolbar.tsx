@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from "react";
-import VideoToolbarCurrenttimeContainer from "@/containers/VideoToolbarCurrentTimeContainer";
+import VideoToolbarCurrenttimeContainer from "@containers/VideoToolbarCurrentTimeContainer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPause,
@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { UIELEM_ID_LIST } from "@/app.config";
-import "@/styles/VideoToolbar.scss";
+import "@styles/VideoToolbar.scss";
 
 interface VideoToolbarProps {
   videoElement: HTMLVideoElement;

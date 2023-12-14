@@ -1,5 +1,5 @@
-import usePDFAnalyzer from "@/hooks/usePDFAnalyzer";
-import usePDFReceiver from "@/hooks/usePDFReceiver";
+import usePDFAnalyzer from "@hooks/usePDFAnalyzer";
+import usePDFReceiver from "@hooks/usePDFReceiver";
 import {
   faFileLines,
   faFilePdf,

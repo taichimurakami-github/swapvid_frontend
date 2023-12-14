@@ -1,14 +1,14 @@
-import { AssetDataCtx } from "@/providers/AssetDataCtxProvider";
+import { AssetDataCtx } from "@providers/AssetDataCtxProvider";
 import {
   DocumentPlayerStateCtx,
   SetDocumentPlayerStateCtx,
-} from "@/providers/DocumentPlayerCtxProvider";
+} from "@providers/DocumentPlayerCtxProvider";
 import {
   SetVideoCropAreaCtx,
   SetVideoPlayerStateCtx,
   VideoCropAreaCtx,
   VideoPlayerStateCtx,
-} from "@/providers/VideoPlayerCtxProvider";
+} from "@providers/VideoPlayerCtxProvider";
 import { useContext } from "react";
 
 export const useVideoPlayerStateCtx = () => useContext(VideoPlayerStateCtx);

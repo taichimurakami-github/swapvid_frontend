@@ -10,18 +10,18 @@ import {
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
   useVideoCropAreaCtx,
-} from "@/hooks/useContextConsumer";
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
+} from "@hooks/useContextConsumer";
+import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
 
-import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import DocumentPlayerOnDemandContainer from "@/containers/DocumentPlayerOnDemandContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
-import VideoToolbar from "@/ui/VideoToolbar";
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import DocumentPlayerCombinedLocalContainer from "@/containers/DocumentPlayerCombinedLocalContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
 
 import { UIELEM_ID_LIST } from "@/app.config";
 
-import "@/styles/MainPlayerCombinedViewContainer.scss";
+import "@styles/MainPlayerCombinedViewContainer.scss";
 
 export default function PoCUserStudyInteractiveViewContainer() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -121,7 +121,7 @@ export default function PoCUserStudyInteractiveViewContainer() {
                 }}
               >
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-full">
-                  <DocumentPlayerOnDemandContainer
+                  <DocumentPlayerCombinedLocalContainer
                     videoElement={videoRef.current}
                     documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
                     pdfSrc={documentPlayerAssets.pdfSrc}
@@ -133,7 +133,7 @@ export default function PoCUserStudyInteractiveViewContainer() {
                     forceToActivatePlayerByUserManipulation
                     disableTextLayer
                     disableVideoViewportVisualization
-                  ></DocumentPlayerOnDemandContainer>
+                  ></DocumentPlayerCombinedLocalContainer>
                 </div>
 
                 {documentPlayerState.active && documentOverviewActive && (

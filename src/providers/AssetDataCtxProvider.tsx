@@ -3,8 +3,8 @@ import {
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
   TSubtitlesData,
-} from "@/@types/types";
-import { loadAssetData } from "@/utils/assetDataUtil";
+} from "@/types/swapvid";
+import { loadAssetData } from "@utils/assetDataUtil";
 import React, {
   createContext,
   PropsWithChildren,

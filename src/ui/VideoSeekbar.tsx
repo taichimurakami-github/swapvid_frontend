@@ -1,12 +1,12 @@
 import React, { useRef } from "react";
-import useVideoSeekbar from "@/hooks/useVideoSeekbar";
-import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
+import useVideoSeekbar from "@hooks/useVideoSeekbar";
+import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
 
-import SeekbarHighlightContainer from "@/containers/SeekbarHighlightContainer";
+import SeekbarHighlightContainer from "@containers/SeekbarHighlightContainer";
 
-import { getHMFormatCurrentTime } from "@/utils/getHMFormatCurrentTime";
+import { getHMFormatCurrentTime } from "@utils/getHMFormatCurrentTime";
 import { UIELEM_ID_LIST } from "@/app.config";
-import usePreviewDummyVideo from "@/hooks/usePreviewDummyVideo";
+import usePreviewDummyVideo from "@hooks/usePreviewDummyVideo";
 
 export default function VideoSeekbar(props: {
   active: boolean;

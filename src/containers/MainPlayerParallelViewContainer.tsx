@@ -1,24 +1,23 @@
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
-
-import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
-import VideoToolbar from "@/ui/VideoToolbar";
-
-import { UIELEM_ID_LIST } from "@/app.config";
 import { useEffect, useRef } from "react";
+
+import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
-import DocumentOverviewContainer from "./DocumentOverviewContainer";
-// import DocumentPlayerContainer from "@/containers/DocumentPlayerOnDemandContainer";
-import DocumentPlayerOnDemandContainer from "@/containers/DocumentPlayerParallelContainer";
+} from "@hooks/useContextConsumer";
+
+import DocumentOverviewContainer from "@containers/DocumentOverviewContainer";
+import DocumentPlayerParallelContainer from "@/containers/DocumentPlayerParallelLocalContainer";
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
+import { UIELEM_ID_LIST } from "@/app.config";
 
 // 一時的にアセットを直接インポートする
-// import EdanMeyerVptActivityTimeline from "@/assets/EdanMeyerVpt/EdanMeyerVpt.activities.json";
-// import EdanMeyerVptBaseImg from "@/assets/EdanMeyerVpt/EdanMeyerVpt.concat.png";
+// import EdanMeyerVptActivityTimeline from "@assets/EdanMeyerVpt/EdanMeyerVpt.activities.json";
+// import EdanMeyerVptBaseImg from "@assets/EdanMeyerVpt/EdanMeyerVpt.concat.png";
 // import DocumentPlayerContainer from "./DocumentPlayerContainerFromImg";
 
 export default function MainPlayerParallelViewContainer() {
@@ -141,7 +140,7 @@ export default function MainPlayerParallelViewContainer() {
           <>
             {videoRef.current && (
               <div className="w-full h-full">
-                <DocumentPlayerOnDemandContainer
+                <DocumentPlayerParallelContainer
                   widthPx={documentAreaWrapperRef.current.clientWidth - 350}
                   heightPx={documentAreaWrapperRef.current.clientHeight}
                   videoElement={videoRef.current}
@@ -152,7 +151,7 @@ export default function MainPlayerParallelViewContainer() {
                   enableDispatchVideoElementClickEvent={true}
                   playerActive={documentPlayerState.active}
                   enableCenteredScrollYBaseline={true}
-                ></DocumentPlayerOnDemandContainer>
+                ></DocumentPlayerParallelContainer>
               </div>
             )}
 

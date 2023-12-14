@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
-import animations from "@/styles/animation.module.scss";
+import animations from "@styles/animation.module.scss";
 
 import React, { PropsWithRef, forwardRef, CSSProperties } from "react";
 

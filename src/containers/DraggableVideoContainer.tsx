@@ -1,8 +1,8 @@
 import React, { PropsWithChildren, useRef } from "react";
 import Draggable from "react-draggable";
-import { useHandleClickWithDrag } from "@/hooks/useDraggable";
-import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
-import useIntersectionObserver from "@/hooks/useIntersectionObserver";
+import { useHandleClickWithDrag } from "@hooks/useDraggable";
+import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
+import useIntersectionObserver from "@hooks/useIntersectionObserver";
 
 /**
  * Memorize component to improve performance

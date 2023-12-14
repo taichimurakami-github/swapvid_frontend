@@ -1,5 +1,5 @@
-import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import React, { useCallback, useState } from "react";
+import { useDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
 
 export default function DebugInfoDialogDocumentCtxContainer() {
   const documentPlayerState = useDocumentPlayerStateCtx();

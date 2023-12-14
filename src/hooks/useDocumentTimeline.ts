@@ -3,7 +3,7 @@ import {
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
-} from "@/@types/types";
+} from "@/types/swapvid";
 import React, { useCallback, useMemo, useState } from "react";
 
 export function useDocumentScrollTimeline(

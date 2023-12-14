@@ -1,17 +1,17 @@
-import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
+import { useSetDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
 import React, { PropsWithChildren, useCallback, useState } from "react";
 
-import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
-import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
-import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
+import DocumentPlayerCtxProvider from "@providers/DocumentPlayerCtxProvider";
+import VideoPlayerCtxProvider from "@providers/VideoPlayerCtxProvider";
+import AssetDataCtxProvider from "@providers/AssetDataCtxProvider";
 
-import PoCUserStudyBaselineViewContainer from "@/containers/PoCUserStudyBaselineViewContainer";
-import PoCUserStudyInteractiveViewContainer from "@/containers/PoCUserStudyInteractiveViewContainer";
+import PoCUserStudyBaselineViewContainer from "@containers/PoCUserStudyBaselineViewContainer";
+import PoCUserStudyInteractiveViewContainer from "@containers/PoCUserStudyInteractiveViewContainer";
 
-import { AppTopMenuContainer } from "@/containers/AppTopMenuContainer";
-import { TAssetId, TInterfaceMode } from "@/@types/types";
+import { AppTopMenuContainer } from "@containers/AppTopMenuContainer";
+import { TAssetId, TInterfaceMode } from "@/types/swapvid";
 import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
-import { PoCUserStudyTaskSubmissionForm } from "@/ui/PoCUserStudyTaskSubmissionForm";
+import { PoCUserStudyTaskSubmissionForm } from "@ui/PoCUserStudyTaskSubmissionForm";
 
 export default function PoCUserStudyPlayerRootContainer(
   props: PropsWithChildren<{

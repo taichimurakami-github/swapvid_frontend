@@ -1,6 +1,3 @@
-import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
-import { faFileInvoice, faPlay } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, {
   CSSProperties,
   PointerEvent,
@@ -11,6 +8,9 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import { faFileInvoice, faPlay } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const DocumentOverviewContainer = React.memo(
   function _DocumentOverviewContainer(

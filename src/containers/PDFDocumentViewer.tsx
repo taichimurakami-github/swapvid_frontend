@@ -7,7 +7,7 @@ import React, {
 import { pdfjs, Document, Page } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { getRangeArray } from "@/utils/common";
+import { getRangeArray } from "@utils/common";
 
 const PDFDocumentViewer = React.memo(function _PDFDocumentViewer(
   props: PropsWithChildren<{

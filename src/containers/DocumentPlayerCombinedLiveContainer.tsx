@@ -11,21 +11,21 @@ import {
   TBoundingBox,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
-} from "@/@types/types";
-import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
+} from "@/types/swapvid";
+import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
 import {
   useSetDocumentPlayerStateCtx,
   useVideoCropAreaCtx,
-} from "@/hooks/useContextConsumer";
-import OnDocumentGuideArea from "@/ui/OnDocumentGuideArea";
+} from "@hooks/useContextConsumer";
+import OnDocumentGuideArea from "@ui/OnDocumentGuideArea";
 
-import { cvtToTLWHArray, cvtToWHArray } from "@/utils/bboxUtil";
+import { cvtToTLWHArray, cvtToWHArray } from "@utils/bboxUtil";
 import useSequenceAnalyzer, {
   SequenceAnalyzerOkResponseBody,
-} from "@/hooks/useSequenceAnalyzer";
+} from "@hooks/useSequenceAnalyzer";
 import PDFDocumentViewer from "./PDFDocumentViewer";
 
-export default function DocumentPlayerLiveStreamingContainer(
+export default function DocumentPlayerCombinedLiveContainer(
   props: PropsWithChildren<{
     videoElement: HTMLVideoElement;
     assetId: TAssetId;

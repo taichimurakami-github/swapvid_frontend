@@ -1,11 +1,11 @@
 import React, { useCallback } from "react";
-import { useKeyboardInputForVideoPlayer } from "@/hooks/useKeyboardInput";
+import { useKeyboardInputForVideoPlayer } from "@hooks/useKeyboardInput";
 import {
   useAssetDataCtx,
   useSetVideoPlayerStateCtx,
   useVideoPlayerStateCtx,
 } from "./useContextConsumer";
-import { TVideoPlayerState } from "@/providers/VideoPlayerCtxProvider";
+import { TVideoPlayerState } from "@providers/VideoPlayerCtxProvider";
 
 export function useVideoPlayerCore(
   videoRefStore: React.RefObject<HTMLVideoElement>

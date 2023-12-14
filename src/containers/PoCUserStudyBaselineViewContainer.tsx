@@ -1,11 +1,11 @@
 import React, { PropsWithChildren } from "react";
 
-import { useVideoPlayerCore } from "@/hooks/useVideoPlayerCore";
+import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
 
-import VideoSubtitle from "@/containers/VideoSubtitlesContainer";
-import { LoadingScreen } from "@/ui/LoadingScreen";
-import VideoSeekbar from "@/ui/VideoSeekbar";
-import VideoToolbar from "@/ui/VideoToolbar";
+import VideoSubtitle from "@containers/VideoSubtitlesContainer";
+import { LoadingScreen } from "@ui/LoadingScreen";
+import VideoSeekbar from "@ui/VideoSeekbar";
+import VideoToolbar from "@ui/VideoToolbar";
 
 import { UIELEM_ID_LIST } from "@/app.config";
 import { useEffect, useRef } from "react";
@@ -13,9 +13,9 @@ import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
   useSetDocumentPlayerStateCtx,
-} from "@/hooks/useContextConsumer";
-import DocumentPlayerParallelContainer from "@/containers/DocumentPlayerParallelContainer";
-import { TAssetId } from "@/@types/types";
+} from "@hooks/useContextConsumer";
+import DocumentPlayerParallelContainer from "@/containers/DocumentPlayerParallelLocalContainer";
+import { TAssetId } from "@/types/swapvid";
 
 export default function PoCUserStudyBaselineViewContainer(
   props: PropsWithChildren<{

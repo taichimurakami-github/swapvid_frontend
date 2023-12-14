@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useCallback, useState } from "react";
-import { TAssetId, TInterfaceMode } from "@/@types/types";
+import { TAssetId, TInterfaceMode } from "@/types/swapvid";
 import { ASSET_ID_LIST } from "@/app.config";
 
 export const AppTopMenuContainer = (

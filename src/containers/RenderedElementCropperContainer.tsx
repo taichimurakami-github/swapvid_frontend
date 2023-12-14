@@ -1,5 +1,5 @@
-import { DOMRectLike } from "@/@types/types";
-import { useSetVideoCropAreaCtx } from "@/hooks/useContextConsumer";
+import { DOMRectLike } from "@/types/swapvid";
+import { useSetVideoCropAreaCtx } from "@hooks/useContextConsumer";
 import React, {
   CSSProperties,
   PropsWithChildren,

@@ -9,7 +9,7 @@ import {
   TBoundingBox,
   TDocumentTimeline,
   TInterfaceMode,
-} from "@/@types/types";
+} from "@/types/swapvid";
 
 export type TDocumentPlayerStateCtx = {
   mode: TInterfaceMode;

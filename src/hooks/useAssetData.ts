@@ -1,6 +1,6 @@
-import { TAssetId, TSubtitlesData } from "@/@types/types";
+import { TAssetId, TSubtitlesData } from "@/types/swapvid";
 import React, { useEffect, useState } from "react";
-import { loadAssetData } from "@/utils/assetDataUtil";
+import { loadAssetData } from "@utils/assetDataUtil";
 
 export type TAssetDataCtx =
   | {

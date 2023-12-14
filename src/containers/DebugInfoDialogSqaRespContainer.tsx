@@ -1,8 +1,6 @@
-import { useDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
 import React, { useCallback, useState } from "react";
 
 export default function DebugInfoDialogSqaRespContainer() {
-  const documentPlayerState = useDocumentPlayerStateCtx();
   const [showcaseActive, setShowcaseActive] = useState(false);
 
   const handleShowcaseActive = useCallback(() => {

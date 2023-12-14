@@ -12,6 +12,13 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": `${__dirname}/src/`,
+      "@containers": `${__dirname}/src/containers/`,
+      "@ui": `${__dirname}/src/ui/`,
+      "@assets": `${__dirname}/src/assets/`,
+      "@hooks": `${__dirname}/src/hooks/`,
+      "@providers": `${__dirname}/src/providers/`,
+      "@utils": `${__dirname}/src/utils/`,
+      "@styles": `${__dirname}/src/styles/`,
     },
   },
 });

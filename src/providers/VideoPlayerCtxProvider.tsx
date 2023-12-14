@@ -1,4 +1,4 @@
-import { DOMRectLike } from "@/@types/types";
+import { DOMRectLike } from "@/types/swapvid";
 import React, { createContext, PropsWithChildren, useState } from "react";
 
 export type TVideoPlayerState = {

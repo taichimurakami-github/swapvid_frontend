@@ -1,4 +1,4 @@
-import { TBoundingBox } from "@/@types/types";
+import { TBoundingBox } from "@/types/swapvid";
 
 export const applyToEachBboxCood = (
   srcBbox: TBoundingBox,

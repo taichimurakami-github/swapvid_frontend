@@ -1,4 +1,4 @@
-import { TAssetId, TBoundingBox } from "@/@types/types";
+import { TAssetId, TBoundingBox } from "@/types/swapvid";
 import { SEQUENCE_ANALYZER_API_ENDPOINT_HTTP } from "@/app.config";
 import { useCallback, useEffect, useRef } from "react";
 import { useVideoCropAreaCtx } from "./useContextConsumer";

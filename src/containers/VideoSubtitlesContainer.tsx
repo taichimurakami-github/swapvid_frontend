@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from "react";
 import useSubtitles from "../hooks/useSubtitles";
-import { TSubtitlesData } from "@/@types/types";
+import { TSubtitlesData } from "@/types/swapvid";
 import { useVideoCurrenttime } from "../hooks/useVideoCurrenttime";
 
 export default function VideoSubtitlesContainer(

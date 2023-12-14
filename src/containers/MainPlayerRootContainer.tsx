@@ -1,17 +1,17 @@
 import React, { PropsWithChildren, useCallback, useState } from "react";
-import { TAssetId, TInterfaceMode } from "@/@types/types";
+import { TAssetId, TInterfaceMode } from "@/types/swapvid";
 import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
 
-import DocumentPlayerCtxProvider from "@/providers/DocumentPlayerCtxProvider";
-import VideoPlayerCtxProvider from "@/providers/VideoPlayerCtxProvider";
-import AssetDataCtxProvider from "@/providers/AssetDataCtxProvider";
+import DocumentPlayerCtxProvider from "@providers/DocumentPlayerCtxProvider";
+import VideoPlayerCtxProvider from "@providers/VideoPlayerCtxProvider";
+import AssetDataCtxProvider from "@providers/AssetDataCtxProvider";
 
-import { useSetDocumentPlayerStateCtx } from "@/hooks/useContextConsumer";
+import { useSetDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
 
-import MainPlayerParallelViewContainer from "@/containers/MainPlayerParallelViewContainer";
-import MainPlayerCombinedViewContainer from "@/containers/MainPlayerCombinedViewODContainer";
-import MainPlayerCombinedViewLSContainer from "@/containers/MainPlayerCombinedViewLSContainer";
-import { AppTopMenuContainer } from "@/containers/AppTopMenuContainer";
+import MainPlayerParallelViewContainer from "@containers/MainPlayerParallelViewContainer";
+import MainPlayerCombinedViewLocalContainer from "@containers/MainPlayerCombinedViewLocalContainer";
+import MainPlayerCombinedViewLiveContainer from "@containers/MainPlayerCombinedViewLiveContainer";
+import { AppTopMenuContainer } from "@containers/AppTopMenuContainer";
 
 export const MainPlayerRootContainer = (
   props: PropsWithChildren<{
@@ -99,14 +99,14 @@ export const MainPlayerRootContainer = (
             )}
 
             {interfaceModeState === "combined" && (
-              <MainPlayerCombinedViewContainer
+              <MainPlayerCombinedViewLocalContainer
                 assetId={activeAssetIdState}
                 enableOverflowMode={props.enableOverflowModeOnCombinedView}
               />
             )}
 
             {interfaceModeState === "combined-ls" && (
-              <MainPlayerCombinedViewLSContainer
+              <MainPlayerCombinedViewLiveContainer
                 assetId={activeAssetIdState}
                 enableOverflowMode={props.enableOverflowModeOnCombinedView}
               />

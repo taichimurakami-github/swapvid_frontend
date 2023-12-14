@@ -1,15 +1,15 @@
-import { MainPlayerRootContainer } from "@/containers/MainPlayerRootContainer";
-import { TAssetId, TInterfaceMode } from "@/@types/types";
+import { MainPlayerRootContainer } from "@containers/MainPlayerRootContainer";
+import { TAssetId, TInterfaceMode } from "@/types/swapvid";
 import { ACTIVE_ASSET_ID_LS_CACHE_KEY } from "@/app.config";
-import PoCUserStudyPlayerRootContainer from "@/containers/PoCUserStudyPlayerRootContainer";
+import PoCUserStudyPlayerRootContainer from "@containers/PoCUserStudyPlayerRootContainer";
 
 const defaultAssetId: TAssetId = "EdanMeyerVpt";
 const defaultInterfaceMode: TInterfaceMode = "combined";
 
 export type TAppMode = "PoCUserStudy" | "SwapVid";
 
-// const APP_MODE: TAppMode = "SwapVid";
-const APP_MODE: TAppMode = "PoCUserStudy";
+const APP_MODE: TAppMode = "SwapVid";
+// const APP_MODE: TAppMode = "PoCUserStudy";
 
 export default function App() {
   switch (APP_MODE) {
