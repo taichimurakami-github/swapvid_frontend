@@ -12,7 +12,7 @@ import VideoToolbar from "@ui/VideoToolbar";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
-  useSetDocumentPlayerStateCtx,
+  useDispatchDocumentPlayerStateCtx,
 } from "@hooks/useContextConsumer";
 import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
 import DocumentPlayerContainer from "@/containers/DocumentPlayerCombinedLocalContainer";
@@ -48,19 +48,20 @@ export default function MainPlayerCombinedViewLocalContainer(
 
   const documentPlayerState = useDocumentPlayerStateCtx();
   const { documentPlayerAssets } = useAssetDataCtx();
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
 
   const [draggableVideoActive, setDraggableVideoActive] = useState(true);
 
   const setDocumentPlayerStateActive = useCallback((value: boolean) => {
-    setDocumentPlayerStateValues({ active: value });
+    dispatchDocumentPlayerState &&
+      dispatchDocumentPlayerState({ type: "update_active", value });
   }, []);
 
   const handleDraggableVideoButtonClick = useCallback(() => {
     setDraggableVideoActive((b) => !b);
   }, [setDraggableVideoActive]);
 
-  const animationTriggerClassname = documentPlayerState.active
+  const animationTriggerClassname = documentPlayerState?.active
     ? "active"
     : "unactive";
 
@@ -69,7 +70,8 @@ export default function MainPlayerCombinedViewLocalContainer(
   //   : "";
 
   useEffect(() => {
-    setDocumentPlayerStateValues({ active: false });
+    dispatchDocumentPlayerState &&
+      dispatchDocumentPlayerState({ type: "update_active", value: false });
   }, []);
 
   if (!documentPlayerAssets.assetsReady) {
@@ -107,7 +109,7 @@ export default function MainPlayerCombinedViewLocalContainer(
               <div
                 className="relative w-full h-full"
                 onClick={() => {
-                  if (documentPlayerState.active && documentOverviewActive) {
+                  if (documentPlayerState?.active && documentOverviewActive) {
                     setDocumentOverviewActive(false);
                   }
                 }}
@@ -125,12 +127,12 @@ export default function MainPlayerCombinedViewLocalContainer(
                     enableCombinedView={true}
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
-                    playerActive={documentPlayerState.active}
+                    playerActive={!!documentPlayerState?.active}
                     enableCenteredScrollYBaseline
                   ></DocumentPlayerContainer>
                 </div>
 
-                {documentPlayerState.active && documentOverviewActive && (
+                {documentPlayerState?.active && documentOverviewActive && (
                   <div className="absolute left-0 top-0 w-full h-full bg-black opacity-30 pointer-events-none"></div>
                 )}
 
@@ -143,7 +145,7 @@ export default function MainPlayerCombinedViewLocalContainer(
                   {videoRef.current && (
                     <DocumentOverviewContainer
                       active={
-                        documentPlayerState.active && documentOverviewActive
+                        !!documentPlayerState?.active && documentOverviewActive
                       }
                       heightPx={videoRef.current.clientHeight}
                     />
@@ -166,15 +168,19 @@ export default function MainPlayerCombinedViewLocalContainer(
             }}
           >
             {videoRef.current &&
-              documentPlayerState.active &&
+              documentPlayerState?.active &&
               draggableVideoActive && (
                 <div className="absolute bottom-[95px] right-0 w-full z-0">
                   <DraggableVideoContainer
-                    active={documentPlayerState.active}
+                    active={!!documentPlayerState?.active}
                     videoElement={videoRef.current}
                     movieSrc={videoRef.current.currentSrc}
                     onHandleClick={() => {
-                      setDocumentPlayerStateValues({ active: false });
+                      dispatchDocumentPlayerState &&
+                        dispatchDocumentPlayerState({
+                          type: "update_active",
+                          value: false,
+                        });
                     }}
                     onHandleClose={() => {
                       setDraggableVideoActive(false);
@@ -201,8 +207,8 @@ export default function MainPlayerCombinedViewLocalContainer(
                   zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}
-                  documentActiveTimes={documentPlayerState.activeTimes}
-                  documentPlayerActive={documentPlayerState.active}
+                  // documentActiveTimes={documentPlayerState.activeTimes}
+                  documentPlayerActive={!!documentPlayerState?.active}
                 />
               )}
               {
@@ -212,8 +218,8 @@ export default function MainPlayerCombinedViewLocalContainer(
                   videoElementPaused={videoPlayerState.paused}
                   videoElementMuted={videoPlayerState.muted}
                   documentAvailable={true} // Always true because the document player loads local file
-                  documentPlayerActive={documentPlayerState.active}
-                  documentPlayerStandby={documentPlayerState.standby}
+                  documentPlayerActive={!!documentPlayerState?.active}
+                  documentPlayerStandby={!!documentPlayerState?.standby}
                   documentOverviewActive={documentOverviewActive}
                   draggableVideoActive={draggableVideoActive}
                   videoSubtitlesActive={
@@ -233,7 +239,7 @@ export default function MainPlayerCombinedViewLocalContainer(
           </div>
         )}
 
-        {documentPlayerState.active && !documentOverviewActive && (
+        {documentPlayerState?.active && !documentOverviewActive && (
           <div
             className="absolute top-0 left-0 flex-xyc flex-col h-full w-[50px] opacity-0 hover:bg-black hover:opacity-90 text-white font-bold text-xl select-none"
             onClick={handleDocumentOverviewActive}

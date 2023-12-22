@@ -12,7 +12,7 @@ import VideoToolbar from "@ui/VideoToolbar";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
-  useSetDocumentPlayerStateCtx,
+  useDispatchDocumentPlayerStateCtx,
   useVideoCropAreaCtx,
 } from "@hooks/useContextConsumer";
 import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
@@ -57,12 +57,13 @@ export default function MainPlayerCombinedViewLiveContainer(
 
   const documentPlayerState = useDocumentPlayerStateCtx();
   const { documentPlayerAssets } = useAssetDataCtx();
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
 
   const [draggableVideoActive, setDraggableVideoActive] = useState(true);
 
   const setDocumentPlayerStateActive = useCallback((value: boolean) => {
-    setDocumentPlayerStateValues({ active: value });
+    dispatchDocumentPlayerState &&
+      dispatchDocumentPlayerState({ type: "update_active", value });
   }, []);
 
   const handleDraggableVideoButtonClick = useCallback(() => {
@@ -91,7 +92,7 @@ export default function MainPlayerCombinedViewLiveContainer(
     []
   );
 
-  const animationTriggerClassname = documentPlayerState.active
+  const animationTriggerClassname = documentPlayerState?.active
     ? "active"
     : "unactive";
 
@@ -100,7 +101,8 @@ export default function MainPlayerCombinedViewLiveContainer(
   //   : "";
 
   useEffect(() => {
-    setDocumentPlayerStateValues({ active: false });
+    dispatchDocumentPlayerState &&
+      dispatchDocumentPlayerState({ type: "update_active", value: false });
   }, []);
 
   if (!documentPlayerAssets.assetsReady) {
@@ -151,7 +153,7 @@ export default function MainPlayerCombinedViewLiveContainer(
               <div
                 className="relative w-full h-full"
                 onClick={() => {
-                  if (documentPlayerState.active && documentOverviewActive) {
+                  if (documentPlayerState?.active && documentOverviewActive) {
                     setDocumentOverviewActive(false);
                   }
                 }}
@@ -171,12 +173,12 @@ export default function MainPlayerCombinedViewLiveContainer(
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
                     enableDispatchVideoElementClickEvent={true}
-                    playerActive={documentPlayerState.active}
+                    playerActive={!!documentPlayerState?.active}
                     enableCenteredScrollYBaseline={true}
                   ></DocumentPlayerCombinedLiveContainer>
                 </div>
 
-                {documentPlayerState.active && documentOverviewActive && (
+                {documentPlayerState?.active && documentOverviewActive && (
                   <div className="absolute left-0 top-0 w-full h-full bg-black opacity-10 pointer-events-none"></div>
                 )}
 
@@ -189,7 +191,7 @@ export default function MainPlayerCombinedViewLiveContainer(
                   {videoRef.current && (
                     <DocumentOverviewContainer
                       active={
-                        documentPlayerState.active && documentOverviewActive
+                        !!documentPlayerState?.active && documentOverviewActive
                       }
                       heightPx={videoRef.current.clientHeight}
                     />
@@ -212,7 +214,7 @@ export default function MainPlayerCombinedViewLiveContainer(
             }}
           >
             {videoRef.current &&
-              documentPlayerState.active &&
+              documentPlayerState?.active &&
               draggableVideoActive && (
                 <div className="absolute bottom-[95px] right-0 w-full z-0">
                   <DraggableVideoContainer
@@ -220,7 +222,11 @@ export default function MainPlayerCombinedViewLiveContainer(
                     videoElement={videoRef.current}
                     movieSrc={videoRef.current.currentSrc}
                     onHandleClick={() => {
-                      setDocumentPlayerStateValues({ active: false });
+                      dispatchDocumentPlayerState &&
+                        dispatchDocumentPlayerState({
+                          type: "update_active",
+                          value: false,
+                        });
                     }}
                     onHandleClose={() => {
                       setDraggableVideoActive(false);
@@ -247,18 +253,19 @@ export default function MainPlayerCombinedViewLiveContainer(
                   zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}
-                  documentActiveTimes={documentPlayerState.activeTimes}
-                  documentPlayerActive={documentPlayerState.active}
+                  // documentActiveTimes={documentPlayerState.activeTimes}
+                  documentPlayerActive={!!documentPlayerState?.active}
                 />
               )}
+
               <VideoToolbar
                 zIndex={10}
                 videoElement={videoRef.current}
                 videoElementPaused={videoPlayerState.paused}
                 videoElementMuted={videoPlayerState.muted}
-                documentAvailable={documentPlayerState.documentAvailable}
-                documentPlayerActive={documentPlayerState.active}
-                documentPlayerStandby={documentPlayerState.standby}
+                documentAvailable={!!documentPlayerState?.documentAvailable}
+                documentPlayerActive={!!documentPlayerState?.active}
+                documentPlayerStandby={!!documentPlayerState?.standby}
                 documentOverviewActive={documentOverviewActive}
                 draggableVideoActive={draggableVideoActive}
                 videoSubtitlesActive={
@@ -276,7 +283,7 @@ export default function MainPlayerCombinedViewLiveContainer(
             </div>
           </div>
         )}
-        {documentPlayerState.active && !documentOverviewActive && (
+        {documentPlayerState?.active && !documentOverviewActive && (
           <div
             className="absolute top-0 left-0 flex-xyc flex-col h-full w-[50px] opacity-0 hover:bg-black hover:opacity-90 text-white font-bold text-xl select-none"
             onClick={handleDocumentOverviewActive}

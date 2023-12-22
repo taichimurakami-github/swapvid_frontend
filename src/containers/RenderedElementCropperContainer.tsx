@@ -1,5 +1,5 @@
 import { DOMRectLike } from "@/types/swapvid";
-import { useSetVideoCropAreaCtx } from "@hooks/useContextConsumer";
+import { useDispatchVideoCropAreaCtx } from "@hooks/useContextConsumer";
 import React, {
   CSSProperties,
   PropsWithChildren,
@@ -47,7 +47,7 @@ export default function RenderedElementCropperContainer(
     }) => void;
   }>
 ) {
-  const { setVideoCropArea } = useSetVideoCropAreaCtx();
+  const dispatchVideoCropArea = useDispatchVideoCropAreaCtx();
 
   const [dragAreaRect, setDragAreaRect] = useState<null | DragAreaRect>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -211,9 +211,17 @@ export default function RenderedElementCropperContainer(
 
     // props.handleSubmitCropArea({ raw, videoScale });
 
-    setVideoCropArea({ raw, videoScale });
+    // setVideoCropArea({ raw, videoScale });
+    if (dispatchVideoCropArea) {
+      dispatchVideoCropArea({
+        type: "update",
+        rawValue: raw,
+        videoScaleValue: videoScale,
+      });
+    }
+
     props.handleComponentActive(false);
-  }, [dragAreaRect, wrapperRef, props, setVideoCropArea]);
+  }, [dragAreaRect, wrapperRef, props, dispatchVideoCropArea]);
 
   if (!props.videoRef.current || !props.active) return <></>;
 

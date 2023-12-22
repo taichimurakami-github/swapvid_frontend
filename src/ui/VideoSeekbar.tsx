@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import useVideoSeekbar from "@hooks/useVideoSeekbar";
 import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
 
@@ -12,7 +12,7 @@ export default function VideoSeekbar(props: {
   active: boolean;
   videoElement: HTMLVideoElement;
   documentPlayerActive: boolean;
-  documentActiveTimes: [number, number, number][];
+  // documentActiveTimes: [number, number, number][];
   zIndex?: number;
   disableSeekbarHighlight?: boolean;
   disableViewportEffectOnSeekbarHighlight?: boolean;
@@ -68,7 +68,7 @@ export default function VideoSeekbar(props: {
         <SeekbarHighlightContainer
           videoElement={props.videoElement}
           documentPlayerActive={props.documentPlayerActive}
-          documentActiveTimes={props.documentActiveTimes}
+          // documentActiveTimes={props.documentActiveTimes}
           onHandleSetDocumentPlayerActive={props.onHandleSetPlayerActive}
           disableViewportEffectOnSeekbarHighlight={
             props.disableViewportEffectOnSeekbarHighlight

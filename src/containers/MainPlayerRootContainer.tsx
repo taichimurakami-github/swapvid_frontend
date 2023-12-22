@@ -9,7 +9,7 @@ import DocumentPlayerCtxProvider from "@providers/DocumentPlayerCtxProvider";
 import VideoPlayerCtxProvider from "@providers/VideoPlayerCtxProvider";
 import AssetDataCtxProvider from "@providers/AssetDataCtxProvider";
 
-import { useSetDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import { useDispatchDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
 
 import MainPlayerParallelViewContainer from "@containers/MainPlayerParallelViewContainer";
 import MainPlayerCombinedViewLocalContainer from "@containers/MainPlayerCombinedViewLocalContainer";
@@ -34,6 +34,7 @@ export const MainPlayerRootContainer = (
     disableAppMenu?: boolean;
   }>
 ) => {
+  console.log("[INFO] render MainPlayerRootContainer");
   const [interfaceModeState, setInterfaceModeState] = useState<TInterfaceMode>(
     props.initialInterfaceMode
   );
@@ -42,7 +43,7 @@ export const MainPlayerRootContainer = (
   );
   // const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
 
   // const handleOnChangeInterfaceMode = useCallback(
   //   (nextInterfaceState: TInterfaceMode) => {
@@ -61,12 +62,14 @@ export const MainPlayerRootContainer = (
 
   const handleChangeActiveAssetId = useCallback(
     (assetId: TAssetId) => {
+      if (!dispatchDocumentPlayerState) return;
+
       setActiveIdState(assetId);
       localStorage.setItem(ACTIVE_ASSET_ID_LS_CACHE_KEY, assetId);
-      setDocumentPlayerStateValues({ active: false });
+      dispatchDocumentPlayerState({ type: "update", value: { active: false } });
       // location.reload();
     },
-    [setActiveIdState, setDocumentPlayerStateValues]
+    [setActiveIdState, dispatchDocumentPlayerState]
   );
 
   // const handleFullScreen = useCallback(() => {

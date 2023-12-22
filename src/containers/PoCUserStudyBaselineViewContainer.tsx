@@ -12,7 +12,7 @@ import { useEffect, useRef } from "react";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
-  useSetDocumentPlayerStateCtx,
+  useDispatchDocumentPlayerStateCtx,
 } from "@hooks/useContextConsumer";
 import DocumentPlayerParallelContainer from "@/containers/DocumentPlayerParallelLocalContainer";
 import { TAssetId } from "@/types/swapvid";
@@ -42,12 +42,14 @@ export default function PoCUserStudyBaselineViewContainer(
   const { documentPlayerAssets } = useAssetDataCtx();
 
   const documentPlayerState = useDocumentPlayerStateCtx();
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
 
   const documentAreaWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setDocumentPlayerStateValues({ active: true });
+    if (dispatchDocumentPlayerState) {
+      dispatchDocumentPlayerState({ type: "update_active", value: true });
+    }
   }, []);
 
   /**
@@ -97,18 +99,20 @@ export default function PoCUserStudyBaselineViewContainer(
 
         <div className="bg-black h-[5px] w-full"></div>
 
-        {videoRef.current && assetDataState.assetsReady && (
-          <VideoSeekbar
-            active={true}
-            videoElement={videoRef.current}
-            documentPlayerActive={documentPlayerState.active}
-            documentActiveTimes={documentPlayerState.activeTimes}
-            onHandleSetPlayerActive={(_) => {
-              return;
-            }}
-            disableSeekbarHighlight
-          />
-        )}
+        {videoRef.current &&
+          assetDataState.assetsReady &&
+          documentPlayerState && (
+            <VideoSeekbar
+              active={true}
+              videoElement={videoRef.current}
+              documentPlayerActive={documentPlayerState.active}
+              // documentActiveTimes={documentPlayerState.activeTimes ?? []}
+              onHandleSetPlayerActive={(_) => {
+                return;
+              }}
+              disableSeekbarHighlight
+            />
+          )}
 
         {videoRef.current && (
           <VideoToolbar
@@ -117,8 +121,8 @@ export default function PoCUserStudyBaselineViewContainer(
             videoElementMuted={videoPlayerState.muted}
             videoSubtitlesActive={videoPlayerState.subtitlesActive}
             documentAvailable={true}
-            documentPlayerActive={documentPlayerState.active}
-            documentPlayerStandby={documentPlayerState.standby}
+            documentPlayerActive={!!documentPlayerState?.active}
+            documentPlayerStandby={!!documentPlayerState?.standby}
             documentOverviewActive={false}
             draggableVideoActive={false}
             onHandlePlayAndPauseButtonClick={handleVideoElementPaused}
@@ -137,30 +141,32 @@ export default function PoCUserStudyBaselineViewContainer(
           width: props.documentWidthPx ?? "45vw",
         }}
       >
-        {documentAreaWrapperRef.current && videoRef.current && (
-          <div className="w-full h-full">
-            <DocumentPlayerParallelContainer
-              widthPx={documentAreaWrapperRef.current.clientWidth}
-              heightPx={documentAreaWrapperRef.current.clientHeight}
-              videoElement={videoRef.current}
-              documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
-              pdfSrc={documentPlayerAssets.pdfSrc}
-              scrollTimeline={documentPlayerAssets.scrollTl}
-              activityTimeline={documentPlayerAssets.activityTl}
-              enableDispatchVideoElementClickEvent={true}
-              playerActive={documentPlayerState.active}
-              enableCenteredScrollYBaseline={true}
-              pageZoomRate={
-                ["EdanMeyerVpt", "EdanMeyerAlphaCode"].includes(props.assetId)
-                  ? 1.3
-                  : 1
-              }
-              showScrollBar
-              disableTextLayer
-              disableVideoViewportVisualization
-            ></DocumentPlayerParallelContainer>
-          </div>
-        )}
+        {documentAreaWrapperRef.current &&
+          videoRef.current &&
+          documentPlayerState && (
+            <div className="w-full h-full">
+              <DocumentPlayerParallelContainer
+                widthPx={documentAreaWrapperRef.current.clientWidth}
+                heightPx={documentAreaWrapperRef.current.clientHeight}
+                videoElement={videoRef.current}
+                documentBaseImageSrc={documentPlayerAssets.baseImageSrc}
+                pdfSrc={documentPlayerAssets.pdfSrc}
+                scrollTimeline={documentPlayerAssets.scrollTl}
+                activityTimeline={documentPlayerAssets.activityTl}
+                enableDispatchVideoElementClickEvent={true}
+                playerActive={documentPlayerState.active}
+                enableCenteredScrollYBaseline={true}
+                pageZoomRate={
+                  ["EdanMeyerVpt", "EdanMeyerAlphaCode"].includes(props.assetId)
+                    ? 1.3
+                    : 1
+                }
+                showScrollBar
+                disableTextLayer
+                disableVideoViewportVisualization
+              ></DocumentPlayerParallelContainer>
+            </div>
+          )}
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
-  useSetDocumentPlayerStateCtx,
+  useDispatchDocumentPlayerStateCtx,
 } from "@hooks/useContextConsumer";
 
 import DocumentOverviewContainer from "@containers/DocumentOverviewContainer";
@@ -39,16 +39,18 @@ export default function MainPlayerParallelViewContainer() {
   const { documentPlayerAssets } = useAssetDataCtx();
 
   const documentPlayerState = useDocumentPlayerStateCtx();
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
 
   const documentAreaWrapperRef = useRef<HTMLDivElement>(null);
 
   // const setDocumentPlayerStateActive = useCallback((value: boolean) => {
-  //   setDocumentPlayerStateValues({ active: value });
+  //   dispatchDocumentPlayerState({ active: value });
   // }, []);
 
   useEffect(() => {
-    setDocumentPlayerStateValues({ active: true });
+    if (dispatchDocumentPlayerState) {
+      dispatchDocumentPlayerState({ type: "update_active", value: true });
+    }
   }, []);
 
   /**
@@ -102,8 +104,8 @@ export default function MainPlayerParallelViewContainer() {
           <VideoSeekbar
             active={true}
             videoElement={videoRef.current}
-            documentPlayerActive={documentPlayerState.active}
-            documentActiveTimes={documentPlayerState.activeTimes}
+            documentPlayerActive={!!documentPlayerState?.active}
+            // documentActiveTimes={documentPlayerState.activeTimes}
             onHandleSetPlayerActive={(_) => {
               return;
             }}
@@ -117,8 +119,8 @@ export default function MainPlayerParallelViewContainer() {
             videoElementMuted={videoPlayerState.muted}
             videoSubtitlesActive={videoPlayerState.subtitlesActive}
             documentAvailable={true}
-            documentPlayerActive={documentPlayerState.active}
-            documentPlayerStandby={documentPlayerState.standby}
+            documentPlayerActive={!!documentPlayerState?.active}
+            documentPlayerStandby={!!documentPlayerState?.standby}
             documentOverviewActive={false}
             draggableVideoActive={false}
             onHandlePlayAndPauseButtonClick={handleVideoElementPaused}
@@ -150,7 +152,7 @@ export default function MainPlayerParallelViewContainer() {
                   scrollTimeline={documentPlayerAssets.scrollTl}
                   activityTimeline={documentPlayerAssets.activityTl}
                   enableDispatchVideoElementClickEvent={true}
-                  playerActive={documentPlayerState.active}
+                  playerActive={!!documentPlayerState?.active}
                   enableCenteredScrollYBaseline={true}
                 ></DocumentPlayerParallelContainer>
               </div>

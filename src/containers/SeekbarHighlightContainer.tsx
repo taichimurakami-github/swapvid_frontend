@@ -1,3 +1,4 @@
+import { useSeekbarActiveTimesCtx } from "@/hooks/useContextConsumer";
 import React, { PropsWithChildren } from "react";
 
 /**
@@ -8,7 +9,7 @@ import React, { PropsWithChildren } from "react";
 export default function SeekbarHighlightContainer(
   props: PropsWithChildren<{
     videoElement: HTMLVideoElement;
-    documentActiveTimes: [number, number, number][];
+    // documentActiveTimes: [number, number, number][];
     documentPlayerActive: boolean;
     onHandleSetDocumentPlayerActive: (v: boolean) => void;
     disableViewportEffectOnSeekbarHighlight?: boolean;
@@ -16,6 +17,7 @@ export default function SeekbarHighlightContainer(
     samplingRateSec?: number;
   }>
 ) {
+  const activeTimes = useSeekbarActiveTimesCtx();
   const videoElement = props.videoElement;
 
   const SAMPLING_RATE_SEC = props.samplingRateSec ?? 1;
@@ -31,58 +33,56 @@ export default function SeekbarHighlightContainer(
   return (
     <>
       {videoElement &&
-        props.documentActiveTimes.map(
-          (v /** v = [t_start, t_end, opacity] */) => {
-            /**
-             * 1. Calculate the width of the highlight area
-             *    as a percentage of the width of the parent component.
-             */
-            const sectionTimeDelta = v[1] - v[0];
-            const widthPct = 100 * (sectionTimeDelta / t_max);
+        activeTimes?.map((v /** v = [t_start, t_end, opacity] */) => {
+          /**
+           * 1. Calculate the width of the highlight area
+           *    as a percentage of the width of the parent component.
+           */
+          const sectionTimeDelta = v[1] - v[0];
+          const widthPct = 100 * (sectionTimeDelta / t_max);
 
-            /**
-             * 2. Calculate the distance
-             *    from the left edge of the parent component
-             *    to the left edge of the section
-             *    as a percentage of the total width.
-             */
-            const leftPct = (100 * v[0]) / t_max;
+          /**
+           * 2. Calculate the distance
+           *    from the left edge of the parent component
+           *    to the left edge of the section
+           *    as a percentage of the total width.
+           */
+          const leftPct = (100 * v[0]) / t_max;
 
-            /**
-             * 3. Determine the opacity value of the highlight area.
-             *    If the disableViewportEffectOnSeekbarHighlight flag is set,
-             *    the opacity value is forcely set to 1.
-             */
-            const opacity = !props.disableViewportEffectOnSeekbarHighlight
-              ? v[2]
-              : v[2] > VIEWPORT_INCLUSION_THRESHOLD
-              ? 1
-              : 0;
+          /**
+           * 3. Determine the opacity value of the highlight area.
+           *    If the disableViewportEffectOnSeekbarHighlight flag is set,
+           *    the opacity value is forcely set to 1.
+           */
+          const opacity = !props.disableViewportEffectOnSeekbarHighlight
+            ? v[2]
+            : v[2] > VIEWPORT_INCLUSION_THRESHOLD
+            ? 1
+            : 0;
 
-            return (
-              <SeekbarHighlightArea
-                /**
-                 * To avoid the gap between highlight areas,
-                 * expand the highlight area by gapPct / 2 from the left and right.
-                 *
-                 * from:
-                 * |  <highlight01>  <highlight02>  | <- SeekBar component
-                 *
-                 * to:
-                 * | < highlight01 >< highlight02 > | <- SeekBar component
-                 */
-                leftPct={leftPct - gapPct / 2}
-                widthPct={widthPct + gapPct}
-                visible={props.documentPlayerActive}
-                time={[v[0], v[1]]}
-                opacity={opacity}
-                onHandleSetDocumentPlayerActive={
-                  props.onHandleSetDocumentPlayerActive
-                }
-              ></SeekbarHighlightArea>
-            );
-          }
-        )}
+          return (
+            <SeekbarHighlightArea
+              /**
+               * To avoid the gap between highlight areas,
+               * expand the highlight area by gapPct / 2 from the left and right.
+               *
+               * from:
+               * |  <highlight01>  <highlight02>  | <- SeekBar component
+               *
+               * to:
+               * | < highlight01 >< highlight02 > | <- SeekBar component
+               */
+              leftPct={leftPct - gapPct / 2}
+              widthPct={widthPct + gapPct}
+              visible={props.documentPlayerActive}
+              time={[v[0], v[1]]}
+              opacity={opacity}
+              onHandleSetDocumentPlayerActive={
+                props.onHandleSetDocumentPlayerActive
+              }
+            ></SeekbarHighlightArea>
+          );
+        })}
     </>
   );
 }

@@ -17,7 +17,12 @@ import {
   TServerGeneratedScrollTimeline,
 } from "@/types/swapvid";
 import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
-import { useSetDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import {
+  useDispatchDocumentPlayerStateCtx,
+  useSetVideoViewportCtx,
+  useSetDocumentViewportCtx,
+  useSetSeekbarActiveTimesCtx,
+} from "@hooks/useContextConsumer";
 import OnDocumentGuideArea from "@ui/OnDocumentGuideArea";
 import {
   useDocumentActivityTimeline,
@@ -62,7 +67,10 @@ export default function DocumentPlayerCombinedLocalContainer(
 
   const videoElement = props.videoElement;
   const currentTime = useVideoCurrenttime(props.videoElement);
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
+  const setVideoViewport = useSetVideoViewportCtx();
+  const setDocumentViewport = useSetDocumentViewportCtx();
+  const setSeekbarActiveTimes = useSetSeekbarActiveTimesCtx();
 
   const [activeScrollTl, setActiveScrollTl] = useState<
     TDocumentTimeline[0] | null
@@ -167,7 +175,13 @@ export default function DocumentPlayerCombinedLocalContainer(
   );
 
   const updateDocumentState = useCallback(() => {
-    if (documentContainerRef.current && scrollWrapperRef.current) {
+    if (
+      dispatchDocumentPlayerState &&
+      setDocumentViewport &&
+      setSeekbarActiveTimes &&
+      documentContainerRef.current &&
+      scrollWrapperRef.current
+    ) {
       const documentWidth = documentContainerRef.current.clientWidth;
       const documentHeight = documentContainerRef.current.clientHeight;
       const playerViewportWidth = scrollWrapperRef.current.clientWidth;
@@ -188,19 +202,24 @@ export default function DocumentPlayerCombinedLocalContainer(
         videoElement.duration
       );
 
-      setDocumentPlayerStateValues({
-        baseImgSrc: props.documentBaseImageSrc,
-        documentViewport: documentViewport,
-        wrapperScrollHeight: documentContainerRef.current.clientHeight,
-        wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
-        activeTimes,
+      dispatchDocumentPlayerState({
+        type: "update",
+        value: {
+          baseImgSrc: props.documentBaseImageSrc,
+          // documentViewport: documentViewport,
+          wrapperScrollHeight: documentContainerRef.current.clientHeight,
+          wrapperWindowHeight: scrollWrapperRef.current.clientHeight,
+          // activeTimes,
+        },
       });
+      setDocumentViewport(documentViewport);
+      setSeekbarActiveTimes(activeTimes);
     }
   }, [
     scrollWrapperRef,
     // getPlaytimeFromInDocScrollY,
     getPlaytimeFromCurrentDocumentViewport,
-    setDocumentPlayerStateValues,
+    dispatchDocumentPlayerState,
   ]);
 
   const updateDocumentStyles = useCallback(
@@ -250,14 +269,20 @@ export default function DocumentPlayerCombinedLocalContainer(
    * 3. Dispatch changes depending on specific conditions
    */
   useEffect(() => {
-    if (documentContainerRef.current && scrollWrapperRef.current) {
+    if (
+      dispatchDocumentPlayerState &&
+      setVideoViewport &&
+      documentContainerRef.current &&
+      scrollWrapperRef.current
+    ) {
       const activeTlSection = getActiveTlSectionFromPlaytime(currentTime);
 
       setActiveScrollTl(activeTlSection);
-      setDocumentPlayerStateValues({
-        videoViewport: activeTlSection?.videoViewport,
-        standby: !!activeTlSection && !!activeTlSection.videoViewport,
+      dispatchDocumentPlayerState({
+        type: "update_standby",
+        value: !!activeTlSection && !!activeTlSection.videoViewport,
       });
+      setVideoViewport(activeTlSection?.videoViewport ?? null);
 
       // Failed to found active section from scroll timeline
       if (!activeTlSection) {

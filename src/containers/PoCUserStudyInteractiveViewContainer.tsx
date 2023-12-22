@@ -8,7 +8,7 @@ import {
 import {
   useAssetDataCtx,
   useDocumentPlayerStateCtx,
-  useSetDocumentPlayerStateCtx,
+  useDispatchDocumentPlayerStateCtx,
   useVideoCropAreaCtx,
 } from "@hooks/useContextConsumer";
 import { useVideoPlayerCore } from "@hooks/useVideoPlayerCore";
@@ -47,24 +47,26 @@ export default function PoCUserStudyInteractiveViewContainer() {
 
   const documentPlayerState = useDocumentPlayerStateCtx();
   const { documentPlayerAssets } = useAssetDataCtx();
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
 
   const [draggableVideoActive, setDraggableVideoActive] = useState(true);
 
   const setDocumentPlayerStateActive = useCallback((value: boolean) => {
-    setDocumentPlayerStateValues({ active: value });
+    dispatchDocumentPlayerState &&
+      dispatchDocumentPlayerState({ type: "update_active", value });
   }, []);
 
   const handleDraggableVideoButtonClick = useCallback(() => {
     setDraggableVideoActive((b) => !b);
   }, [setDraggableVideoActive]);
 
-  const animationTriggerClassname = documentPlayerState.active
+  const animationTriggerClassname = documentPlayerState?.active
     ? "active"
     : "unactive";
 
   useEffect(() => {
-    setDocumentPlayerStateValues({ active: false });
+    dispatchDocumentPlayerState &&
+      dispatchDocumentPlayerState({ type: "update_active", value: false });
   }, []);
 
   if (!documentPlayerAssets.assetsReady) {
@@ -115,7 +117,7 @@ export default function PoCUserStudyInteractiveViewContainer() {
               <div
                 className="relative w-full h-full"
                 onClick={() => {
-                  if (documentPlayerState.active && documentOverviewActive) {
+                  if (documentPlayerState?.active && documentOverviewActive) {
                     setDocumentOverviewActive(false);
                   }
                 }}
@@ -127,7 +129,7 @@ export default function PoCUserStudyInteractiveViewContainer() {
                     pdfSrc={documentPlayerAssets.pdfSrc}
                     scrollTimeline={documentPlayerAssets.scrollTl}
                     activityTimeline={documentPlayerAssets.activityTl}
-                    playerActive={documentPlayerState.active}
+                    playerActive={!!documentPlayerState?.active}
                     enableCombinedView
                     enableCenteredScrollYBaseline
                     forceToActivatePlayerByUserManipulation
@@ -136,7 +138,7 @@ export default function PoCUserStudyInteractiveViewContainer() {
                   ></DocumentPlayerCombinedLocalContainer>
                 </div>
 
-                {documentPlayerState.active && documentOverviewActive && (
+                {documentPlayerState?.active && documentOverviewActive && (
                   <div className="absolute left-0 top-0 w-full h-full bg-black opacity-10 pointer-events-none"></div>
                 )}
               </div>
@@ -168,8 +170,8 @@ export default function PoCUserStudyInteractiveViewContainer() {
                   zIndex={1}
                   videoElement={videoRef.current}
                   onHandleSetPlayerActive={setDocumentPlayerStateActive}
-                  documentActiveTimes={documentPlayerState.activeTimes}
-                  documentPlayerActive={documentPlayerState.active}
+                  // documentActiveTimes={documentPlayerState.activeTimes}
+                  documentPlayerActive={!!documentPlayerState?.active}
                   disableViewportEffectOnSeekbarHighlight
                 />
               )}
@@ -178,9 +180,9 @@ export default function PoCUserStudyInteractiveViewContainer() {
                 videoElement={videoRef.current}
                 videoElementPaused={videoPlayerState.paused}
                 videoElementMuted={videoPlayerState.muted}
-                documentAvailable={documentPlayerState.documentAvailable}
-                documentPlayerActive={documentPlayerState.active}
-                documentPlayerStandby={documentPlayerState.standby}
+                documentAvailable={!!documentPlayerState?.documentAvailable}
+                documentPlayerActive={!!documentPlayerState?.active}
+                documentPlayerStandby={!!documentPlayerState?.standby}
                 documentOverviewActive={documentOverviewActive}
                 draggableVideoActive={draggableVideoActive}
                 videoSubtitlesActive={

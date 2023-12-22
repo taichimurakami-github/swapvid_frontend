@@ -23,14 +23,15 @@ export default function DebugInfoDialogDocumentCtxContainer() {
           <h2 className="p-2 font-bold text-xl text-center">
             Current docuentPlayerState
           </h2>
-          {Object.entries(documentPlayerState).map(([key, value]) => {
-            return (
-              <div className="flex gap-4">
-                <p>{key}</p>
-                <p>{JSON.stringify(value)}</p>
-              </div>
-            );
-          })}
+          {documentPlayerState &&
+            Object.entries(documentPlayerState).map(([key, value]) => {
+              return (
+                <div className="flex gap-4">
+                  <p>{key}</p>
+                  <p>{JSON.stringify(value)}</p>
+                </div>
+              );
+            })}
         </div>
       )}
     </div>

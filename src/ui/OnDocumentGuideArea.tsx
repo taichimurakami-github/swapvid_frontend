@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useRef } from "react";
-import { useDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import { useVideoViewportCtx } from "@hooks/useContextConsumer";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -16,16 +16,16 @@ export default function OnDocumentGuideArea(
   }>
 ) {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const documentPlayerState = useDocumentPlayerStateCtx();
+  const videoViewport = useVideoViewportCtx();
 
-  if (!documentPlayerState.videoViewport) {
+  if (!videoViewport) {
     return <></>;
   }
 
-  const areaLeft = documentPlayerState.videoViewport[0][0];
-  const areaTop = documentPlayerState.videoViewport[0][1];
-  const areaRight = documentPlayerState.videoViewport[1][0];
-  const areaBottom = documentPlayerState.videoViewport[1][1];
+  const areaLeft = videoViewport[0][0];
+  const areaTop = videoViewport[0][1];
+  const areaRight = videoViewport[1][0];
+  const areaBottom = videoViewport[1][1];
 
   const areaWidth = areaRight - areaLeft;
   const areaHeight = areaBottom - areaTop;

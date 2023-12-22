@@ -1,4 +1,4 @@
-import { useSetDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import { useDispatchDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
 import React, { PropsWithChildren, useCallback, useState } from "react";
 
 import DocumentPlayerCtxProvider from "@providers/DocumentPlayerCtxProvider";
@@ -40,7 +40,7 @@ export default function PoCUserStudyPlayerRootContainer(
 
   const [taskSubmitFormVisible, setTaskSubmitFormVisible] = useState(false);
 
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
 
   const handleChangeInterfaceMode = useCallback(
     (value: TInterfaceMode) => {
@@ -53,10 +53,11 @@ export default function PoCUserStudyPlayerRootContainer(
     (assetId: TAssetId) => {
       setActiveIdState(assetId);
       localStorage.setItem(ACTIVE_ASSET_ID_LS_CACHE_KEY, assetId);
-      setDocumentPlayerStateValues({ active: false });
+      dispatchDocumentPlayerState &&
+        dispatchDocumentPlayerState({ type: "update_active", value: false });
       // location.reload();
     },
-    [setActiveIdState, setDocumentPlayerStateValues]
+    [setActiveIdState, dispatchDocumentPlayerState]
   );
 
   return (

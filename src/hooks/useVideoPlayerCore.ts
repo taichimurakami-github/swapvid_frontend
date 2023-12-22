@@ -2,49 +2,59 @@ import React, { useCallback } from "react";
 import { useKeyboardInputForVideoPlayer } from "@hooks/useKeyboardInput";
 import {
   useAssetDataCtx,
-  useSetVideoPlayerStateCtx,
+  useDispatchVideoPlayerStateCtx,
   useVideoPlayerStateCtx,
 } from "./useContextConsumer";
-import { TVideoPlayerState } from "@providers/VideoPlayerCtxProvider";
 
 export function useVideoPlayerCore(
   videoRefStore: React.RefObject<HTMLVideoElement>
 ) {
   const videoPlayerState = useVideoPlayerStateCtx();
-  const { setVideoPlayerState } = useSetVideoPlayerStateCtx();
+  const dispatchVideoPlayerState = useDispatchVideoPlayerStateCtx();
 
   // アセットデータの読み込み
   const { videoPlayerAssets } = useAssetDataCtx();
   const assetDataState = videoPlayerAssets;
 
-  // const _getVideoElementRef = (e: Event) => {
-  //   return e.currentTarget as HTMLVideoElement;
-  // };
-
   const handleOnPause = useCallback(() => {
-    setVideoPlayerState((b: TVideoPlayerState) => ({ ...b, paused: true }));
+    if (!dispatchVideoPlayerState) return;
+    dispatchVideoPlayerState({ type: "update_paused", value: true });
   }, []);
 
   const handleOnPlay = useCallback(() => {
-    setVideoPlayerState((b: TVideoPlayerState) => ({ ...b, paused: false }));
+    if (!dispatchVideoPlayerState) return;
+    dispatchVideoPlayerState({ type: "update_paused", value: false });
   }, []);
 
   const handleOnWating = useCallback(() => {
-    setVideoPlayerState((b: TVideoPlayerState) => ({ ...b, loading: true }));
+    if (!dispatchVideoPlayerState) return;
+    dispatchVideoPlayerState({ type: "update_loading", value: true });
   }, []);
 
   const handleOnCanPlay = useCallback(() => {
-    setVideoPlayerState((b: TVideoPlayerState) => ({ ...b, loading: false }));
+    if (!dispatchVideoPlayerState) return;
+
+    dispatchVideoPlayerState({ type: "update_loaded", value: false });
   }, []);
 
   const handleOnLoadedData = useCallback(() => {
+    if (!dispatchVideoPlayerState) return;
+
     const video = videoRefStore.current as HTMLVideoElement;
-    setVideoPlayerState((b: TVideoPlayerState) => ({
-      ...b,
-      loaded: true,
-      width: video.clientWidth,
-      height: video.clientHeight,
-    }));
+    dispatchVideoPlayerState({
+      type: "update",
+      value: {
+        loaded: true,
+        width: video.clientWidth,
+        height: video.clientHeight,
+      },
+    });
+    // setVideoPlayerState((b: TVideoPlayerState) => ({
+    //   ...b,
+    //   loaded: true,
+    //   width: video.clientWidth,
+    //   height: video.clientHeight,
+    // }));
   }, []);
 
   const handleOnClick = useCallback((e: React.MouseEvent<HTMLVideoElement>) => {
@@ -57,42 +67,49 @@ export function useVideoPlayerCore(
 
   const handleVideoElementMuted = useCallback(
     (nextVideoElementMuted: boolean) => {
-      if (!videoRefStore.current) {
+      if (!videoRefStore.current || !dispatchVideoPlayerState) {
         return;
       }
       videoRefStore.current.muted =
         nextVideoElementMuted ?? !videoRefStore.current.muted;
-      setVideoPlayerState((s) => ({
-        ...s,
-        muted: (videoRefStore.current as HTMLVideoElement).muted,
-      }));
+
+      dispatchVideoPlayerState({
+        type: "update_muted",
+        value: (videoRefStore.current as HTMLVideoElement).muted,
+      });
     },
     []
   );
 
   const handleVideoElementPaused = useCallback(
     (nextVideoElementPaused: boolean) => {
-      if (!videoRefStore.current) {
+      if (!videoRefStore.current || !dispatchVideoPlayerState) {
         return;
       }
       nextVideoElementPaused
         ? videoRefStore.current.pause()
         : videoRefStore.current.play();
 
-      setVideoPlayerState((s) => ({
-        ...s,
-        paused: (videoRefStore.current as HTMLVideoElement).paused,
-      }));
+      dispatchVideoPlayerState({
+        type: "update_paused",
+        value: (videoRefStore.current as HTMLVideoElement).paused,
+      });
     },
     []
   );
 
   const handleVideoSubtitlesActive = useCallback(
     (nextSubtitlesActive: boolean) => {
-      setVideoPlayerState((b) => ({
-        ...b,
-        subtitlesActive: nextSubtitlesActive,
-      }));
+      if (!dispatchVideoPlayerState) return;
+      dispatchVideoPlayerState({
+        type: "update_subtitles_active",
+        value: nextSubtitlesActive,
+      });
+
+      // setVideoPlayerState((b) => ({
+      //   ...b,
+      //   subtitlesActive: nextSubtitlesActive,
+      // }));
     },
     []
   );
@@ -104,7 +121,6 @@ export function useVideoPlayerCore(
     videoPlayerState,
     videoRefStore,
     assetDataState,
-    setVideoPlayerState,
     handleOnPlay,
     handleOnPause,
     handleOnClick,

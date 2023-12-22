@@ -1,7 +1,7 @@
 import React, {
   createContext,
   PropsWithChildren,
-  useCallback,
+  useReducer,
   useState,
 } from "react";
 import {
@@ -10,20 +10,21 @@ import {
   TDocumentTimeline,
   TInterfaceMode,
 } from "@/types/swapvid";
+import {
+  documentPlayerStateReducer,
+  documentPlayerStateReducerActions,
+} from "@/providers/reducers/documentPlayerState";
 
-export type TDocumentPlayerStateCtx = {
+export type TDocumentPlayerState = {
   mode: TInterfaceMode;
   assetId: TAssetId;
   loaded: boolean;
   active: boolean;
   standby: boolean;
-  activeTimes: [number, number, number][];
   baseImgSrc: string;
   pdfSrc: string;
   wrapperScrollHeight: number;
   wrapperWindowHeight: number;
-  videoViewport: TBoundingBox | null;
-  documentViewport: TBoundingBox;
   playerElement: HTMLElement | null;
   unableScrollTo: number;
   gapBetweenImagesPx: number;
@@ -32,20 +33,38 @@ export type TDocumentPlayerStateCtx = {
   documentAvailable: boolean;
 };
 
-export type TDocumentPlayerSetterArguments = Partial<TDocumentPlayerStateCtx>;
+export type TDocumentPlayerStateCtx = TDocumentPlayerState | null;
+export const DocumentPlayerStateCtx =
+  createContext<TDocumentPlayerStateCtx>(null);
+export type TDispatchDocumentPlayerStateCtx =
+  React.Dispatch<documentPlayerStateReducerActions> | null;
+export const DispatchDocumentPlayerStateCtx =
+  createContext<TDispatchDocumentPlayerStateCtx>(null);
 
-export type TSeTDocumentPlayerStateCtx = {
-  setDocumentPlayerStateValues: (
-    value?: TDocumentPlayerSetterArguments
-  ) => void;
-  // getOnFocusTimeline: () => TContentTimeline | undefined;
-};
+export type TVideoViewport = TBoundingBox | null;
+export type TVideoViewportCtx = TVideoViewport;
+export const VideoViewportCtx = createContext<TVideoViewportCtx>(null);
+export type TSetVideoViewportCtx = React.Dispatch<
+  React.SetStateAction<TVideoViewport>
+> | null;
+export const SetVideoViewportCtx = createContext<TSetVideoViewportCtx>(null);
 
-//@ts-ignore
-export const DocumentPlayerStateCtx = createContext<TDocumentPlayerStateCtx>();
-export const SetDocumentPlayerStateCtx =
-  //@ts-ignore
-  createContext<TSeTDocumentPlayerStateCtx>({});
+export type TDocumentViewport = TBoundingBox | null;
+export type TDocumentViewportCtx = TDocumentViewport;
+export const DocumentViewportCtx = createContext<TDocumentViewportCtx>(null);
+export type TSetDocumentViewportCtx = React.Dispatch<
+  React.SetStateAction<TDocumentViewport>
+> | null;
+export const SetDocumentViewportCtx = createContext<TSetVideoViewportCtx>(null);
+
+export type TSeekbarActiveTimes = [number, number, number][];
+export type TSeekbarActiveTimesCtx = TSeekbarActiveTimes | null;
+export const SeekbarActiveTimesCtx = createContext<TSeekbarActiveTimesCtx>([]);
+export type TSetSeekbarActiveTimesCtx = React.Dispatch<
+  React.SetStateAction<TSeekbarActiveTimes>
+> | null;
+export const SetSeekbarActiveTimesCtx =
+  createContext<TSetSeekbarActiveTimesCtx>(null);
 
 export default function DocumentPlayerCtxProvider(
   props: PropsWithChildren<{
@@ -53,8 +72,9 @@ export default function DocumentPlayerCtxProvider(
     assetId: TAssetId;
   }>
 ) {
-  const [documentPlayerState, setDocumentPlayerState] =
-    useState<TDocumentPlayerStateCtx>({
+  const [documentPlayerState, dispatchDocumentPlayerState] = useReducer(
+    documentPlayerStateReducer,
+    {
       assetId: props.assetId,
       mode: props.playerMode,
       type:
@@ -71,43 +91,46 @@ export default function DocumentPlayerCtxProvider(
        */
       active: false,
       standby: false,
-      activeTimes: [],
       baseImgSrc: "",
       pdfSrc: "",
       wrapperScrollHeight: 0,
       wrapperWindowHeight: 0,
-      videoViewport: [
-        [0.0, 0.0],
-        [0.0, 0.0],
-      ],
-      documentViewport: [
-        [0.0, 0.0],
-        [0.0, 0.0],
-      ],
       playerElement: null,
       unableScrollTo: 0,
       timelineData: [],
       gapBetweenImagesPx: 0,
       documentAvailable: false,
-    });
-
-  const setDocumentPlayerStateValues = useCallback(
-    (value?: TDocumentPlayerSetterArguments) => {
-      setDocumentPlayerState((b) => ({
-        ...b,
-        ...value,
-      }));
-    },
-    []
+    }
   );
 
+  const [videoViewport, setVideoViewport] = useState<TVideoViewport>(null);
+  const [documentViewport, setDocumentViewport] =
+    useState<TDocumentViewport>(null);
+
+  const [seekbarActiveTimes, setSeekbarActiveTimes] =
+    useState<TSeekbarActiveTimes>([]);
+
   return (
-    <SetDocumentPlayerStateCtx.Provider
-      value={{ setDocumentPlayerStateValues }}
+    <DispatchDocumentPlayerStateCtx.Provider
+      value={dispatchDocumentPlayerState}
     >
       <DocumentPlayerStateCtx.Provider value={documentPlayerState}>
-        {props.children}
+        <SetDocumentViewportCtx.Provider value={setDocumentViewport}>
+          <DocumentViewportCtx.Provider value={documentViewport}>
+            <SetVideoViewportCtx.Provider value={setVideoViewport}>
+              <VideoViewportCtx.Provider value={videoViewport}>
+                <SetSeekbarActiveTimesCtx.Provider
+                  value={setSeekbarActiveTimes}
+                >
+                  <SeekbarActiveTimesCtx.Provider value={seekbarActiveTimes}>
+                    {props.children}
+                  </SeekbarActiveTimesCtx.Provider>
+                </SetSeekbarActiveTimesCtx.Provider>
+              </VideoViewportCtx.Provider>
+            </SetVideoViewportCtx.Provider>
+          </DocumentViewportCtx.Provider>
+        </SetDocumentViewportCtx.Provider>
       </DocumentPlayerStateCtx.Provider>
-    </SetDocumentPlayerStateCtx.Provider>
+    </DispatchDocumentPlayerStateCtx.Provider>
   );
 }

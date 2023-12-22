@@ -8,7 +8,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useDocumentPlayerStateCtx } from "@hooks/useContextConsumer";
+import {
+  useDocumentPlayerStateCtx,
+  useDocumentViewportCtx,
+  useVideoViewportCtx,
+} from "@hooks/useContextConsumer";
 import { faFileInvoice, faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -31,6 +35,8 @@ const DocumentOverviewContainer = React.memo(
     );
 
     const documentPlayerState = useDocumentPlayerStateCtx();
+    const videoViewport = useVideoViewportCtx();
+    const documentViewport = useDocumentViewportCtx();
     // const videoPlayerState = useVideoPlayerStateCtx();
 
     const videoArea: { [key: string]: number | null } = {
@@ -40,11 +46,11 @@ const DocumentOverviewContainer = React.memo(
       bottom: null,
     };
 
-    if (documentPlayerState.videoViewport) {
-      videoArea.left = documentPlayerState.videoViewport[0][0];
-      videoArea.top = documentPlayerState.videoViewport[0][1];
-      videoArea.right = documentPlayerState.videoViewport[1][0];
-      videoArea.bottom = documentPlayerState.videoViewport[1][1];
+    if (videoViewport) {
+      videoArea.left = videoViewport[0][0];
+      videoArea.top = videoViewport[0][1];
+      videoArea.right = videoViewport[1][0];
+      videoArea.bottom = videoViewport[1][1];
     }
 
     /**
@@ -74,51 +80,55 @@ const DocumentOverviewContainer = React.memo(
        * DocumentArea is rendered as a VideoArea scale
        */
 
-      // const documentAreaLeft = documentPlayerState.documentViewport[0][0];
-      // const documentAreaTop = documentPlayerState.documentViewport[0][1];
-      // const documentAreaRight = documentPlayerState.documentViewport[1][0];
-      // const documentAreaBottom = documentPlayerState.documentViewport[1][1];
+      // const documentAreaLeft = documentViewport[0][0];
+      // const documentAreaTop = documentViewport[0][1];
+      // const documentAreaRight = documentViewport[1][0];
+      // const documentAreaBottom = documentViewport[1][1];
 
-      const [
-        [documentAreaLeft, documentAreaTop],
-        [documentAreaRight, documentAreaBottom],
-      ] = documentPlayerState.documentViewport;
+      if (documentViewport) {
+        const [
+          [documentAreaLeft, documentAreaTop],
+          [documentAreaRight, documentAreaBottom],
+        ] = documentViewport;
 
-      const documentAreaWidth = wrapperRef.current
-        ? (documentAreaRight - documentAreaLeft) *
-          wrapperRef.current.clientWidth
-        : 0;
+        const documentAreaWidth = wrapperRef.current
+          ? (documentAreaRight - documentAreaLeft) *
+            wrapperRef.current.clientWidth
+          : 0;
 
-      const documentAreaHeight = wrapperRef.current
-        ? (documentAreaBottom - documentAreaTop) *
-          wrapperRef.current.scrollHeight
-        : 0;
-      // documentAreaWidth * (videoPlayerState.height / videoPlayerState.width);
+        const documentAreaHeight = wrapperRef.current
+          ? (documentAreaBottom - documentAreaTop) *
+            wrapperRef.current.scrollHeight
+          : 0;
+        // documentAreaWidth * (videoPlayerState.height / videoPlayerState.width);
 
-      if (backgroundImgRef.current && wrapperRef.current) {
-        setDocumentAreaStyle({
-          left: documentAreaLeft * wrapperRef.current.clientWidth, //x
-          // top: documentAreaTop * 100 + "%", //y
-          top: documentAreaTop * backgroundImgRef.current.clientHeight,
-          width: documentAreaWidth,
-          height: documentAreaHeight,
-        });
+        if (backgroundImgRef.current && wrapperRef.current) {
+          setDocumentAreaStyle({
+            left: documentAreaLeft * wrapperRef.current.clientWidth, //x
+            // top: documentAreaTop * 100 + "%", //y
+            top: documentAreaTop * backgroundImgRef.current.clientHeight,
+            width: documentAreaWidth,
+            height: documentAreaHeight,
+          });
 
-        wrapperRef.current.scrollTop =
-          documentAreaHeight * documentAreaTop + //documentArea.clientHeightを補正項として付け足し
-          documentAreaTop *
-            (backgroundImgRef.current.clientHeight -
-              wrapperRef.current.clientHeight);
+          wrapperRef.current.scrollTop =
+            documentAreaHeight * documentAreaTop + //documentArea.clientHeightを補正項として付け足し
+            documentAreaTop *
+              (backgroundImgRef.current.clientHeight -
+                wrapperRef.current.clientHeight);
+        }
       }
-    }, [documentPlayerState.documentViewport]);
+    }, [documentViewport]);
 
     const handlePointerDown = useCallback(
       (e: PointerEvent) => {
+        if (!documentViewport || !documentPlayerState) return;
+
         isDragging.current = true;
         const wrapperBrect = e.currentTarget.getBoundingClientRect();
 
-        const documentAreaTop = documentPlayerState.documentViewport[0][1];
-        const documentAreaBottom = documentPlayerState.documentViewport[1][1];
+        const documentAreaTop = documentViewport[0][1];
+        const documentAreaBottom = documentViewport[1][1];
 
         const newScrollYRatio =
           (-1 * (documentAreaBottom - documentAreaTop)) / 2 +
@@ -133,7 +143,11 @@ const DocumentOverviewContainer = React.memo(
             documentPlayerState.wrapperScrollHeight * newScrollYRatio;
         }
       },
-      [documentPlayerState.wrapperScrollHeight] // Update when documentPlayerState.wrapperScrollHeight is updated
+      [
+        documentPlayerState,
+        documentViewport,
+        // documentPlayerState?.wrapperScrollHeight,
+      ] // Update when documentPlayerState.wrapperScrollHeight is updated
     );
 
     const handlePointerMove = useCallback(
@@ -189,7 +203,7 @@ const DocumentOverviewContainer = React.memo(
         >
           <img
             className="w-full pointer-events-none"
-            src={documentPlayerState.baseImgSrc}
+            src={documentPlayerState?.baseImgSrc}
             ref={backgroundImgRef}
           />
         </div>

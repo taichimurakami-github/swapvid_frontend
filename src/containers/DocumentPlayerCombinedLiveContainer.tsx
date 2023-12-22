@@ -14,7 +14,9 @@ import {
 } from "@/types/swapvid";
 import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
 import {
-  useSetDocumentPlayerStateCtx,
+  useDispatchDocumentPlayerStateCtx,
+  useSetDocumentViewportCtx,
+  useSetVideoViewportCtx,
   useVideoCropAreaCtx,
 } from "@hooks/useContextConsumer";
 import OnDocumentGuideArea from "@ui/OnDocumentGuideArea";
@@ -51,8 +53,10 @@ export default function DocumentPlayerCombinedLiveContainer(
   const videoElement = props.videoElement;
   const currentTime = useVideoCurrenttime(props.videoElement);
   const videoCropArea = useVideoCropAreaCtx();
+  const setVideoViewport = useSetVideoViewportCtx();
+  const setDocumentViewport = useSetDocumentViewportCtx();
 
-  const { setDocumentPlayerStateValues } = useSetDocumentPlayerStateCtx();
+  const dispatchDocumentPlayerState = useDispatchDocumentPlayerStateCtx();
   const { matchContentSequenceOnVideoTimeUpdate } = useSequenceAnalyzer(
     props.assetId,
     props.videoElement
@@ -84,41 +88,50 @@ export default function DocumentPlayerCombinedLiveContainer(
   const playerStandby = activeVideoViewport;
 
   const updateDocumentStateOnScroll = useCallback(() => {
-    if (documentContainerRef.current && documentWrapperRef.current) {
-      const documentWidth = documentContainerRef.current.clientWidth;
-      const documentHeight = documentContainerRef.current.clientHeight;
-      const playerViewportWidth = documentWrapperRef.current.clientWidth;
-      const playerViewportHeight = documentWrapperRef.current.clientHeight;
+    if (
+      !dispatchDocumentPlayerState ||
+      !setDocumentViewport ||
+      !documentWrapperRef.current ||
+      !documentContainerRef.current
+    )
+      return;
 
-      const currDocLeft = documentWrapperRef.current.scrollLeft / documentWidth;
-      const currDocTop = documentWrapperRef.current.scrollTop / documentHeight;
-      const currDocWidth = playerViewportWidth / documentWidth;
-      const currDocHeight = playerViewportHeight / documentHeight;
+    const documentWidth = documentContainerRef.current.clientWidth;
+    const documentHeight = documentContainerRef.current.clientHeight;
+    const playerViewportWidth = documentWrapperRef.current.clientWidth;
+    const playerViewportHeight = documentWrapperRef.current.clientHeight;
 
-      const documentViewport: [[number, number], [number, number]] = [
-        [currDocLeft, currDocTop],
-        [currDocLeft + currDocWidth, currDocTop + currDocHeight],
-      ];
+    const currDocLeft = documentWrapperRef.current.scrollLeft / documentWidth;
+    const currDocTop = documentWrapperRef.current.scrollTop / documentHeight;
+    const currDocWidth = playerViewportWidth / documentWidth;
+    const currDocHeight = playerViewportHeight / documentHeight;
 
-      // const activeTimes = getPlaytimeFromCurrentDocumentViewport(
-      //   documentViewport,
-      //   videoElement.duration
-      // );
+    const documentViewport: [[number, number], [number, number]] = [
+      [currDocLeft, currDocTop],
+      [currDocLeft + currDocWidth, currDocTop + currDocHeight],
+    ];
 
-      setDocumentPlayerStateValues({
+    // const activeTimes = getPlaytimeFromCurrentDocumentViewport(
+    //   documentViewport,
+    //   videoElement.duration
+    // );
+
+    dispatchDocumentPlayerState({
+      type: "update",
+      value: {
         baseImgSrc: props.documentBaseImageSrc,
-        documentViewport: documentViewport,
         wrapperScrollHeight: documentContainerRef.current.clientHeight,
         wrapperWindowHeight: documentWrapperRef.current.clientHeight,
-        // activeTimes,
-      });
-    }
+      },
+    });
+    setDocumentViewport(documentViewport);
   }, [
     documentWrapperRef,
     props.documentBaseImageSrc,
     // getPlaytimeFromInDocScrollY,
     // getPlaytimeFromCurrentDocumentViewport,
-    setDocumentPlayerStateValues,
+    dispatchDocumentPlayerState,
+    setDocumentViewport,
   ]);
 
   const updateDocumentAndGuideAreaStylesOnVideoTimeUpdate = useCallback(
@@ -180,7 +193,12 @@ export default function DocumentPlayerCombinedLiveContainer(
    * Use sequence analyzer to get current video viewport and update document player state.
    */
   useEffect(() => {
-    if (documentContainerRef.current && documentWrapperRef.current) {
+    if (
+      documentContainerRef.current &&
+      documentWrapperRef.current &&
+      setVideoViewport &&
+      dispatchDocumentPlayerState
+    ) {
       matchContentSequenceOnVideoTimeUpdate(currentTime).then((result) => {
         if (!result || result.status === "ERROR") return;
 
@@ -190,11 +208,14 @@ export default function DocumentPlayerCombinedLiveContainer(
         const videoViewport = resultContent.estimated_viewport;
         setActiveVideoViewport(videoViewport);
 
-        setDocumentPlayerStateValues({
-          videoViewport,
-          standby: !!videoViewport,
-          documentAvailable: resultContent.document_available,
+        dispatchDocumentPlayerState({
+          type: "update",
+          value: {
+            standby: !!videoViewport,
+            documentAvailable: resultContent.document_available,
+          },
         });
+        setVideoViewport(videoViewport);
 
         // console.log(`Video viewport updated: ${videoViewport}`);
 
@@ -211,15 +232,21 @@ export default function DocumentPlayerCombinedLiveContainer(
     currentTime,
     props.videoElement,
     matchContentSequenceOnVideoTimeUpdate,
-    setDocumentPlayerStateValues,
+    dispatchDocumentPlayerState,
     updateDocumentAndGuideAreaStylesOnVideoTimeUpdate,
+    setVideoViewport,
   ]);
 
   const activatePlayer = useCallback(() => {
+    if (!dispatchDocumentPlayerState) return;
+
     !playerActive &&
       playerStandby &&
-      setDocumentPlayerStateValues({ active: true });
-  }, [setDocumentPlayerStateValues, playerActive, playerStandby]);
+      dispatchDocumentPlayerState({
+        type: "update_active",
+        value: true,
+      });
+  }, [dispatchDocumentPlayerState, playerActive, playerStandby]);
 
   return (
     <div
@@ -236,12 +263,13 @@ export default function DocumentPlayerCombinedLiveContainer(
       onWheel={activatePlayer}
       onTouchStart={activatePlayer}
       onMouseDown={(e: React.MouseEvent) => {
-        if (!playerActive) {
-          const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
-          const isTextClicked =
-            onClickNode.nodeName === "SPAN" && !!onClickNode.innerText;
-          isTextClicked && activatePlayer();
-        }
+        if (playerActive) return;
+
+        // Handle text layer click event when player is unactive
+        const onClickNode = e.nativeEvent.composedPath()[0] as HTMLElement;
+        const isTextClicked =
+          onClickNode.nodeName === "SPAN" && !!onClickNode.innerText;
+        isTextClicked && activatePlayer();
       }}
     >
       <div
