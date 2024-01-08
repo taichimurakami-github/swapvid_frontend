@@ -54,42 +54,17 @@ export type TContextTimeline = {
 export type TAssetId = (typeof ASSET_ID_LIST)[number];
 
 export type TInterfaceMode = "parallel" | "combined" | "combined-ls";
+export type TInterfaceType = "parallel" | "combined";
+
+export type TMediaSourceType = "live-streaming" | "streaming" | "local";
+
+export type TScrollTimelineSrc = "sequence-analyzer" | "local";
 
 export type TSubtitlesData = {
   id: number;
   startAt: number;
   endAt: number;
   subtitle: string;
-}[];
-
-export type TTaskMetaData = {
-  id: string;
-  type:
-    | "summarization"
-    | "text-based-search-in-document"
-    | "image-based-search-in-document"
-    | "text-based-search-in-video"
-    | "image-based-search-in-video";
-  title: string;
-  description: string[];
-  t?: number;
-  autoPlay?: boolean;
-  disableSeekbar?: boolean;
-  disablePauseAndPlay?: boolean;
-};
-
-export type TSlideTimeline_IEEEVR2022 = {
-  id: number;
-  src: string;
-  startAt: number;
-  movie?: {
-    src: string;
-    posterSrc: string;
-    top: string | number;
-    left: string | number;
-    width: string | number;
-    height: string | number;
-  };
 }[];
 
 export type TDocumentTimeline = {

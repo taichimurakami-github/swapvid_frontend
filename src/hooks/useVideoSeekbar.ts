@@ -1,39 +1,36 @@
-import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-const useVideoSeekbar = (
-  videoElement: HTMLVideoElement,
+const useVideoSeekbar = <
+  SeekbarWrapperElement extends HTMLElement = HTMLDivElement,
+  SeekbarDraggerElement extends HTMLElement = HTMLDivElement
+>(
+  videoElementRef: React.RefObject<HTMLVideoElement> | null,
+  seekbarContainerRef: React.RefObject<SeekbarWrapperElement | null>,
+  draggerRef: React.RefObject<SeekbarDraggerElement | null>,
   currentTime: number,
   liveModeEnabled = false,
-  seekbar_height = 12,
-  dragger_radius = 24,
-
   onHandleSetDocumentPlayerActive?: (v: boolean) => void
 ) => {
-  const seekbarWrapperRef = useRef(null);
-  const draggerRef = useRef(null);
+  const videoElement = videoElementRef?.current;
   const isDragging = useRef(false);
   const latestCurrentTime = useRef(0);
 
   const [draggerLeft, setDraggerLeft] = useState(0);
-  const [seekbarHeight] = useState(seekbar_height);
-  const [draggerRadius] = useState(dragger_radius);
 
   const [previewState, setPreviewState] = useState({
     currentTime_sec: 0,
     containerLeft: 0,
     imgSrc: "",
   });
-
   const [previewVisibility, setPreviewVisibility] = useState(false);
 
   const _getSeekbarWrapperRects = useCallback(() => {
-    if (seekbarWrapperRef.current) {
-      return (
-        seekbarWrapperRef.current as HTMLDivElement
-      ).getBoundingClientRect();
+    if (!seekbarContainerRef.current) {
+      throw new Error("E_NO_SEEKBAR_REF");
     }
-    throw new Error("E_NO_SEEKBAR_REF");
-  }, []);
+
+    return seekbarContainerRef.current.getBoundingClientRect();
+  }, [seekbarContainerRef]);
 
   const _getNewCurrentTimeFromDraggerLeft = useCallback(
     (newDraggerLeft: number) => {
@@ -54,7 +51,7 @@ const useVideoSeekbar = (
 
   const _getDraggerLeft = useCallback(
     (nowMouseClientX: number): number => {
-      if (!seekbarWrapperRef.current) {
+      if (!seekbarContainerRef.current) {
         throw new Error("E_NO_SEEKBAR_REF");
       }
 
@@ -78,7 +75,7 @@ const useVideoSeekbar = (
       // 算出されたDraggerLeftの値が適切だった場合、そのまま値を返す
       return newDraggerLeft;
     },
-    [_getSeekbarWrapperRects]
+    [_getSeekbarWrapperRects, seekbarContainerRef]
   );
 
   /**
@@ -92,6 +89,8 @@ const useVideoSeekbar = (
    */
   const _setCurrentTimeFromClientX = useCallback(
     (clientX: number) => {
+      if (!videoElement) return;
+
       // console.log("dragging end: " + e.clientX);
       const newDraggerLeft = _getDraggerLeft(clientX);
 
@@ -143,9 +142,9 @@ const useVideoSeekbar = (
     [liveModeEnabled, _getDraggerLeft, _getNewCurrentTimeFromDraggerLeft]
   );
 
-  const _hidePreview = () => {
+  const _hidePreview = useCallback(() => {
     setPreviewVisibility(() => false);
-  };
+  }, [setPreviewVisibility]);
 
   /**
    * Draggerのドラッグに合わせ、DraggerLeftの値を更新する
@@ -166,7 +165,8 @@ const useVideoSeekbar = (
    */
   useEffect(() => {
     //ドラッグ中であれば処理を行わない
-    if (isDragging.current) return;
+    if (isDragging.current || !videoElement) return;
+
     const seekbarRect = _getSeekbarWrapperRects();
 
     if (latestCurrentTime.current < videoElement.currentTime) {
@@ -184,7 +184,7 @@ const useVideoSeekbar = (
     );
 
     //currentTimeから、新たなDraggerLeftの位置を計算・設定
-    setDraggerLeft((_) => newDraggerLeft);
+    setDraggerLeft(() => newDraggerLeft);
     // _updateIsReviewingFlg(newDraggerLeft);
   }, [
     currentTime,
@@ -242,7 +242,7 @@ const useVideoSeekbar = (
     },
 
     // マウスのホバーによるプレビュー表示OFF
-    onMouseLeave: (e: React.MouseEvent) => {
+    onMouseLeave: () => {
       _hidePreview();
     },
   };
@@ -287,14 +287,12 @@ const useVideoSeekbar = (
   }, [_handleMoveDragger, _handleLeaveDragger]);
 
   return {
-    seekbarWrapperRef,
-    seekbarHeight,
+    seekbarContainerRef,
     draggerRef,
-    draggerRadius,
     draggerLeft,
     previewVisibility,
     previewImgSrc: previewState.imgSrc,
-    previewCurrentTime_sec: previewState.currentTime_sec,
+    currentPreviewTime_sec: previewState.currentTime_sec,
     previewContainerLeft: previewState.containerLeft,
     seekbarWrapperProps,
   };

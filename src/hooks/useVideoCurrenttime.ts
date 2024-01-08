@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 export function useVideoCurrenttime(
-  videoElement: HTMLVideoElement | null,
+  videoElementRef: React.RefObject<HTMLVideoElement> | null,
   interval_to_update_ms = 250
 ) {
+  const videoElement = videoElementRef?.current;
   const [videoCurrentTime, setVideoCurrentTime] = useState(
     videoElement ? videoElement.currentTime : 0
   );
@@ -44,4 +45,47 @@ export function useVideoCurrenttime(
   }, [videoElement, _handleVideoElementOnTimeUpdate]);
 
   return videoCurrentTime;
+}
+
+export function useVideoCurrentTimeEffect(
+  videoElementRef: React.RefObject<HTMLVideoElement> | null,
+  listener: (currentTime: number) => void,
+  interval_to_update_ms = 250
+) {
+  const _beforeUpdatedTime_ns = useRef(0);
+  const videoElement = videoElementRef?.current;
+
+  const _shouldExecute = useCallback(
+    (currentTime_ns: number) => {
+      return (
+        currentTime_ns - _beforeUpdatedTime_ns.current >= interval_to_update_ms
+      );
+    },
+    [interval_to_update_ms, _beforeUpdatedTime_ns]
+  );
+
+  const _timeUpdateEventListener = useCallback(
+    (e: Event) => {
+      if (_shouldExecute(Date.now())) {
+        listener((e.currentTarget as HTMLVideoElement).currentTime);
+      }
+    },
+    [listener, _shouldExecute]
+  );
+
+  useEffect(() => {
+    if (videoElement) {
+      videoElement.addEventListener("timeupdate", _timeUpdateEventListener);
+    }
+
+    return () => {
+      if (videoElement) {
+        videoElement.removeEventListener(
+          "timeupdate",
+          _timeUpdateEventListener
+        );
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoElement, _timeUpdateEventListener]);
 }

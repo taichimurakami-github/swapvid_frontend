@@ -15,12 +15,14 @@ export const getZeroBbox = (): TBoundingBox => [
   [0.0, 0.0],
 ];
 
-export const cvtToWHArray = (value: TBoundingBox) => [
+export const cvtToWHArray = (value: TBoundingBox): [number, number] => [
   value[1][0] - value[0][0], // width
   value[1][1] - value[0][1], // height
 ];
 
-export const cvtToTLWHArray = (value: TBoundingBox) => [
+export const cvtToTLWHArray = (
+  value: TBoundingBox
+): [number, number, number, number] => [
   value[0][1], // top
   value[0][0], // left
   value[1][0] - value[0][0], //width

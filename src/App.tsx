@@ -1,45 +1,21 @@
-import { MainPlayerRootContainer } from "@containers/MainPlayerRootContainer";
-import { TAssetId, TInterfaceMode } from "@/types/swapvid";
-import {
-  ACTIVE_ASSET_ID_LS_CACHE_KEY,
-  ACTIVE_VIEW_MODE_LS_CACHE_KEY,
-} from "@/app.config";
-import PoCUserStudyPlayerRootContainer from "@containers/PoCUserStudyPlayerRootContainer";
-
-const defaultAssetId: TAssetId = "EdanMeyerVpt";
-const defaultInterfaceMode: TInterfaceMode = "combined";
+import { AppConfig } from "./containers/AppConfig";
+import { ErrorBoundary } from "./containers/ErrorBoundary";
+import { PdfUplorder } from "./containers/PDFUplorder";
+import { SwapVidPlayerRoot } from "./containers/SwapVidPlayerRoot";
+import { VideoCropper } from "./containers/VideoCropper";
 
 export type TAppMode = "PoCUserStudy" | "SwapVid";
 
-const APP_MODE: TAppMode = "SwapVid";
-// const APP_MODE: TAppMode = "PoCUserStudy";
-
 export default function App() {
-  const initialInterfaceMode =
-    (localStorage.getItem(ACTIVE_VIEW_MODE_LS_CACHE_KEY) as TInterfaceMode) ??
-    defaultInterfaceMode;
-  const initialAssetId =
-    (localStorage.getItem(ACTIVE_ASSET_ID_LS_CACHE_KEY) as TAssetId) ??
-    defaultAssetId;
+  return (
+    <div className="app-container relative bg-neutral-800 box-border z-0 h-screen flex-xyc flex-col px-4 pt-4">
+      <ErrorBoundary>
+        <SwapVidPlayerRoot zIndex={0} />
+        <VideoCropper zIndex={10} />
+        <PdfUplorder zIndex={10} />
+      </ErrorBoundary>
 
-  switch (APP_MODE) {
-    case "SwapVid":
-      return (
-        <MainPlayerRootContainer
-          initialInterfaceMode={initialInterfaceMode}
-          initialAssetId={initialAssetId}
-          enableOverflowModeOnCombinedView={false}
-          disableAppMenu={false}
-        />
-      );
-
-    case "PoCUserStudy":
-      return (
-        <PoCUserStudyPlayerRootContainer
-          initialInterfaceMode={initialInterfaceMode}
-          initialAssetId={initialAssetId}
-          enableOverflowModeOnCombinedView={false}
-        />
-      );
-  }
+      <AppConfig zIndex={20} />
+    </div>
+  );
 }
