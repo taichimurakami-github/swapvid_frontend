@@ -1,6 +1,6 @@
 import { TAssetId, TBoundingBox } from "@/types/swapvid";
 import { SEQUENCE_ANALYZER_API_ENDPOINT_HTTP } from "@/app.config";
-import { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { useVideoCropAreaCtx } from "./useContextConsumer";
 
 export type SequenceAnalyzerOkResponseBody = {
@@ -12,7 +12,18 @@ export type SequenceAnalyzerOkResponseBody = {
   score_sqmatch: number;
 };
 
+// content_sequence_matched: boolean,
+// content_matching_result TBoundingBox | None,
+// document_available: boolean,
+// viewport_estimation_result: TBoundingBox | None,
+
 export type SequenceAnalyzerErrorResponseBody = {
+  document_available: boolean;
+  estimated_viewport: TBoundingBox | null;
+  matched_content_vf: string | null;
+  matched_content_doc: string | null;
+  score_ngram: number;
+  score_sqmatch: number;
   error_type: string;
   error_message: string;
 };
@@ -27,10 +38,12 @@ type MatchContentSequenceResult =
       bodyContent: SequenceAnalyzerErrorResponseBody;
     };
 
-export default function useSequenceAnalyzer(
-  assetId: TAssetId,
-  videoElement: HTMLVideoElement
+export function useSequenceAnalyzer(
+  assetId: TAssetId | null,
+  videoElementRef: React.RefObject<HTMLVideoElement> | null
 ) {
+  const videoElement = videoElementRef?.current;
+
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement("canvas"));
   const prevResReseived = useRef(true);
   const prevResContent = useRef<null | MatchContentSequenceResult>(null);
@@ -38,71 +51,73 @@ export default function useSequenceAnalyzer(
 
   const videoCropArea = useVideoCropAreaCtx();
 
-  const _showSentFrameImage = useCallback((frame_src_dataurl: string) => {
-    const img: HTMLImageElement | null = document.querySelector(
-      "#frame_capture_showcase"
-    );
+  // const _showSentFrameImage = useCallback((frame_src_dataurl: string) => {
+  //   const img: HTMLImageElement | null = document.querySelector(
+  //     "#frame_capture_showcase"
+  //   );
 
-    if (img) {
-      img.src = frame_src_dataurl;
-    }
-  }, []);
+  //   if (img) {
+  //     img.src = frame_src_dataurl;
+  //   }
+  // }, []);
 
-  const _showMatchResult = useCallback((matchResult: TBoundingBox | null) => {
-    const showcase: HTMLParagraphElement | null = document.querySelector(
-      "#sqa_resp_estimated_viewport_showcase"
-    );
+  // const _showMatchResult = useCallback((matchResult: TBoundingBox | null) => {
+  //   const showcase: HTMLParagraphElement | null = document.querySelector(
+  //     "#sqa_resp_estimated_viewport_showcase"
+  //   );
 
-    if (!showcase) return;
+  //   if (!showcase) return;
 
-    showcase.innerHTML = JSON.stringify(matchResult);
-  }, []);
+  //   showcase.innerHTML = JSON.stringify(matchResult);
+  // }, []);
 
-  const _showMatchScore = useCallback(
-    (ngramScore: number, sqmatchScore: number) => {
-      const showcase: HTMLParagraphElement | null = document.querySelector(
-        "#sqa_content_match_score_showcase"
-      );
+  // const _showMatchScore = useCallback(
+  //   (ngramScore: number, sqmatchScore: number) => {
+  //     const showcase: HTMLParagraphElement | null = document.querySelector(
+  //       "#sqa_content_match_score_showcase"
+  //     );
 
-      if (!showcase) return;
+  //     if (!showcase) return;
 
-      const totalScore = `${(100 * (ngramScore + sqmatchScore)) / 2}%`;
-      const showcaseContent = `${totalScore} (ngram=${ngramScore}, sqmatch=${sqmatchScore})`;
+  //     const totalScore = `${(100 * (ngramScore + sqmatchScore)) / 2}%`;
+  //     const showcaseContent = `${totalScore} (ngram=${ngramScore}, sqmatch=${sqmatchScore})`;
 
-      showcase.innerHTML = JSON.stringify(showcaseContent);
-    },
-    []
-  );
+  //     showcase.innerHTML = JSON.stringify(showcaseContent);
+  //   },
+  //   []
+  // );
 
-  const _showMatchContent = useCallback(
-    (
-      contentFromVideoFrame: string,
-      contentFromDocument: string,
-      currentResponseTime: number
-    ) => {
-      const vf_content_showcase: HTMLParagraphElement | null =
-        document.querySelector("#sqa_video_content_showcase");
-      const doc_content_showcase: HTMLParagraphElement | null =
-        document.querySelector("#sqa_document_content_showcase");
+  // const _showMatchContent = useCallback(
+  //   (
+  //     contentFromVideoFrame: string,
+  //     contentFromDocument: string,
+  //     currentResponseTime: number
+  //   ) => {
+  //     const vf_content_showcase: HTMLParagraphElement | null =
+  //       document.querySelector("#sqa_video_content_showcase");
+  //     const doc_content_showcase: HTMLParagraphElement | null =
+  //       document.querySelector("#sqa_document_content_showcase");
 
-      const sqa_response_time_showcase: HTMLParagraphElement | null =
-        document.querySelector("#sqa_response_time_showcase");
+  //     const sqa_response_time_showcase: HTMLParagraphElement | null =
+  //       document.querySelector("#sqa_response_time_showcase");
 
-      if (
-        !vf_content_showcase ||
-        !doc_content_showcase ||
-        !sqa_response_time_showcase
-      )
-        return;
+  //     if (
+  //       !vf_content_showcase ||
+  //       !doc_content_showcase ||
+  //       !sqa_response_time_showcase
+  //     )
+  //       return;
 
-      vf_content_showcase.innerText = JSON.stringify(contentFromVideoFrame);
-      doc_content_showcase.innerText = JSON.stringify(contentFromDocument);
-      sqa_response_time_showcase.innerText = String(currentResponseTime);
-    },
-    []
-  );
+  //     vf_content_showcase.innerText = JSON.stringify(contentFromVideoFrame);
+  //     doc_content_showcase.innerText = JSON.stringify(contentFromDocument);
+  //     sqa_response_time_showcase.innerText = String(currentResponseTime);
+  //   },
+  //   []
+  // );
 
   const _getImgDataURLFromVideoSource = useCallback((): string | null => {
+    if (!videoElement) return null;
+
     canvasRef.current.width = videoCropArea
       ? (videoElement.videoWidth * videoCropArea.videoScale.width) /
         videoElement.clientWidth
@@ -144,11 +159,11 @@ export default function useSequenceAnalyzer(
     return imgDataURL;
   }, [videoElement, canvasRef, videoCropArea]);
 
-  const matchContentSequence = useCallback(
+  const fetchVideoViewport = useCallback(
     async (imgDataURL: string): Promise<MatchContentSequenceResult | null> => {
       // return null; /** temporaliry out */
       // If the previous request is not finished, return the previous result
-      if (!prevResReseived.current) return prevResContent.current;
+      if (!prevResReseived.current || !assetId) return prevResContent.current;
 
       // Make a flag for preventing multiple requests
       prevResReseived.current = false;
@@ -195,11 +210,11 @@ export default function useSequenceAnalyzer(
     [assetId, prevResReseived, prevResContent]
   );
 
-  const matchContentSequenceOnVideoTimeUpdate = useCallback(
-    async (currentTime: number, samplingRate_sec = 3.0) => {
+  const fetchVideoViewportFromCurrentTime = useCallback(
+    async (currentTime: number, maxSamplingRate_sec = 3.0) => {
       const timeDiff = Math.abs(currentTime - prevSampledCurrentTime.current);
 
-      if (timeDiff < samplingRate_sec) return prevResContent.current;
+      if (timeDiff < maxSamplingRate_sec) return prevResContent.current;
 
       prevSampledCurrentTime.current = currentTime;
 
@@ -207,33 +222,34 @@ export default function useSequenceAnalyzer(
 
       if (!imgDataURL) return null;
 
-      _showSentFrameImage(imgDataURL);
+      // _showSentFrameImage(imgDataURL);
 
-      const serverResponsePrevSentTime = Date.now();
-      const result = await matchContentSequence(imgDataURL);
-      const serverResponseReceivedTime = Date.now();
+      // const serverResponsePrevSentTime = Date.now();
+      const result = await fetchVideoViewport(imgDataURL);
+      // const serverResponseReceivedTime = Date.now();
 
-      if (result && result.status === "OK") {
-        _showMatchResult(result.bodyContent.estimated_viewport);
-        _showMatchContent(
-          result.bodyContent.matched_content_vf as string,
-          result.bodyContent.matched_content_doc as string,
-          serverResponseReceivedTime - serverResponsePrevSentTime
-        );
-        _showMatchScore(
-          result.bodyContent.score_ngram,
-          result.bodyContent.score_sqmatch
-        );
-      }
+      // const sequenceAnalyzerProcTime = serverResponseReceivedTime - serverResponsePrevSentTime;
+      // if (result && result.status === "OK") {
+      //   _showMatchResult(result.bodyContent.estimated_viewport);
+      //   _showMatchContent(
+      //     result.bodyContent.matched_content_vf as string,
+      //     result.bodyContent.matched_content_doc as string,
+      //     sequenceAnalyzerProcTime
+      //   );
+      //   _showMatchScore(
+      //     result.bodyContent.score_ngram,
+      //     result.bodyContent.score_sqmatch
+      //   );
+      // }
 
       return result;
     },
     [
-      matchContentSequence,
-      _showSentFrameImage,
-      _showMatchResult,
-      _showMatchContent,
-      _showMatchScore,
+      fetchVideoViewport,
+      // _showSentFrameImage,
+      // _showMatchResult,
+      // _showMatchContent,
+      // _showMatchScore,
       _getImgDataURLFromVideoSource,
     ]
   );
@@ -244,7 +260,7 @@ export default function useSequenceAnalyzer(
   }, [assetId, videoElement]);
 
   return {
-    matchContentSequence,
-    matchContentSequenceOnVideoTimeUpdate,
+    fetchVideoViewport,
+    fetchVideoViewportFromCurrentTime,
   };
 }

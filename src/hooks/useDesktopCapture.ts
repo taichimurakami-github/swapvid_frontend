@@ -1,30 +1,21 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 
-export function useDesktopCapture(videoRef: React.RefObject<HTMLVideoElement>) {
-  const startCaptureDesktop = useCallback(async () => {
+export function useDesktopCapture() {
+  const captureDesktop = useCallback(async () => {
     try {
-      const video = videoRef.current;
-      if (!video) throw new Error("Cannot find video element.");
-
       const captureStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: true,
       });
 
-      video.width =
-        captureStream.getVideoTracks()[0].getSettings().width ?? 1000;
-      video.height =
-        captureStream.getVideoTracks()[0].getSettings().height ?? 1000;
-      video.srcObject = captureStream;
-      video.onloadeddata = () => {
-        video.play();
+      return {
+        captureSettings: captureStream.getVideoTracks()[0].getSettings(),
+        captureStream,
       };
-
-      // console.log(captureStream);
     } catch (e) {
       console.log(e);
     }
-  }, [videoRef]);
+  }, []);
 
-  return { startCaptureDesktop };
+  return captureDesktop;
 }
