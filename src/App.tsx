@@ -1,5 +1,6 @@
 import { AppConfig } from "./containers/AppConfig";
 import { ErrorBoundary } from "./containers/ErrorBoundary";
+import { LocalFilePicker } from "./containers/FilePicker";
 import { PdfUplorder } from "./containers/PDFUplorder";
 import { SwapVidPlayerRoot } from "./containers/SwapVidPlayerRoot";
 import { VideoCropper } from "./containers/VideoCropper";
@@ -13,6 +14,7 @@ export default function App() {
         <SwapVidPlayerRoot zIndex={0} />
         <VideoCropper zIndex={10} />
         <PdfUplorder zIndex={10} />
+        <LocalFilePicker zIndex={20} />
       </ErrorBoundary>
 
       <AppConfig zIndex={20} />

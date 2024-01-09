@@ -10,7 +10,6 @@ import {
   documentOverviewActiveAtom,
   documentPlayerActiveAtom,
   documentPlayerStandbyAtom,
-  mediaSourceTypeAtom,
   pdfRendererStateAtom,
   pipVideoWindowActiveAtom,
   sequenceAnalyzerEnabledAtom,
@@ -45,7 +44,6 @@ const _VideoToolbar: React.FC<{
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
   const videoElementRef = useAtomValue(videoElementRefAtom);
   const videoElementState = useAtomValue(videoElementStateAtom);
-  const mediaSourceType = useAtomValue(mediaSourceTypeAtom);
   const interfaceType = useAtomValue(swapvidInterfaceTypeAtom);
 
   const handlePlayAndPauseButtonClick = useCallback(() => {
@@ -102,7 +100,7 @@ const _VideoToolbar: React.FC<{
     ambientBackgroundEnabled ? wrapperStyleAmbientBackgroundEnabled : ""
   }`;
 
-  const liveStreamingEnabled = mediaSourceType === "live-streaming";
+  const liveStreamingEnabled = videoElementRef?.current?.duration === Infinity;
   const parallelViewEnabled = interfaceType === "parallel";
   const documentAvailableOnClient = pdfRendererState.loaded;
   const documentAvailableOnSequenceAnalyzer =

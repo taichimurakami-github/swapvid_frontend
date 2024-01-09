@@ -1,16 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
 import {
-  mediaSourceTypeAtom,
+  assetLoaderStateAtom,
   sequenceAnalyzerEnabledAtom,
   videoElementRefAtom,
   videoElementStateAtom,
   videoMetadataAtom,
   videoPlayerLayoutAtom,
   videoSrcAtom,
-  videoSrcObjectAtom,
 } from "@/providers/jotai/swapVidPlayer";
 import { useDesktopCapture } from "@/hooks/useDesktopCapture";
+import { TMediaSourceObject } from "@/types/swapvid";
 
 /**
  * Should not use "useCallback" in this component,
@@ -21,13 +21,12 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
 }) => {
   const errorContent = useRef("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const videoSrc = useAtomValue(videoSrcAtom);
-  const [videoSrcObject, setVideoSrcObject] = useAtom(videoSrcObjectAtom);
+  const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
   const setVideoElementRef = useSetAtom(videoElementRefAtom);
   const setVideoPlayerLayout = useSetAtom(videoPlayerLayoutAtom);
   const setVideoElementState = useSetAtom(videoElementStateAtom);
   const setVideoMetadata = useSetAtom(videoMetadataAtom);
-  const setMediaSourceType = useSetAtom(mediaSourceTypeAtom);
+  const setAssetLoaderState = useSetAtom(assetLoaderStateAtom);
   const setSequenceAnalyzerEnabled = useSetAtom(sequenceAnalyzerEnabledAtom);
 
   const captureDesktop = useDesktopCapture();
@@ -100,45 +99,39 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
     const result = await captureDesktop();
 
     if (result) {
-      setVideoSrcObject(result.captureStream);
-      setMediaSourceType("live-streaming");
+      setVideoSrc(result.captureStream);
+      setAssetLoaderState((b) => ({
+        ...b,
+        video: { presetsEnabled: false, sourceType: "streaming" },
+      }));
       setSequenceAnalyzerEnabled(true);
     }
   };
 
   useEffect(() => {
     if (videoRef.current) {
-      const videoElem = videoRef.current;
-      if (desktopCaptureEnabled) {
-        videoElem.srcObject = videoSrcObject;
-        return () => {
-          videoElem.srcObject = null;
-        };
-      }
+      const videoElement = videoRef.current;
+      switch (typeof videoSrc) {
+        case "string":
+          videoElement.src = videoSrc;
+          return () => {
+            videoElement.src = "";
+          };
 
-      if (videoSrc) {
-        videoRef.current.src = videoSrc;
+        default:
+          videoElement.srcObject = videoSrc;
+          return () => {
+            videoElement.srcObject = null;
+          };
       }
     }
-  }, [videoSrc, desktopCaptureEnabled, videoSrcObject, videoRef]);
+  }, [videoSrc, desktopCaptureEnabled, videoRef]);
 
   if (errorContent.current) throw new Error(errorContent.current);
 
-  if (!desktopCaptureEnabled && !videoSrc) {
-    return (
-      <div className="flex-xyc bg-gray-300 text-2xl font-bold w-[1000px]">
-        Failed to load media : Video source is not found.
-      </div>
-    );
-  }
-
-  const videoReady =
-    (!desktopCaptureEnabled && !!videoSrc) ||
-    (desktopCaptureEnabled && !!videoSrcObject);
-
   return (
     <>
-      {desktopCaptureEnabled && !videoReady && (
+      {desktopCaptureEnabled && !videoSrc && (
         <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] bg-gray-300">
           <p className="text-xl">Please choose app window from your desktop.</p>
           <button
@@ -150,16 +143,25 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
         </div>
       )}
 
-      {!desktopCaptureEnabled && !videoReady && (
-        <div className="flex-xyc bg-gray-300 text-2xl font-bold w-[1000px]">
-          Failed to load media : Video source is not found.
+      {!desktopCaptureEnabled && !videoSrc && (
+        <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] bg-gray-300">
+          <b className="text-2xl">
+            <span className="text-red-700">Cannot find the video file.</span>{" "}
+            Please select it.
+          </b>
+          <button
+            className="py-2 px-4 rounded-full bg-teal-600 hover:bg-teal-700 font-bold text-white text-2xl"
+            onClick={handleCaptureDesktop}
+          >
+            Select Video File
+          </button>
         </div>
       )}
 
       <video
         className="max-h-[75vh] max-w-[100%] w-full"
         style={{
-          display: videoReady ? "block" : "none",
+          display: videoSrc ? "block" : "none",
         }}
         ref={videoRef}
         loop={false}

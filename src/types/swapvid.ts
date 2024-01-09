@@ -56,7 +56,8 @@ export type TAssetId = (typeof ASSET_ID_LIST)[number];
 export type TInterfaceMode = "parallel" | "combined" | "combined-ls";
 export type TInterfaceType = "parallel" | "combined";
 
-export type TMediaSourceType = "live-streaming" | "streaming" | "local";
+export type TMediaSourceType = "streaming" | "local";
+export type TMediaSourceObject = MediaStream | MediaSource | File | Blob; // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject
 
 export type TScrollTimelineSrc = "sequence-analyzer" | "local";
 

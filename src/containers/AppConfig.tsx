@@ -11,7 +11,7 @@ import {
 } from "@/presentations/Modal";
 import {
   assetIdAtom,
-  mediaSourceTypeAtom,
+  assetLoaderStateAtom,
   pdfSrcAtom,
   sequenceAnalyzerEnabledAtom,
   swapvidDesktopEnabledAtom,
@@ -189,7 +189,7 @@ const AppConfigMenuSwapVidDesktopOptions: React.FC = () => {
 };
 
 const AppConfigMenuPlayerOptions: React.FC = () => {
-  const [mediaSourceType, _setMediaSourceType] = useAtom(mediaSourceTypeAtom);
+  const [assetLoaderState, setAssetLoaderState] = useAtom(assetLoaderStateAtom);
 
   const [swapVidInterfaceType, setSwapVidInterfaceType] = useAtom(
     swapvidInterfaceTypeAtom
@@ -206,10 +206,28 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
 
   return (
     <AppConfigMenuSectionContainer title="SwapVid Player">
+      {React.createElement(AppConfigMultipleSelect<TInterfaceType>, {
+        currentValue: swapVidInterfaceType,
+        selectElementId: "player_ui_type",
+        labelText: "Player UI Type",
+        options: [
+          { value: "parallel", name: "Parallel" },
+          { value: "combined", name: "SwapVid" },
+        ],
+        handleSetValue: setSwapVidInterfaceType,
+      } as TAppConfigMultipleSelectProps<TInterfaceType>)}
+
+      <AppConfigToggle
+        labelText="Sequence Analyzer"
+        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
+        handleSetValue={setSequenceAnalyzerEnabled}
+        disabled={swapVidDesktopEnabled}
+      />
+
       {React.createElement(AppConfigMultipleSelect<TAssetId>, {
         currentValue: activeAssetId,
         selectElementId: "player_active_asset_id",
-        labelText: "Asset ID (presets)",
+        labelText: "Preset Asset",
         options: [
           { value: "SampleLectureLLM01", name: "SampleLectureLLM01" },
           { value: "CHI2021Fujita", name: "CHI2021Fujita" },
@@ -228,51 +246,79 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
         handleSetValue={setActiveAssetId}
       /> */}
 
-      <AppConfigInput
-        labelText="Video Source URL"
-        currentValue={videoSrc ?? ""}
-        handleSetValue={setVideoSrc}
-      />
-
-      <AppConfigInput
-        labelText="PDF Source URL"
-        currentValue={pdfSrc ?? ""}
-        handleSetValue={setPdfSrc}
-      />
-
-      {React.createElement(AppConfigMultipleSelect<TInterfaceType>, {
-        currentValue: swapVidInterfaceType,
-        selectElementId: "player_ui_type",
-        labelText: "Player UI Type",
+      {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
+        currentValue: assetLoaderState.video.sourceType,
+        selectElementId: "video_source_type",
+        labelText: "Video Source Type",
         options: [
-          { value: "parallel", name: "Parallel" },
-          { value: "combined", name: "SwapVid" },
-        ],
-        handleSetValue: setSwapVidInterfaceType,
-      } as TAppConfigMultipleSelectProps<TInterfaceType>)}
-
-      <div className="flex flex-wrap items-center justify-between p-4">
-        <span>media source type:</span>
-        <b className="text-teal-600">{mediaSourceType}</b>
-      </div>
-      {/* {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
-        currentValue: mediaSourceType,
-        selectElementId: "media_source_type",
-        labelText: "Media Source Type",
-        options: [
-          { value: "live-streaming", name: "Live Streaming" },
           { value: "streaming", name: "Streaming" },
           { value: "local", name: "Local File" },
         ],
-        handleSetValue: setMediaSourceType,
-      } as TAppConfigMultipleSelectProps<TMediaSourceType>)} */}
+        handleSetValue: (v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            video: { ...b.video, sourceType: v },
+          })),
+      } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
 
       <AppConfigToggle
-        labelText="Sequence Analyzer"
-        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
-        handleSetValue={setSequenceAnalyzerEnabled}
+        labelText="Use preset Video file"
+        currentValue={
+          swapVidDesktopEnabled ? true : assetLoaderState.video.presetsEnabled
+        }
+        handleSetValue={(v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            video: { ...b.video, presetsEnabled: v },
+          }))
+        }
         disabled={swapVidDesktopEnabled}
       />
+
+      {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
+        currentValue: assetLoaderState.video.sourceType,
+        selectElementId: "pdf_source_type",
+        labelText: "PDF Source Type",
+        options: [
+          { value: "streaming", name: "Streaming" },
+          { value: "local", name: "Local File" },
+        ],
+        handleSetValue: (v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            pdf: { ...b.pdf, sourceType: v },
+          })),
+      } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
+
+      <AppConfigToggle
+        labelText="Use preset PDF file"
+        currentValue={
+          swapVidDesktopEnabled ? true : assetLoaderState.pdf.presetsEnabled
+        }
+        handleSetValue={(v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            pdf: { ...b.pdf, presetsEnabled: v },
+          }))
+        }
+        disabled={swapVidDesktopEnabled}
+      />
+
+      {typeof videoSrc === "string" && (
+        <AppConfigInput
+          labelText="Video Source URL"
+          currentValue={videoSrc ?? ""}
+          handleSetValue={setVideoSrc}
+        />
+      )}
+
+      {typeof pdfSrc === "string" && (
+        <AppConfigInput
+          labelText="PDF Source URL"
+          currentValue={pdfSrc ?? ""}
+          handleSetValue={setPdfSrc}
+        />
+      )}
     </AppConfigMenuSectionContainer>
   );
 };

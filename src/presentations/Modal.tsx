@@ -11,17 +11,22 @@ export const AppMenuModalTypeA: React.FC<
     title: string;
     visibility: boolean;
     handleClose?: () => void;
+    zIndex?: number;
   }>
-> = ({ children, title, visibility, handleClose }) => (
+> = ({ children, title, visibility, handleClose, zIndex }) => (
   <div
-    className="fixed z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[95vh] max-w-[90vw] overflow-hidden rounded-lg bg-white text-black text-lg h-full w-[90vw] max-w-[1280px] rounded-lg"
-    style={{ visibility: visibility ? "visible" : "hidden" }}
+    className="fixed z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[90vh] max-w-[80vw] overflow-hidden rounded-lg bg-white text-black text-lg h-full w-[90vw] max-w-[1280px] rounded-lg"
+    style={{
+      visibility: visibility ? "visible" : "hidden",
+      zIndex: zIndex ?? "auto",
+    }}
   >
     <h2 className="relative py-4 px-8 bg-slate-600 text-white text-2xl font-bold mb-4">
       {title}
       <button
-        className="absolute top-1/2 -translate-y-1/2 right-0 p-2"
+        className="absolute top-1/2 -translate-y-1/2 right-0 p-2 disabled:hidden"
         onClick={handleClose}
+        disabled={!handleClose}
       >
         <FontAwesomeIcon className="text-3xl px-2" icon={faXmark} />
       </button>

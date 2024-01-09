@@ -3,11 +3,11 @@ import { useAtomValue } from "jotai/react";
 import {
   appMenuActiveAtom,
   assetIdAtom,
+  assetLoaderStateAtom,
   documentOverviewImgSrcAtom,
   documentPlayerActiveAtom,
   documentPlayerLayoutAtom,
   documentPlayerStandbyAtom,
-  mediaSourceTypeAtom,
   pdfPageStateAtom,
   pdfRendererStateAtom,
   pdfUploaderActiveAtom,
@@ -51,10 +51,10 @@ export const AppStatesVisualizer: React.FC<{
   const pdfPageState = useAtomValue(pdfPageStateAtom);
 
   const swapVidInterfaceType = useAtomValue(swapvidInterfaceTypeAtom);
-  const mediaSourceType = useAtomValue(mediaSourceTypeAtom);
   const appMenuActive = useAtomValue(appMenuActiveAtom);
   const sequenceAnalyzerState = useAtomValue(sequenceAnalyzerStateAtom);
 
+  const assetLoaderState = useAtomValue(assetLoaderStateAtom);
   const assetId = useAtomValue(assetIdAtom);
   const videoSrc = useAtomValue(videoSrcAtom);
   const documentOverviewImgSrc = useAtomValue(documentOverviewImgSrcAtom);
@@ -102,8 +102,8 @@ export const AppStatesVisualizer: React.FC<{
       <Item label="pdfPageState" value={pdfPageState} />
 
       <SectionTitle>SwapVid Player</SectionTitle>
+      <Item label="assetLoaderState" value={assetLoaderState} />
       <Item label="swapVidInterfaceType" value={swapVidInterfaceType} />
-      <Item label="mediaSourceType" value={mediaSourceType} />
       <Item label="appMenuActive" value={appMenuActive} />
       <Item label="sequenceAnalyzerState" value={sequenceAnalyzerState} />
 

@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from "react";
 import {
   pdfUploaderActiveAtom,
   videoCropperActiveAtom,
-  videoSrcObjectAtom,
+  videoSrcAtom,
 } from "@/providers/jotai/swapVidPlayer";
 import { useSetAtom } from "jotai";
 import { useAtomValue } from "jotai/react";
@@ -54,9 +54,9 @@ export const SwapVidDesktopMenu: React.FC<{ zIndex?: number }> = ({
 export const ShowDocumentPlayerOnDesktopCaptured: React.FC<
   PropsWithChildren
 > = ({ children }) => {
-  const videoSrcObject = useAtomValue(videoSrcObjectAtom);
+  const videoSrc = useAtomValue(videoSrcAtom);
 
-  if (!videoSrcObject) return null;
+  if (!videoSrc || typeof videoSrc === "string") return null;
 
   return <>{children}</>;
 };

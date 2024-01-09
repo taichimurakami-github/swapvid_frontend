@@ -4,6 +4,7 @@ import {
   TBoundingBox,
   TDocumentTimeline,
   TInterfaceType,
+  TMediaSourceObject,
   TMediaSourceType,
   TServerGeneratedScrollTimeline,
   TSubtitlesData,
@@ -87,12 +88,6 @@ export const swapvidInterfaceTypeAtom = atomWithStorage<TInterfaceType>(
   undefined,
   { getOnInit: true }
 );
-export const mediaSourceTypeAtom = atomWithStorage<TMediaSourceType>(
-  _getStorageKey("mediaSourceType"),
-  "local",
-  undefined,
-  { getOnInit: true }
-);
 export const appMenuActiveAtom = atom(false);
 
 // SequenceAnalyzer
@@ -118,15 +113,33 @@ export const sequenceAnalyzerStateAtom = atom<{
 });
 
 // AssetState
+export const assetLoaderStateAtom = atomWithStorage<{
+  video: {
+    sourceType: TMediaSourceType;
+    presetsEnabled: boolean;
+  };
+  pdf: {
+    sourceType: TMediaSourceType;
+    presetsEnabled: boolean;
+  };
+}>(
+  _getStorageKey("assetLoaderState"),
+  {
+    video: { sourceType: "local", presetsEnabled: true },
+    pdf: { sourceType: "local", presetsEnabled: true },
+  },
+  undefined,
+  { getOnInit: true }
+);
+export const localFilePickerActiveAtom = atom(false);
 export const assetIdAtom = atomWithStorage<TAssetId | null>(
   _getStorageKey("assetId"),
   "SampleLectureLLM01",
   undefined,
   { getOnInit: true }
 ); // Set to true when !!videoSrc && !!pdfSrc === true
-export const videoSrcObjectAtom = atom<MediaStream | null>(null); // For SwapVid Desktop
-export const videoSrcAtom = atom<string | null>(null); // Set to true when video file is found.
-export const pdfSrcAtom = atom<string | null>(null); // Set to true when pdf file is found.
+export const videoSrcAtom = atom<string | TMediaSourceObject | null>(null); // Set to true when video file is found.
+export const pdfSrcAtom = atom<string | File | null>(null); // Set to true when pdf file is found.
 export const documentOverviewImgSrcAtom = atom<string | null>(null); // Set to true when pdf file is found.
 export const subtitlesDataAtom = atom<TSubtitlesData | null>(null); // Provide parsed .srt data
 export const preGeneratedScrollTimelineDataAtom =
