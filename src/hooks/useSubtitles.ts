@@ -1,5 +1,3 @@
-import React from "react";
-
 type TSubtitlesData = {
   id: number;
   startAt: number;

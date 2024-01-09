@@ -1,5 +1,5 @@
 import { PDF_ANALYZER_API_ENDPOINT_WS } from "@/app.config";
-import React, { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const PDF_ANALYZER_QUERY_SEP = "&";
 

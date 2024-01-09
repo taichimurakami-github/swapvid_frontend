@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 
 import { videoSrcAtom } from "@/providers/jotai/swapVidPlayer";
 import { useAtomValue } from "jotai/react";
+import { useVideoSrcSetter } from "@/hooks/useVideoSrcSetter";
 
 const DEFAULT_UPDATE_INTERVAL_SEC = 5;
 
@@ -29,15 +30,17 @@ const _SeekbarPreviewVideo: React.FC<{
     [videoCurrentTime.current]
   );
 
-  if (!videoSrc) {
-    return <></>;
-  }
+  const handleSetVideoSrc = useVideoSrcSetter();
+
+  useEffect(() => {
+    handleSetVideoSrc(videoSrc, videoRef);
+  }, [videoSrc, videoRef, handleSetVideoSrc]);
 
   return (
     <video
       // id={UIELEM_ID_LIST.system.videoPlayer.dummyVideoElement}
       className="pointer-events-none"
-      src={videoSrc}
+      style={{ display: videoSrc ? "block" : "none" }}
       ref={videoRef}
       muted
       width="500"

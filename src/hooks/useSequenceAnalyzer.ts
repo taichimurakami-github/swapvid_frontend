@@ -1,7 +1,8 @@
 import { TAssetId, TBoundingBox } from "@/types/swapvid";
 import { SEQUENCE_ANALYZER_API_ENDPOINT_HTTP } from "@/app.config";
 import React, { useCallback, useEffect, useRef } from "react";
-import { useVideoCropAreaCtx } from "./useContextConsumer";
+import { useAtomValue } from "jotai/react";
+import { userCroppedAreaAtom } from "@/providers/jotai/swapVidPlayer";
 
 export type SequenceAnalyzerOkResponseBody = {
   document_available: boolean;
@@ -49,7 +50,7 @@ export function useSequenceAnalyzer(
   const prevResContent = useRef<null | MatchContentSequenceResult>(null);
   const prevSampledCurrentTime = useRef<number>(-Infinity);
 
-  const videoCropArea = useVideoCropAreaCtx();
+  const videoCropArea = useAtomValue(userCroppedAreaAtom);
 
   // const _showSentFrameImage = useCallback((frame_src_dataurl: string) => {
   //   const img: HTMLImageElement | null = document.querySelector(
@@ -116,7 +117,7 @@ export function useSequenceAnalyzer(
   // );
 
   const _getImgDataURLFromVideoSource = useCallback((): string | null => {
-    if (!videoElement) return null;
+    if (!videoElement || !videoCropArea) return null;
 
     canvasRef.current.width = videoCropArea
       ? (videoElement.videoWidth * videoCropArea.videoScale.width) /

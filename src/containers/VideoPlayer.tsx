@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
+import React, { useEffect, useRef } from "react";
+import { useAtom, useSetAtom } from "jotai/react";
 import {
   assetLoaderStateAtom,
   sequenceAnalyzerEnabledAtom,
@@ -10,7 +10,7 @@ import {
   videoSrcAtom,
 } from "@/providers/jotai/swapVidPlayer";
 import { useDesktopCapture } from "@/hooks/useDesktopCapture";
-import { TMediaSourceObject } from "@/types/swapvid";
+import { useVideoSrcSetter } from "@/hooks/useVideoSrcSetter";
 
 /**
  * Should not use "useCallback" in this component,
@@ -108,24 +108,11 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
     }
   };
 
-  useEffect(() => {
-    if (videoRef.current) {
-      const videoElement = videoRef.current;
-      switch (typeof videoSrc) {
-        case "string":
-          videoElement.src = videoSrc;
-          return () => {
-            videoElement.src = "";
-          };
+  const handleSetVideoSrc = useVideoSrcSetter();
 
-        default:
-          videoElement.srcObject = videoSrc;
-          return () => {
-            videoElement.srcObject = null;
-          };
-      }
-    }
-  }, [videoSrc, desktopCaptureEnabled, videoRef]);
+  useEffect(() => {
+    handleSetVideoSrc(videoSrc, videoRef);
+  }, [videoSrc, handleSetVideoSrc, videoRef]);
 
   if (errorContent.current) throw new Error(errorContent.current);
 

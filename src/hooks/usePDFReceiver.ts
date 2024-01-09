@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { PDF_RECEIVER_API_ENDPOINT_HTTP } from "@/app.config";
 
 export default function usePDFReceiver() {
