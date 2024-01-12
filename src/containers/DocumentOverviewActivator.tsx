@@ -1,7 +1,7 @@
 import {
   documentOverviewActiveAtom,
   documentPlayerActiveAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { useAtom, useAtomValue } from "jotai/react";
 import React, { CSSProperties } from "react";
 

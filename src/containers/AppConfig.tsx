@@ -17,7 +17,7 @@ import {
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import {
   AppConfigInput,
   AppConfigLinkItem,
@@ -224,7 +224,7 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
         disabled={swapVidDesktopEnabled}
       />
 
-      {React.createElement(AppConfigMultipleSelect<TAssetId>, {
+      {/* {React.createElement(AppConfigMultipleSelect<TAssetId>, {
         currentValue: activeAssetId,
         selectElementId: "player_active_asset_id",
         labelText: "Preset Asset",
@@ -237,7 +237,7 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
           { value: "EdanMeyerAlphaCode", name: "EdanMeyerAlphaCode" },
         ],
         handleSetValue: setActiveAssetId,
-      } as TAppConfigMultipleSelectProps<TAssetId>)}
+      } as TAppConfigMultipleSelectProps<TAssetId>)} */}
 
       {/* <AppConfigInput
         labelText="Asset ID (custom)"
@@ -261,7 +261,7 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
           })),
       } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
 
-      <AppConfigToggle
+      {/* <AppConfigToggle
         labelText="Use preset Video file"
         currentValue={
           swapVidDesktopEnabled ? true : assetLoaderState.video.presetsEnabled
@@ -273,10 +273,10 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
           }))
         }
         disabled={swapVidDesktopEnabled}
-      />
+      /> */}
 
       {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
-        currentValue: assetLoaderState.video.sourceType,
+        currentValue: assetLoaderState.pdf.sourceType,
         selectElementId: "pdf_source_type",
         labelText: "PDF Source Type",
         options: [
@@ -290,7 +290,7 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
           })),
       } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
 
-      <AppConfigToggle
+      {/* <AppConfigToggle
         labelText="Use preset PDF file"
         currentValue={
           swapVidDesktopEnabled ? true : assetLoaderState.pdf.presetsEnabled
@@ -302,7 +302,7 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
           }))
         }
         disabled={swapVidDesktopEnabled}
-      />
+      /> */}
 
       {typeof videoSrc === "string" && (
         <AppConfigInput

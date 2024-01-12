@@ -16,6 +16,41 @@ import React from "react";
 const _getStorageKey = (key: string, primitive = true) =>
   `jotai.atom.${primitive ? "primitive" : "derived"}.${key}`;
 
+/**
+ * Asset State
+ */
+export const assetLoaderStateAtom = atomWithStorage<{
+  video: {
+    sourceType: TMediaSourceType;
+  };
+  pdf: {
+    sourceType: TMediaSourceType;
+  };
+}>(
+  _getStorageKey("assetLoaderState"),
+  {
+    video: { sourceType: "local" },
+    pdf: { sourceType: "local" },
+  },
+  undefined,
+  { getOnInit: true }
+);
+
+export const localFilePickerActiveAtom = atom(false);
+export const assetIdAtom = atomWithStorage<TAssetId | null>(
+  _getStorageKey("assetId"),
+  "SampleLectureLLM01",
+  undefined,
+  { getOnInit: true }
+); // Set to true when !!videoSrc && !!pdfSrc === true
+
+export const videoSrcAtom = atom<string | TMediaSourceObject | null>(null); // Set to true when video file is found.
+export const pdfSrcAtom = atom<string | File | null>(null); // Set to true when pdf file is found.
+export const documentOverviewImgSrcAtom = atom<string | null>(null); // Set to true when pdf file is found.
+export const subtitlesDataAtom = atom<TSubtitlesData | null>(null); // Provide parsed .srt data
+export const preGeneratedScrollTimelineDataAtom =
+  atom<TServerGeneratedScrollTimeline | null>(null);
+
 // PlayerState.VideoPlayerElement
 export const videoPlayerLayoutAtom = atom({ width: 0, height: 0 });
 export const videoMetadataAtom = atom<{
@@ -84,7 +119,7 @@ export const pdfPageStateAtom = atom({
 // PlayerState.RootPlayerConfig
 export const swapvidInterfaceTypeAtom = atomWithStorage<TInterfaceType>(
   _getStorageKey("interfaceType"),
-  "parallel",
+  "combined",
   undefined,
   { getOnInit: true }
 );
@@ -97,6 +132,11 @@ export const sequenceAnalyzerEnabledAtom = atomWithStorage(
   undefined,
   { getOnInit: true }
 );
+
+/**
+ * Sequence Analyzer State
+ *
+ */
 export const sequenceAnalyzerStateAtom = atom<{
   listening: boolean;
   running: boolean;
@@ -112,39 +152,6 @@ export const sequenceAnalyzerStateAtom = atom<{
   error: null, // Infomation about current error response.
 });
 
-// AssetState
-export const assetLoaderStateAtom = atomWithStorage<{
-  video: {
-    sourceType: TMediaSourceType;
-    presetsEnabled: boolean;
-  };
-  pdf: {
-    sourceType: TMediaSourceType;
-    presetsEnabled: boolean;
-  };
-}>(
-  _getStorageKey("assetLoaderState"),
-  {
-    video: { sourceType: "local", presetsEnabled: true },
-    pdf: { sourceType: "local", presetsEnabled: true },
-  },
-  undefined,
-  { getOnInit: true }
-);
-export const localFilePickerActiveAtom = atom(false);
-export const assetIdAtom = atomWithStorage<TAssetId | null>(
-  _getStorageKey("assetId"),
-  "SampleLectureLLM01",
-  undefined,
-  { getOnInit: true }
-); // Set to true when !!videoSrc && !!pdfSrc === true
-export const videoSrcAtom = atom<string | TMediaSourceObject | null>(null); // Set to true when video file is found.
-export const pdfSrcAtom = atom<string | File | null>(null); // Set to true when pdf file is found.
-export const documentOverviewImgSrcAtom = atom<string | null>(null); // Set to true when pdf file is found.
-export const subtitlesDataAtom = atom<TSubtitlesData | null>(null); // Provide parsed .srt data
-export const preGeneratedScrollTimelineDataAtom =
-  atom<TServerGeneratedScrollTimeline | null>(null);
-
 // SwapVid Desktop
 export const swapvidDesktopEnabledAtom = atomWithStorage(
   _getStorageKey("swapvidDesktopEnabled"),
@@ -152,9 +159,11 @@ export const swapvidDesktopEnabledAtom = atomWithStorage(
   undefined,
   { getOnInit: true }
 );
+
 export const userCroppedAreaAtom = atom<{
   raw: DOMRectLike;
   videoScale: DOMRectLike;
 } | null>(null);
+
 export const videoCropperActiveAtom = atom(false);
 export const pdfUploaderActiveAtom = atom(false);

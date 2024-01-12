@@ -17,7 +17,7 @@ import {
   documentPlayerWrapperElementRefAtom,
   userDocumentViewportAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { useAtom, useAtomValue } from "jotai/react";
 import { cvtToTLWHArray } from "@/utils/bboxUtil";
 import { usePointerDrag } from "@/hooks/usePointerDrag";

@@ -5,7 +5,7 @@ import {
   userCroppedAreaAtom,
   videoCropperActiveAtom,
   videoElementRefAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { clamp } from "@/utils/validate";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

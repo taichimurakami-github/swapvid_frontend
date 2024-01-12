@@ -8,7 +8,7 @@ import {
   videoMetadataAtom,
   videoPlayerLayoutAtom,
   videoSrcAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { useDesktopCapture } from "@/hooks/useDesktopCapture";
 import { useVideoSrcSetter } from "@/hooks/useVideoSrcSetter";
 
@@ -111,8 +111,24 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
   const handleSetVideoSrc = useVideoSrcSetter();
 
   useEffect(() => {
-    handleSetVideoSrc(videoSrc, videoRef);
+    if (videoRef.current) {
+      handleSetVideoSrc(videoSrc, videoRef);
+    }
   }, [videoSrc, handleSetVideoSrc, videoRef]);
+
+  useEffect(() => {
+    videoRef.current &&
+      setVideoPlayerLayout((b) => ({
+        ...b,
+        width: videoRef.current?.clientWidth ?? b.width,
+        height: videoRef.current?.clientHeight ?? b.height,
+      }));
+  }, [
+    setVideoPlayerLayout,
+    videoSrc,
+    videoRef.current?.clientWidth,
+    videoRef.current?.clientHeight,
+  ]);
 
   if (errorContent.current) throw new Error(errorContent.current);
 
@@ -146,7 +162,7 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
       )}
 
       <video
-        className="max-h-[75vh] max-w-[100%] w-full"
+        className="max-h-full max-w-full w-full"
         style={{
           display: videoSrc ? "block" : "none",
         }}

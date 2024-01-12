@@ -10,7 +10,7 @@ import {
   pipVideoWindowActiveAtom,
   videoElementRefAtom,
   videoPlayerLayoutAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 
 /**
  * Memorize component to improve performance

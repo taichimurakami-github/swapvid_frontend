@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-import { videoSrcAtom } from "@/providers/jotai/swapVidPlayer";
+import { videoSrcAtom } from "@/providers/jotai/store";
 import { useAtomValue } from "jotai/react";
 import { useVideoSrcSetter } from "@/hooks/useVideoSrcSetter";
 

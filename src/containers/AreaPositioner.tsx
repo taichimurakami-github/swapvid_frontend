@@ -1,4 +1,4 @@
-import { userCroppedAreaAtom } from "@/providers/jotai/swapVidPlayer";
+import { userCroppedAreaAtom } from "@/providers/jotai/store";
 import { useAtomValue } from "jotai";
 import { PropsWithChildren } from "react";
 

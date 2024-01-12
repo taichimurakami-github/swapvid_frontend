@@ -18,6 +18,7 @@ import {
   documentPlayerStandbyAtom,
   documentPlayerStateAtom,
   documentPlayerWrapperElementRefAtom,
+  pdfSrcAtom,
   preGeneratedScrollTimelineDataAtom,
   relatedVideoTimeSectionsAtom,
   sequenceAnalyzerEnabledAtom,
@@ -25,7 +26,7 @@ import {
   userDocumentViewportAtom,
   videoElementRefAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { TBoundingBox } from "@/types/swapvid";
 import { cvtToWHArray } from "@utils/bboxUtil";
 import { VideoViewportRectangle } from "@/containers/VideoViewportRectangle";
@@ -40,6 +41,7 @@ export const DocumentPlayer: React.FC<{
   const preGeneratedScrollTimeline = useAtomValue(
     preGeneratedScrollTimelineDataAtom
   );
+  const pdfSrc = useAtomValue(pdfSrcAtom);
   const assetId = useAtomValue(assetIdAtom);
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
   const [documentPlayerActive, setDocumentPlayerActive] = useAtom(
@@ -264,7 +266,7 @@ export const DocumentPlayer: React.FC<{
       const [videoViewportWidth] = cvtToWHArray(
         videoViewport ?? [
           [0, 0],
-          [0, 0],
+          [1, 0],
         ]
       );
 
@@ -297,7 +299,7 @@ export const DocumentPlayer: React.FC<{
   return (
     <div
       id="document_player_wrapper"
-      className={`overflow-scroll ${
+      className={`bg-white overflow-scroll ${
         standaloneModeEnabled ? "" : "scrollbar-hidden"
       }`}
       style={{
@@ -331,7 +333,7 @@ export const DocumentPlayer: React.FC<{
           visibility: playerActive ? "visible" : "hidden",
         }}
       >
-        {pageWidthToRender > 0 && (
+        {pdfSrc && (
           <>
             <PDFRenderer pageWidthPx={pageWidthToRender} />
             <VideoViewportRectangle pageWidthPx={pageWidthToRender} />

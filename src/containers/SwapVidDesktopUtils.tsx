@@ -3,7 +3,7 @@ import {
   pdfUploaderActiveAtom,
   videoCropperActiveAtom,
   videoSrcAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { useSetAtom } from "jotai";
 import { useAtomValue } from "jotai/react";
 

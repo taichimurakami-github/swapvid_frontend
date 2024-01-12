@@ -6,14 +6,9 @@ import {
   relatedVideoTimeSectionsAtom,
   swapvidInterfaceTypeAtom,
   videoMetadataAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { SeekbarHighlightSection } from "@/presentations/SeekbarHighlightSection";
 
-/**
- * 呼び出し元の親コンポーネントに関する条件：
- * 1. 幅・高さがシークバーのラッパーコンポーネントと同一である
- * 2. スタイリングでposition: relativeを指定している
- */
 const _SeekbarHighlight: React.FC<{
   active?: boolean;
   userViewportEffectEnabled?: boolean; // Transparent seekbar-highlighting area gradually appears/disappears according to user's document viewport

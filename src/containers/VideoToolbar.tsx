@@ -19,7 +19,7 @@ import {
   videoElementRefAtom,
   videoElementStateAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 
 const _VideoToolbar: React.FC<{
   ambientBackgroundEnabled: boolean;
@@ -96,7 +96,7 @@ const _VideoToolbar: React.FC<{
       : "";
   }
 
-  const wrapperStyle = `bg-toolbar flex justify-between py-3 ${
+  const wrapperStyle = `bg-toolbar flex justify-between py-2 ${
     ambientBackgroundEnabled ? wrapperStyleAmbientBackgroundEnabled : ""
   }`;
 

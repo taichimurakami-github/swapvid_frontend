@@ -2,7 +2,7 @@ import { TAssetId, TBoundingBox } from "@/types/swapvid";
 import { SEQUENCE_ANALYZER_API_ENDPOINT_HTTP } from "@/app.config";
 import React, { useCallback, useEffect, useRef } from "react";
 import { useAtomValue } from "jotai/react";
-import { userCroppedAreaAtom } from "@/providers/jotai/swapVidPlayer";
+import { userCroppedAreaAtom } from "@/providers/jotai/store";
 
 export type SequenceAnalyzerOkResponseBody = {
   document_available: boolean;

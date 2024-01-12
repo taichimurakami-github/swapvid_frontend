@@ -27,7 +27,7 @@ import {
   videoPlayerLayoutAtom,
   videoSrcAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 
 export const AppStatesVisualizer: React.FC<{
   active: boolean;

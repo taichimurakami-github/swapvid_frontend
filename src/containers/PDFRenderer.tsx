@@ -10,7 +10,7 @@ import {
   pdfPageStateAtom,
   pdfRendererStateAtom,
   pdfSrcAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 ("@/providers/jotai/swapVidPlayer");
 
 const _PDFRenderer: React.FC<{

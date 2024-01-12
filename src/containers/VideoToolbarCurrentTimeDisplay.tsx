@@ -2,7 +2,7 @@ import React from "react";
 import { useAtomValue } from "jotai/react";
 import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
 import { formatCurrentTimeIntoHMSString } from "@utils/formatCurrentTime";
-import { videoElementRefAtom } from "@/providers/jotai/swapVidPlayer";
+import { videoElementRefAtom } from "@/providers/jotai/store";
 
 /**
  * Use standalone container for video toolbar current time container

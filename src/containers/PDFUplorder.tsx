@@ -9,7 +9,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useRef, useState } from "react";
 import { useAtom } from "jotai/react";
-import { pdfUploaderActiveAtom } from "@/providers/jotai/swapVidPlayer";
+import { pdfUploaderActiveAtom } from "@/providers/jotai/store";
 
 type UploaderProgress =
   | "INIT"

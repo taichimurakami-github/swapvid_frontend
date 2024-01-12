@@ -1,3 +1,10 @@
+import React from "react";
+import { VideoToolbarCurrentTimeDisplay } from "@/containers/VideoToolbarCurrentTimeDisplay";
+import {
+  VideoToolbarPanelTypeA,
+  VideoToolbarPanelTypeB,
+} from "@/presentations/Button";
+import { getRangeArray } from "@/utils/common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPause,
@@ -9,10 +16,6 @@ import {
   faVolumeUp,
   faVolumeMute,
 } from "@fortawesome/free-solid-svg-icons";
-import { VideoToolbarCurrentTimeDisplay } from "@/containers/VideoToolbarCurrentTimeDisplay";
-import { VideoToolbarPanelTypeA, VideoToolbarPanelTypeB } from "./Button";
-import { getRangeArray } from "@/utils/common";
-import React from "react";
 
 /** TODO: Refactor this component */
 

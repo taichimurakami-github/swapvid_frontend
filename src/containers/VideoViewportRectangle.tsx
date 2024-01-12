@@ -5,7 +5,7 @@ import { useAtomValue } from "jotai/react";
 import {
   documentPlayerActiveAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { cvtToTLWHArray } from "@/utils/bboxUtil";
 
 export const VideoViewportRectangle: React.FC<{ pageWidthPx: number }> =
