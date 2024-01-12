@@ -2,7 +2,7 @@ import React, { useCallback, useReducer } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { faCircleRight, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { TAssetId, TInterfaceType, TMediaSourceType } from "@/types/swapvid";
+import { TInterfaceType, TMediaSourceType } from "@/types/swapvid";
 import { useAtom, useAtomValue } from "jotai/react";
 import { AppStatesVisualizer } from "@/containers/AppStatesVisualizer";
 import {
@@ -10,10 +10,10 @@ import {
   AppConfigModalContainer,
 } from "@/presentations/Modal";
 import {
-  assetIdAtom,
   assetLoaderStateAtom,
   pdfSrcAtom,
   sequenceAnalyzerEnabledAtom,
+  sequenceAnalyzerEndpointURLAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
@@ -194,12 +194,13 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
   const [swapVidInterfaceType, setSwapVidInterfaceType] = useAtom(
     swapvidInterfaceTypeAtom
   );
-  const [activeAssetId, setActiveAssetId] = useAtom(assetIdAtom);
-
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
   const [pdfSrc, setPdfSrc] = useAtom(pdfSrcAtom);
   const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
     sequenceAnalyzerEnabledAtom
+  );
+  const [sqaEndpointURL, setSqaEndpointURL] = useAtom(
+    sequenceAnalyzerEndpointURLAtom
   );
 
   const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
@@ -222,6 +223,12 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
         currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
         handleSetValue={setSequenceAnalyzerEnabled}
         disabled={swapVidDesktopEnabled}
+      />
+
+      <AppConfigInput
+        labelText="Sequence Analyzer Endpoint URL"
+        currentValue={sqaEndpointURL}
+        handleSetValue={setSqaEndpointURL}
       />
 
       {/* {React.createElement(AppConfigMultipleSelect<TAssetId>, {

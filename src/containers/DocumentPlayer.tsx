@@ -22,6 +22,7 @@ import {
   preGeneratedScrollTimelineDataAtom,
   relatedVideoTimeSectionsAtom,
   sequenceAnalyzerEnabledAtom,
+  sequenceAnalyzerEndpointURLAtom,
   sequenceAnalyzerStateAtom,
   userDocumentViewportAtom,
   videoElementRefAtom,
@@ -44,6 +45,9 @@ export const DocumentPlayer: React.FC<{
   const pdfSrc = useAtomValue(pdfSrcAtom);
   const assetId = useAtomValue(assetIdAtom);
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
+  const sequenceAnalyzerEndpointURL = useAtomValue(
+    sequenceAnalyzerEndpointURLAtom
+  );
   const [documentPlayerActive, setDocumentPlayerActive] = useAtom(
     documentPlayerActiveAtom
   );
@@ -179,7 +183,7 @@ export const DocumentPlayer: React.FC<{
   ]);
 
   useEffect(() => {
-    preGeneratedScrollTimeline &&
+    !preGeneratedScrollTimeline &&
       setDocumentPlayerState((b) => ({ ...b, sequenceAnalyzerEnabled: true }));
   }, [setDocumentPlayerState, preGeneratedScrollTimeline]);
 
@@ -197,6 +201,7 @@ export const DocumentPlayer: React.FC<{
         setSequenceAnalyzerState((b) => ({ ...b, running: true }));
 
         const fetchResult = await fetchVideoViewportFromCurrentTime(
+          sequenceAnalyzerEndpointURL,
           currentTime
         );
 
@@ -229,6 +234,7 @@ export const DocumentPlayer: React.FC<{
       return getActiveVideoViewportFromCurrentTime(currentTime);
     },
     [
+      sequenceAnalyzerEndpointURL,
       sequenceAnalyzerEnabled,
       scrollTimelineData.length,
       setSequenceAnalyzerState,
@@ -257,11 +263,14 @@ export const DocumentPlayer: React.FC<{
   /** Adjust pdf page width to render */
   const getRenderingScalePageWidth = useCallback(
     (videoViewport: TBoundingBox | null) => {
-      if (!documentContainerRef.current || !videoViewport) {
+      if (!documentContainerRef.current) {
         return 0;
       }
 
       const containerWidth = documentContainerRef.current.clientWidth;
+      if (!videoViewport) {
+        return containerWidth;
+      }
 
       const [videoViewportWidth] = cvtToWHArray(
         videoViewport ?? [
