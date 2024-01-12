@@ -133,7 +133,7 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
         }
       }
     },
-    [handleOnInputChange]
+    [errorMessage, handleOnInputChange]
   );
 
   const handleSubmit = useCallback(async () => {
@@ -168,7 +168,6 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
 
     setActive(false);
   }, [
-    selectedAsset,
     setActive,
     files,
     setVideoSrc,
@@ -181,12 +180,6 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
     selectedAsset.video &&
     selectedAsset.document &&
     selectedAsset.overviewImage;
-
-  const EscapedAssetIdSymbol = (
-    <span className="inline-block mx-2 text-teal-600">
-      &#123; Asset Id &#125;
-    </span>
-  );
 
   return (
     <AppModalWrapper visibility={active} zIndex={zIndex}>
