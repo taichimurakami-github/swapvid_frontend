@@ -15,3 +15,19 @@ export function useFileInput() {
     handleOnInputChange,
   };
 }
+
+export function useMultipleFilesInput() {
+  const [files, setFiles] = useState<null | FileList>(null);
+
+  const handleOnInputChange = useCallback(
+    (v: React.ChangeEvent<HTMLInputElement>) => {
+      v.currentTarget.files && setFiles(v.currentTarget.files);
+    },
+    []
+  );
+
+  return {
+    files,
+    handleOnInputChange,
+  };
+}
