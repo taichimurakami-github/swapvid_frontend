@@ -132,6 +132,10 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
 
   if (errorContent.current) throw new Error(errorContent.current);
 
+  /**
+   * Must set max-width and max-height to video element
+   * to keep it in viewport.
+   */
   return (
     <>
       {desktopCaptureEnabled && !videoSrc && (
@@ -147,22 +151,14 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
       )}
 
       {!desktopCaptureEnabled && !videoSrc && (
-        <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] bg-gray-300">
-          <b className="text-2xl">
-            <span className="text-red-700">Cannot find the video file.</span>{" "}
-            Please select it.
-          </b>
-          <button
-            className="py-2 px-4 rounded-full bg-teal-600 hover:bg-teal-700 font-bold text-white text-2xl"
-            onClick={handleCaptureDesktop}
-          >
-            Select Video File
-          </button>
+        <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] max-w-full max-h-full bg-gray-700 text-white font-bold">
+          <p className="text-2xl">Cannot find the video file.</p>
+          <p>Please choose the assets from Config to play.</p>
         </div>
       )}
 
       <video
-        className="max-h-full max-w-full w-full"
+        className="max-h-[85vh] max-w-full"
         style={{
           display: videoSrc ? "block" : "none",
         }}

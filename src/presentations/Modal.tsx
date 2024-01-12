@@ -1,25 +1,47 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { PropsWithChildren } from "react";
+import React, { CSSProperties, PropsWithChildren } from "react";
 
 export const AppMenu: React.FC = () => {
   return <div></div>;
 };
 
-export const AppMenuModalTypeA: React.FC<
+export const AppModalWrapper: React.FC<
   PropsWithChildren<{
-    title: string;
     visibility: boolean;
+    height?: CSSProperties["height"];
     handleClose?: () => void;
     zIndex?: number;
   }>
-> = ({ children, title, visibility, handleClose, zIndex }) => (
+> = ({ children, visibility, height, handleClose, zIndex }) => (
   <div
-    className="fixed z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[90vh] max-w-[80vw] overflow-hidden rounded-lg bg-white text-black text-lg h-full w-[90vw] max-w-[1280px] rounded-lg"
+    className="fixed flex-xyc z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full overflow-hidden rounded-lg bg-white text-black text-lg rounded-lg bg-black-transparent-01"
     style={{
       visibility: visibility ? "visible" : "hidden",
       zIndex: zIndex ?? "auto",
+      height: height ?? "100%",
     }}
+    onClick={handleClose}
+  >
+    {children}
+  </div>
+);
+
+export const AppModalTypeA: React.FC<
+  PropsWithChildren<{
+    title: string;
+    width?: CSSProperties["width"];
+    height?: CSSProperties["height"];
+    handleClose?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  }>
+> = ({ children, title, width, height, handleClose }) => (
+  <div
+    className="z-10 max-h-[90%] max-w-[80%] overflow-hidden rounded-lg bg-white text-black text-lg min-w-[50vw] max-w-[1280px] rounded-lg"
+    style={{
+      height: height ?? "auto",
+      width: width ?? "auto",
+    }}
+    onClick={(e) => e.stopPropagation()}
   >
     <h2 className="relative py-4 px-8 bg-slate-600 text-white text-2xl font-bold mb-4">
       {title}
@@ -31,7 +53,9 @@ export const AppMenuModalTypeA: React.FC<
         <FontAwesomeIcon className="text-3xl px-2" icon={faXmark} />
       </button>
     </h2>
-    <div className="h-full p-4 overflow-scroll">{children}</div>
+    <div className="flex-xyc p-4 overflow-scroll scrollbar-hidden">
+      {children}
+    </div>
   </div>
 );
 
