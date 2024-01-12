@@ -33,7 +33,12 @@ export const SwapVidPlayerRoot: React.FC<{
     if (localSourceExists) {
       setLocalFilePickerActive(true);
     }
-  }, [assetId, assetLoaderState, swapvidDesktopEnabled]);
+  }, [
+    assetId,
+    assetLoaderState,
+    swapvidDesktopEnabled,
+    setLocalFilePickerActive,
+  ]);
 
   switch (interfaceType) {
     case "combined":

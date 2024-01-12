@@ -22,5 +22,13 @@ export const ComponentError: React.FC<{
     <p className="mt-8 font-bold">
       Please reload or change config by clicking the up-right "config" icon.
     </p>
+    <button
+      className="bg-teal-600 hover:bg-teal-700 rounded-full px-4 py-2 text-white font-bold"
+      onClick={() => {
+        window.location.reload();
+      }}
+    >
+      Reload App
+    </button>
   </div>
 );
