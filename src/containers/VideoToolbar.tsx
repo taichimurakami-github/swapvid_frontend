@@ -118,7 +118,7 @@ const _VideoToolbar: React.FC<{
         handleClickPlayAndPauseButton={handlePlayAndPauseButtonClick}
         handleChangeVideoVolumeSlider={handleChangeVideoVolumeSlider}
         handleToggleVideoVolumeMuted={handleToggleChangeVideoVolumeMuted}
-        liveModeEnabled={liveStreamingEnabled || sequenceAnalyzerEnabled}
+        liveModeEnabled={liveStreamingEnabled}
         videoPaused={videoElementState.paused}
         videoVolume={videoElementState.volume}
         playAndPauseButtonEnabled={playAndPauseButtonEnabled ?? true}

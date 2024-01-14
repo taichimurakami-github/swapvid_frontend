@@ -84,6 +84,7 @@ export const VideoToolbarPanelCenter: React.FC<{
   documentPlayerActive: boolean;
 }> = React.memo(
   ({
+    sequenceAnalyzerEnabled,
     documentAvailableOnClient,
     documentAvailableOnSequenceAnalyzer,
     documentPlayerStandby,
@@ -129,16 +130,25 @@ export const VideoToolbarPanelCenter: React.FC<{
         Document active
       </p>
     ) : (
-      <p className="flex-xyc gap-2 text-sm">
-        <span
-          className="block rounded-full bg-blue-400"
-          style={{
-            width: 10,
-            height: 10,
-          }}
-        ></span>
-        Document standby
-      </p>
+      <div className="flex-xyc flex-col text-sm">
+        <p className="flex-xyc gap-2">
+          <span
+            className="block rounded-full bg-blue-400"
+            style={{
+              width: 10,
+              height: 10,
+            }}
+          ></span>
+          Document standby
+        </p>
+        <p className="text-[11px]">
+          (
+          {sequenceAnalyzerEnabled
+            ? "Source: Sequence Analyzer"
+            : "Source: Pre-generated timeline"}
+          )
+        </p>
+      </div>
     );
   }
 );

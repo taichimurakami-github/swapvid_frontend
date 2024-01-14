@@ -1,11 +1,14 @@
 import React, { PropsWithChildren } from "react";
 import {
+  assetLoaderStateAtom,
   pdfUploaderActiveAtom,
+  sequenceAnalyzerEnabledAtom,
   videoCropperActiveAtom,
   videoSrcAtom,
 } from "@/providers/jotai/store";
 import { useSetAtom } from "jotai";
 import { useAtomValue } from "jotai/react";
+import { useDesktopCapture } from "@/hooks/useDesktopCapture";
 
 export const SwapVidDesktopUtils: React.FC<{ zIndex?: number }> = ({
   zIndex,
@@ -20,6 +23,24 @@ export const SwapVidDesktopUtils: React.FC<{ zIndex?: number }> = ({
 export const SwapVidDesktopMenu: React.FC<{ zIndex?: number }> = ({
   zIndex,
 }) => {
+  const captureDesktop = useDesktopCapture();
+  const setVideoSrc = useSetAtom(videoSrcAtom);
+  const setAssetLoaderState = useSetAtom(assetLoaderStateAtom);
+  const setSequenceAnalyzerEnabled = useSetAtom(sequenceAnalyzerEnabledAtom);
+
+  const handleCaptureDesktop = async () => {
+    const result = await captureDesktop();
+
+    if (result) {
+      setVideoSrc(result.captureStream);
+      setAssetLoaderState((b) => ({
+        ...b,
+        video: { presetsEnabled: false, sourceType: "streaming" },
+      }));
+      setSequenceAnalyzerEnabled(true);
+    }
+  };
+
   const setVideoCropperActive = useSetAtom(videoCropperActiveAtom);
   const setPdfUploaderActive = useSetAtom(pdfUploaderActiveAtom);
 
@@ -33,6 +54,13 @@ export const SwapVidDesktopMenu: React.FC<{ zIndex?: number }> = ({
     >
       <h3 className="select-none">SwapVid Desktop</h3>
       <div className="flex-xyc gap-4">
+        <button
+          className="p-3 bg-teal-600 hover:bg-teal-700 rounded-full"
+          onClick={handleCaptureDesktop}
+        >
+          Capture Desktop
+        </button>
+
         <button
           className="p-3 bg-teal-600 hover:bg-teal-700 rounded-full"
           onClick={() => setVideoCropperActive(true)}

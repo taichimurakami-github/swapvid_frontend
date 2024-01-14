@@ -62,12 +62,12 @@ export const PlayerParallelView: React.FC<{ zIndex?: number }> = ({
   zIndex,
 }) => (
   <div
-    className="combined-view-container flex items-center gap-8 max-w-full h-full overflow-scroll scrollbar-hidden mx-auto"
+    className="combined-view-container flex items-center gap-8 px-4 max-w-full h-full overflow-scroll scrollbar-hidden mx-auto"
     style={{ zIndex: zIndex ?? "auto" }}
   >
-    <div className="player-container relative z-0 w-1/2">
+    <div className="player-container relative z-0 max-w-[50%]">
       <div className="grid w-full">
-        <VideoPlayer />
+        <VideoPlayer playerWidth={1280} />
         <VideoSubtitles />
       </div>
 
@@ -78,9 +78,9 @@ export const PlayerParallelView: React.FC<{ zIndex?: number }> = ({
       />
     </div>
 
-    <div className="document-player-outer flex-xyc gap-2 w-1/2 w-full h-full z-0">
-      <DocumentPlayer standaloneModeEnabled />
-      <DocumentOverview widthPx={150} standaloneModeEnabled />
+    <div className="document-player-outer relative flex-xyc gap-2 max-w-[50%] h-full z-0">
+      <DocumentPlayer playerWidth={800} standaloneModeEnabled />
+      {/* <DocumentOverview widthPx={100} standaloneModeEnabled /> */}
     </div>
   </div>
 );
