@@ -7,9 +7,12 @@ import {
 import {
   assetIdAtom,
   assetLoaderStateAtom,
+  documentOverviewImgSrcAtom,
   localFilePickerActiveAtom,
+  pdfSrcAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
+  videoSrcAtom,
 } from "@/providers/jotai/store";
 // import { TAssetId } from "@/types/swapvid";
 
@@ -22,15 +25,19 @@ export const SwapVidPlayerRoot: React.FC<{
   const interfaceType = useAtomValue(swapvidInterfaceTypeAtom);
   const swapvidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
   const assetLoaderState = useAtomValue(assetLoaderStateAtom);
+  const videoSrc = useAtomValue(videoSrcAtom);
+  const pdfSrc = useAtomValue(pdfSrcAtom);
+  const documentOverviewImgSrc = useAtomValue(documentOverviewImgSrcAtom);
 
   const setLocalFilePickerActive = useSetAtom(localFilePickerActiveAtom);
 
   useEffect(() => {
-    const localSourceExists = Object.values(assetLoaderState)
-      .map((v) => v.sourceType)
-      .includes("local");
+    const localSourceRegistered =
+      (!!videoSrc || swapvidDesktopEnabled) &&
+      !!pdfSrc &&
+      !!documentOverviewImgSrc;
 
-    if (localSourceExists) {
+    if (!localSourceRegistered) {
       setLocalFilePickerActive(true);
     }
   }, [
@@ -38,6 +45,9 @@ export const SwapVidPlayerRoot: React.FC<{
     assetLoaderState,
     swapvidDesktopEnabled,
     setLocalFilePickerActive,
+    videoSrc,
+    pdfSrc,
+    documentOverviewImgSrc,
   ]);
 
   switch (interfaceType) {

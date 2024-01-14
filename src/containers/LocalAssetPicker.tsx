@@ -4,13 +4,35 @@ import {
   localFilePickerActiveAtom,
   pdfSrcAtom,
   preGeneratedScrollTimelineDataAtom,
+  swapvidDesktopEnabledAtom,
   videoSrcAtom,
 } from "@/providers/jotai/store";
-import { useAtom, useSetAtom } from "jotai/react";
+import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
 import { AppModalTypeA, AppModalWrapper } from "@/presentations/Modal";
 import { useMultipleFilesInput } from "@/hooks/useFileInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
+
+const Item: React.FC<{
+  title: string;
+  errorMessage?: string;
+  value: boolean;
+}> = ({ title, errorMessage, value }) => (
+  <div className="flex-xyc gap-4">
+    <div
+      className="bg-teal-600 text-white rounded-full w-8 h-8 flex-xyc font-bold"
+      style={{
+        opacity: value ? 1 : 0.3,
+      }}
+    >
+      <FontAwesomeIcon icon={faCheck} />
+    </div>
+    <p className="grid">
+      <span className="text-lg">{title}</span>
+      <b className="text-red-600 text-md">{errorMessage ?? ""}</b>
+    </p>
+  </div>
+);
 
 type PickedAssetState<T> = {
   video: T;
@@ -25,7 +47,9 @@ type ErrorMessageState = PickedAssetState<string>;
 /**
  * Load large files
  */
-export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
+export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
+  zIndex,
+}) => {
   // const { video: loaderStateVideo, pdf: loaderStatePdf } =
   //   useAtomValue(assetLoaderStateAtom);
 
@@ -54,6 +78,8 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
       scrollTimeline: "",
     }
   );
+
+  const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
 
   const setVideoSrc = useSetAtom(videoSrcAtom);
   const setPdfSrc = useSetAtom(pdfSrcAtom);
@@ -87,7 +113,10 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
 
       for (const f of e.target.files as FileList) {
         validationResult.video =
-          validationResult.video || f.name.includes(".mp4");
+          swapVidDesktopEnabled || // Skip validation of video file if swapVidDesktopEnabled is true.
+          validationResult.video ||
+          f.name.includes(".mp4");
+
         validationResult.document =
           validationResult.document || f.name.includes(".pdf");
         validationResult.overviewImage =
@@ -177,24 +206,27 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
   ]);
 
   const submissionReady =
-    selectedAsset.video &&
+    (selectedAsset.video || swapVidDesktopEnabled) &&
     selectedAsset.document &&
     selectedAsset.overviewImage;
 
   return (
     <AppModalWrapper visibility={active} zIndex={zIndex}>
       <AppModalTypeA title="Asset Picker">
-        <div className="grid justify-center gap-8 text-xl">
+        <div className="grid justify-center gap-8 text-xl max-w-[750px]">
           <h2 className="text-center font-bold">
             Pleaase select required asset files.
           </h2>
 
           <div className="flex flex-col gap-6 items-start">
-            <Item
-              title="[REQUIRED] Video File (.mp4)"
-              errorMessage={errorMessage.video}
-              value={selectedAsset.video}
-            />
+            {!swapVidDesktopEnabled && (
+              <Item
+                title="[REQUIRED] Video File (.mp4)"
+                errorMessage={errorMessage.video}
+                value={selectedAsset.video}
+              />
+            )}
+
             <Item
               title="[REQUIRED] Document File (.pdf)"
               errorMessage={errorMessage.document}
@@ -215,7 +247,9 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
           <input
             className="bg-slate-200 p-2 rounded-sm hover:bg-slate-300"
             type="file"
-            accept="video/*,image/*,.pdf,.json"
+            accept={`${
+              swapVidDesktopEnabled ? "" : "video/*"
+            },image/*,.pdf,.json`}
             onChange={handleChange}
             maxLength={3}
             minLength={2}
@@ -235,24 +269,3 @@ export const LocalAssetPicker: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
     </AppModalWrapper>
   );
 };
-
-const Item: React.FC<{
-  title: string;
-  errorMessage?: string;
-  value: boolean;
-}> = ({ title, errorMessage, value }) => (
-  <div className="flex-xyc gap-4">
-    <div
-      className="bg-teal-600 text-white rounded-full w-8 h-8 flex-xyc font-bold"
-      style={{
-        opacity: value ? 1 : 0.3,
-      }}
-    >
-      <FontAwesomeIcon icon={faCheck} />
-    </div>
-    <p className="grid">
-      <span className="text-lg">{title}</span>
-      <b className="text-red-600 text-md">{errorMessage ?? ""}</b>
-    </p>
-  </div>
-);
