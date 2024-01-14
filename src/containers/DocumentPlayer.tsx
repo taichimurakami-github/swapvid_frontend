@@ -11,7 +11,6 @@ import {
 import { usePreGeneratedScrollTimeline } from "@hooks/usePreGeneratedTimeline";
 import { useSequenceAnalyzer } from "@hooks/useSequenceAnalyzer";
 import {
-  assetIdAtom,
   documentPlayerActiveAtom,
   documentPlayerContainerElementRefAtom,
   documentPlayerLayoutAtom,
@@ -43,7 +42,6 @@ export const DocumentPlayer: React.FC<{
     preGeneratedScrollTimelineDataAtom
   );
   const pdfSrc = useAtomValue(pdfSrcAtom);
-  const assetId = useAtomValue(assetIdAtom);
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
   const sequenceAnalyzerEndpointURL = useAtomValue(
     sequenceAnalyzerEndpointURLAtom
@@ -52,6 +50,9 @@ export const DocumentPlayer: React.FC<{
     documentPlayerActiveAtom
   );
   const [playerStandby, setPlayerStandby] = useAtom(documentPlayerStandbyAtom);
+  const [sequenceAnalyzerState, setSequenceAnalyzerState] = useAtom(
+    sequenceAnalyzerStateAtom
+  );
   const setDocumentPlayerState = useSetAtom(documentPlayerStateAtom);
   const setVideoViewport = useSetAtom(videoViewportAtom);
   const setUserDocumentViewport = useSetAtom(userDocumentViewportAtom);
@@ -63,24 +64,21 @@ export const DocumentPlayer: React.FC<{
     documentPlayerContainerElementRefAtom
   );
   const setRelatedVideoTimeSections = useSetAtom(relatedVideoTimeSectionsAtom);
-  const setSequenceAnalyzerState = useSetAtom(sequenceAnalyzerStateAtom);
 
   const videoElementRef = useAtomValue(videoElementRefAtom);
   const documentWrapperRef = useRef<HTMLDivElement>(null);
   const documentContainerRef = useRef<HTMLDivElement>(null);
   const renderingScaleVideoViewport = useRef(videoViewport);
 
-  const playerActive = documentPlayerActive || standaloneModeEnabled;
+  const playerActive = documentPlayerActive || !!standaloneModeEnabled;
 
   /** Video viewport fetcher/getter */
   const {
     timeline: scrollTimelineData,
     getActiveVideoViewportFromCurrentTime,
   } = usePreGeneratedScrollTimeline(preGeneratedScrollTimeline);
-  const { fetchVideoViewportFromCurrentTime } = useSequenceAnalyzer(
-    assetId,
-    videoElementRef
-  );
+  const { fetchVideoViewportFromCurrentTime } =
+    useSequenceAnalyzer(videoElementRef);
 
   const getRelatedVideoTimeSections = useRelatedVideoTimeSectionParser();
   const { timeline: documentTimeline } = usePreGeneratedScrollTimeline(
@@ -183,6 +181,9 @@ export const DocumentPlayer: React.FC<{
   ]);
 
   useEffect(() => {
+    /**
+     * Automatically enable sequence analyzer when pre-generated timeline data is not available
+     */
     !preGeneratedScrollTimeline &&
       setDocumentPlayerState((b) => ({ ...b, sequenceAnalyzerEnabled: true }));
   }, [setDocumentPlayerState, preGeneratedScrollTimeline]);
@@ -202,6 +203,7 @@ export const DocumentPlayer: React.FC<{
 
         const fetchResult = await fetchVideoViewportFromCurrentTime(
           sequenceAnalyzerEndpointURL,
+          sequenceAnalyzerState.activeAssetId,
           currentTime
         );
 
@@ -236,6 +238,7 @@ export const DocumentPlayer: React.FC<{
     [
       sequenceAnalyzerEndpointURL,
       sequenceAnalyzerEnabled,
+      sequenceAnalyzerState.activeAssetId,
       scrollTimelineData.length,
       setSequenceAnalyzerState,
       getActiveVideoViewportFromCurrentTime,
@@ -345,7 +348,10 @@ export const DocumentPlayer: React.FC<{
         {pdfSrc && (
           <>
             <PDFRenderer pageWidthPx={pageWidthToRender} />
-            <VideoViewportRectangle pageWidthPx={pageWidthToRender} />
+            <VideoViewportRectangle
+              pageWidthPx={pageWidthToRender}
+              standaloneModeEnabled={standaloneModeEnabled}
+            />
           </>
         )}
       </div>

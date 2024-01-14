@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { DOMRectLike, TAssetId, TBoundingBox } from "@/types/swapvid";
+import { DOMRectLike, TBoundingBox } from "@/types/swapvid";
 
 export type SequenceAnalyzerOkResponseBody = {
   document_available: boolean;
@@ -37,7 +37,6 @@ type MatchContentSequenceResult =
     };
 
 export function useSequenceAnalyzer(
-  assetId: TAssetId | null,
   videoElementRef: React.RefObject<HTMLVideoElement> | null
 ) {
   const videoElement = videoElementRef?.current;
@@ -160,6 +159,7 @@ export function useSequenceAnalyzer(
   const fetchVideoViewport = useCallback(
     async (
       endpointURL: string,
+      assetId: string,
       imgDataURL: string
     ): Promise<MatchContentSequenceResult | null> => {
       // return null; /** temporaliry out */
@@ -208,14 +208,15 @@ export function useSequenceAnalyzer(
 
       return result;
     },
-    [assetId, prevResReseived, prevResContent]
+    [prevResReseived, prevResContent]
   );
 
   const fetchVideoViewportFromCurrentTime = useCallback(
     async (
       endpointURL: string,
+      assetId: string,
       currentTime: number,
-      maxSamplingRate_sec = 3.0
+      maxSamplingRate_sec = 0.5
     ) => {
       const timeDiff = Math.abs(currentTime - prevSampledCurrentTime.current);
 
@@ -230,7 +231,7 @@ export function useSequenceAnalyzer(
       // _showSentFrameImage(imgDataURL);
 
       // const serverResponsePrevSentTime = Date.now();
-      const result = await fetchVideoViewport(endpointURL, imgDataURL);
+      const result = await fetchVideoViewport(endpointURL, assetId, imgDataURL);
       // const serverResponseReceivedTime = Date.now();
 
       // const sequenceAnalyzerProcTime = serverResponseReceivedTime - serverResponsePrevSentTime;
@@ -262,7 +263,7 @@ export function useSequenceAnalyzer(
   useEffect(() => {
     prevResReseived.current = true;
     prevResContent.current = null;
-  }, [assetId, videoElement]);
+  }, [videoElement]);
 
   return {
     fetchVideoViewport,
