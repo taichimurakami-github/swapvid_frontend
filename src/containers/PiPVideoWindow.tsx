@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import Draggable from "react-draggable";
 import { useHandleClickWithDrag } from "@hooks/useDraggable";
 import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
@@ -10,7 +10,9 @@ import {
   pipVideoWindowActiveAtom,
   videoElementRefAtom,
   videoPlayerLayoutAtom,
+  videoSrcAtom,
 } from "@/providers/jotai/store";
+import { useAutoVideoSrcInjecter } from "@/hooks/useVideoSrcHelper";
 
 /**
  * Memorize component to improve performance
@@ -30,17 +32,12 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
   const videoPlayerLayout = useAtomValue(videoPlayerLayoutAtom);
   const videoAspectRatio = videoPlayerLayout.width / videoPlayerLayout.height;
   const pipVideoWindowActive = useAtomValue(pipVideoWindowActiveAtom);
+  const videoSrc = useAtomValue(videoSrcAtom);
 
   const parentVideoRef = useAtomValue(videoElementRefAtom);
   const pipVideoRef = useRef<HTMLVideoElement>(null);
 
   const videoCurrentTime = useVideoCurrenttime(parentVideoRef);
-
-  const videoSrc = useMemo(
-    () => parentVideoRef?.current?.currentSrc,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [parentVideoRef, parentVideoRef?.current?.currentSrc]
-  );
 
   const handleCloseWindow = () => setDocumentPlayerActive(false);
 
@@ -77,23 +74,31 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
   const initialPositionLeft = parentVideoBCRect?.left ?? 0;
   const initialWidth = parentVideoBCRect?.width ?? 0;
 
-  if (!documentPlayerActive || !pipVideoWindowActive || !parentVideoElem) {
-    return <></>;
-  }
+  const syncParentVideoCurrentTime = useCallback(
+    (targetVideo: HTMLVideoElement, currentTime: number) => {
+      if (typeof videoSrc === "string") {
+        targetVideo.currentTime = currentTime;
+      }
+    },
+    [videoSrc]
+  );
 
-  const syncParentVideoCurrentTime = (target: HTMLVideoElement) => {
-    target.currentTime = videoCurrentTime;
-  };
+  useAutoVideoSrcInjecter(pipVideoRef, videoSrc);
 
-  pipVideoRef.current && syncParentVideoCurrentTime(pipVideoRef.current);
+  const componentActive =
+    !documentPlayerActive || !pipVideoWindowActive || !parentVideoElem;
+
+  const isVideoSrcObject =
+    typeof videoSrc !== "string" && typeof videoSrc === "object" && !!videoSrc;
 
   return (
     <>
       <Draggable>
         <div
           id="pip_video_window"
-          className={`pip-video-window-container fixed cursor-pointer`}
+          className={`pip-video-window-container fixed cursor-pointer bg-gray-600`}
           style={{
+            display: componentActive ? "none" : "block",
             zIndex: zIndex ?? "auto",
             transition: "width top left 0.3s ease-in-out",
           }}
@@ -101,13 +106,13 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
           {...eventHandlers}
         >
           <video
+            id="pip_video"
             className={`w-full border-4`}
-            src={videoSrc}
             muted
-            autoPlay={false}
+            autoPlay={isVideoSrcObject}
             ref={pipVideoRef}
             onLoadedData={(e) => {
-              syncParentVideoCurrentTime(e.currentTarget);
+              syncParentVideoCurrentTime(e.currentTarget, videoCurrentTime);
             }}
           />
         </div>

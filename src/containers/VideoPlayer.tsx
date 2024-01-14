@@ -10,15 +10,17 @@ import {
   videoSrcAtom,
 } from "@/providers/jotai/store";
 import { useDesktopCapture } from "@/hooks/useDesktopCapture";
-import { useVideoSrcSetter } from "@/hooks/useVideoSrcSetter";
+import { useAutoVideoSrcInjecter } from "@/hooks/useVideoSrcHelper";
 
 /**
  * Should not use "useCallback" in this component,
  * because it won't be re-rendered so frequently.
  */
-const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
-  desktopCaptureEnabled,
-}) => {
+const _VideoPlayer: React.FC<{
+  desktopCaptureEnabled?: boolean;
+  playerWidth?: number;
+  playerHeight?: number;
+}> = ({ desktopCaptureEnabled, playerWidth, playerHeight }) => {
   const errorContent = useRef("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
@@ -108,13 +110,7 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
     }
   };
 
-  const handleSetVideoSrc = useVideoSrcSetter();
-
-  useEffect(() => {
-    if (videoRef.current) {
-      handleSetVideoSrc(videoSrc, videoRef);
-    }
-  }, [videoSrc, handleSetVideoSrc, videoRef]);
+  useAutoVideoSrcInjecter(videoRef, videoSrc);
 
   useEffect(() => {
     videoRef.current &&
@@ -158,9 +154,11 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
       )}
 
       <video
-        className="max-h-[85vh] max-w-full"
+        className="max-w-full max-h-[80vh]"
         style={{
           display: videoSrc ? "block" : "none",
+          width: playerWidth ?? "auto",
+          height: playerHeight ?? "auto",
         }}
         ref={videoRef}
         loop={false}
