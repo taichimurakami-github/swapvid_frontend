@@ -1,145 +1,136 @@
-# PoC-User-Study Updation UI DEMO
+<div style="display:grid; place-items:center;"> 
+  <img src="https://github.com/taichimurakami-github/swapvid_frontend/assets/64308722/e56ab988-60c0-4cf8-ae1e-430f036c0483" />
+</div>
 
-りどみ
+# SwapVid Frontend
 
-### How to run App (on dev server)
 
-アプリ動作のための環境構築について．  
-おおよそ 5 分程度で終わります．簡単です．
+A frontend component of SwapVid application, built on Vite + TypeScript + React.  
+Please visit **[SwapVid demonstration app website](https://swapvid-demo.web.app)** to use built version of this app.
 
-#### 1. [Node.js をダウンロード&インストール](https://nodejs.org/ja)
+This app contains below component of SwapVid:
+- SwapVid user interface
+- SwapVid Desktop application
 
-- https://nodejs.org/ja
-  - v16 以上，v18 系も動作可能
-- `npm -v` の結果が出力されれば OK
-- 既に v16 以降をインストール済みの場合は飛ばしてください
+## Getting started
 
-#### 2. ターミナルでこの README.md のディレクトリを開く
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+2. Install WSL2 (for windows)
+3. Install [GNU Make](https://www.gnu.org/software/make/) (optional)
 
-- <img style="max-width: 550px;" src="./src/assets/README/ls-list.jpg" />
+## Usage
 
-#### 3. `npm install`を実行
+The command `make run` activates the container and dev server. After the container runs, you can access dev mode of SwapVid from http://localhost:3070
 
-- package.json に書かれた必要モジュールをインストールします
+And if you want to build the app, please use  `make build` command.
 
-#### 4. `npm run dev` を実行
+You can use `make deploy` command to build and deploy the development build.
 
-- ターミナル上に以下のような表示が出たら成功です
-  - <img src="./src/assets/README/vite-activated.jpg" />
 
-#### 5. ブラウザで http://localhost:3070/ にアクセス
-
-- 上手くいけば Edan さんの Minecraft の動画（EdanMeyerVpt）が表示されます
-  - <img style="max-width: 550px;" src="./src/assets/README/app-top.jpg" />
-
-### How to use App
-
-#### 動画の操作
-
-- 操作方法は一般的な動画プレイヤーと全く同じです
-- 一時停止・再生，（字幕データがあれば）字幕表示，ドキュメントの切り替えボタンが表示されています
-  - <img style="max-width: 550px;" src="./src/assets/README/app-top.jpg" />
-
-#### 動画 → 資料の切り替え
-
-- <img src="./src/assets/README/video-toolbar.jpg" />
-- 画面右下のドキュメント起動ボタン("Click to Show Document")を押すと，資料ビューアが起動します．
-- もしくは，資料が表示されている動画のパートが再生されている時に，動画ビューア上でスクロール操作を行うと資料ビューアが起動します
-- 初めて資料ビューアを起動する場合，若干もたつきます．要改良．(資料ビューアコンポーネントの初期化処理に起因)
-
-#### 資料 → 動画の切り替え
-
-- <img src="./src/assets/README/video-toolbar-on-activate.jpg" />
-- 画面右下のドキュメント起動ボタンを押すと，資料ビューアが終了します．
-- もしくは，右下のワイプ画面をクリックすると消えます．
-
-#### アセットの選択
-
-- 動画 + 資料の組み合わせパターンをアセットと呼称します．
-- 画面左上の "Change Asset" ボタンをクリックすると，アセット選択画面が出現します．
-  - <img style="max-width: 350px;" src="./src/assets/README/asset-selector.jpg" />
-- 現状のデモは３つのアセットを選択可能です．見たいアセットをクリックで選択してください．
-  - EdanMeyerVpt (Document) ← Default
-  - IEEEVR2022Ogawa (Slide)
-  - IEEEVR2022Hoshikawa (Slide)
-  - <img style="max-width: 350px;" src="./src/assets/README/asset-select-form.jpg" />
-- アセット選択画面を閉じるには，ダイアログの枠外をクリックしてください．
-
-#### 追加予定機能
-
-- (~8/8) PDF.js を組み込むことで，ドキュメントにテキストレイヤーを追加
-  - テキストベースのインタラクションをサポート
-- (~8/8) CHI2021Fujita アセットを追加
-  - 藤田先生の CHI2021 における発表映像のアセットです．
-
-### App Component Tree
+## Components
 
 ```mermaid
 classDiagram
-  class PlayerStateCtx {
-    <<Global State Provider>>
+
+  class Store{
+    <<Provider/jotai>>
+    Provides app global states.
   }
 
   class App{
-    <<Container, ProviderInjectionRoot>>
-
-    initialAssetid: TAssetId
-  }
-
-  class MainPlayerRoot {
     <<Container>>
-    useAssetDataLoader()
+
+    Application's root.
   }
 
-  class MainPlayerParallelView {
+  class AppConfig{
     <<Container>>
-    useVideoPlayerCore()
-    useDocumentPlayerCore()
+
+    Renders application's settings.
   }
 
-  class MainPlayerCombinedView {
+  class AssetPicker {
     <<Container>>
-    useVideoPlayerCore()
-    useDocumentPlayerCore()
+
+    Renders a form for users to select the assets
+    used in this application.
   }
 
-  class DocumentOverviewContainer {
+  class SwapVidPlayerRoot {
+    <<Container>>
+    Player's root.
+  }
+
+  class PlayerCombinedView {
+    <<Presentation>>
+
+    Renders combined view mode.
+  }
+
+  class PlayerParallelView {
+    <<Presentation>>
+
+    Renders parallel view mode.
+  }
+
+  class DocumentOverview {
     <<Container>>
   }
 
-  class SlideOverviewContainer {
+  class DocumentPlayer {
     <<Container>>
+    1. Renders document.
+    2. Binds user viewport on document.
+    3. Binds current viewport in the video to rendered document.
   }
 
-  class IEEEVR2022SlidePlayer{
+
+  class VideoPlayer{
     <<Container>>
+    1. Renders video component.
+    2. Binds video-related data to app states.
   }
 
-  class EdanMeyerDocumentPlayer{
+  class VideoToolbar{
     <<Container>>
+    1. Renders video toolbar.
+    2. Binds user's mainpulation to video component.
   }
-  _rootElement --> index
-  index --> App
 
 
-  App --> MainPlayerRoot
+  class VideoSeekbar{
+    <<Container>>
+    1. Renders video seekbar.
+    2. Binds user's mainpulation to video component.
+  }
 
-  MainPlayerRoot --> MainPlayerCombinedView
-  MainPlayerRoot --> MainPlayerParallelView
-  PlayerStateCtx -- MainPlayerRoot
+  class VideoSubtitles{
+    <<Container>>
+    1. Renders subtitles of the video.
+    2. Loads current subtitles data syncronized to video current time.
+  }
 
-  MainPlayerCombinedView --> IEEEVR2022SlidePlayer
-  MainPlayerCombinedView --> EdanMeyerDocumentPlayer
-  MainPlayerCombinedView --> SlideOverviewContainer
-  MainPlayerCombinedView --> DocumentOverviewContainer
 
-  MainPlayerParallelView --> IEEEVR2022SlidePlayer
-  MainPlayerParallelView --> EdanMeyerDocumentPlayer
-  MainPlayerParallelView --> SlideOverviewContainer
-  MainPlayerParallelView --> DocumentOverviewContainer
-  SlideOverviewContainer -- PlayerStateCtx
-  DocumentOverviewContainer -- PlayerStateCtx
-  IEEEVR2022SlidePlayer -- PlayerStateCtx
-  EdanMeyerDocumentPlayer -- PlayerStateCtx
+  App --> SwapVidPlayerRoot
+  App --> AppConfig
+  App --> AssetPicker
 
+  SwapVidPlayerRoot --> PlayerCombinedView
+  SwapVidPlayerRoot --> PlayerParallelView
+
+
+  PlayerCombinedView --> DocumentOverview
+  PlayerCombinedView --> DocumentPlayer
+  PlayerCombinedView --> VideoPlayer
+  PlayerCombinedView --> VideoSeekbar
+  PlayerCombinedView --> VideoToolbar
+  PlayerCombinedView --> VideoSubtitles
+
+
+  PlayerParallelView --> DocumentOverview
+  PlayerParallelView --> DocumentPlayer
+  PlayerParallelView --> VideoPlayer
+  PlayerParallelView --> VideoSeekbar
+  PlayerParallelView --> VideoToolbar
+  PlayerParallelView --> VideoSubtitles
 ```
