@@ -28,6 +28,4 @@ You can use `make deploy` command to build and deploy the development build.
 
 
 ## Components
-![SwapVid_frontend_components_v1](https://github.com/taichimurakami-github/swapvid_frontend/assets/64308722/e7c68f3c-ecaa-430d-9a0c-8af4e6492621)
-
-
+![SwapVid_frontend_components_v1 1](https://github.com/taichimurakami-github/swapvid_frontend/assets/64308722/73b93785-a33c-4dd0-9034-b62137b101ef)
