@@ -1,23 +1,23 @@
 import React, { useCallback, useReducer } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { faCircleRight, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { TInterfaceType, TMediaSourceType } from "@/types/swapvid";
 import { useAtom, useAtomValue } from "jotai/react";
 import { AppStatesVisualizer } from "@/containers/AppStatesVisualizer";
 import {
-  AppConfigContentContainer,
-  AppConfigModalContainer,
-} from "@/presentations/Modal";
-import {
   assetLoaderStateAtom,
   pdfSrcAtom,
   sequenceAnalyzerEnabledAtom,
   sequenceAnalyzerEndpointURLAtom,
+  sequenceAnalyzerStateAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
 } from "@/providers/jotai/store";
+import {
+  AppConfigContentContainer,
+  AppConfigModalContainer,
+} from "@/presentations/Modal";
 import {
   AppConfigInput,
   AppConfigLinkItem,
@@ -26,6 +26,7 @@ import {
   AppConfigToggle,
   TAppConfigMultipleSelectProps,
 } from "@/containers/AppConfigParts";
+import { AppConfigActivatorButton } from "@/presentations/Button";
 
 type AppMenuContents = {
   element: JSX.Element;
@@ -104,13 +105,11 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
 
   if (!appConfigActive)
     return (
-      <button
-        id="appmenu_activator"
-        className="fixed top-2 left-2 p-2 z-20"
-        onClick={toggleAppConfigActive}
-      >
-        <FontAwesomeIcon className="text-4xl text-white" icon={faGear} />
-      </button>
+      <div className="fixed top-2 left-2 z-20 bg-black-transparent-01">
+        <AppConfigActivatorButton
+          handleToggleAppConfigActive={toggleAppConfigActive}
+        />
+      </div>
     );
 
   return (
@@ -123,7 +122,7 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
               dispatchAppMenuContents({ type: "reset" });
             }}
           >
-            App Config
+            App Settings
           </a>
           {appMenuContents.map((v, i) => (
             <>
@@ -160,6 +159,7 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
             <div className="grid max-w-[750px] mx-auto pb-16">
               <div className="h-[50px]"></div>
               <AppConfigMenuPlayerOptions />
+              <AppConfigMenuSequenceAnalyzerOptions />
               <AppConfigMenuSwapVidDesktopOptions />
               <AppConfigMenuDebugger
                 toggleAppStatesVisualizer={handleToggleAppStatesVisualizer}
@@ -188,6 +188,36 @@ const AppConfigMenuSwapVidDesktopOptions: React.FC = () => {
   );
 };
 
+const AppConfigMenuSequenceAnalyzerOptions: React.FC = () => {
+  const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
+    sequenceAnalyzerEnabledAtom
+  );
+  const [sequenceAnalyzerState, setSequenceAnalyzerState] = useAtom(
+    sequenceAnalyzerStateAtom
+  );
+  const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
+
+  const handleSetSqaActiveAssetId = (v: string) =>
+    setSequenceAnalyzerState((b) => ({ ...b, activeAssetId: v }));
+
+  return (
+    <AppConfigMenuSectionContainer title="Sequence Analyzer">
+      <AppConfigToggle
+        labelText="Sequence Analyzer"
+        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
+        handleSetValue={setSequenceAnalyzerEnabled}
+        disabled={swapVidDesktopEnabled}
+      />
+
+      <AppConfigInput
+        labelText="Asset ID"
+        currentValue={sequenceAnalyzerState.activeAssetId}
+        handleSetValue={handleSetSqaActiveAssetId}
+      />
+    </AppConfigMenuSectionContainer>
+  );
+};
+
 const AppConfigMenuPlayerOptions: React.FC = () => {
   const [assetLoaderState, setAssetLoaderState] = useAtom(assetLoaderStateAtom);
 
@@ -196,14 +226,10 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
   );
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
   const [pdfSrc, setPdfSrc] = useAtom(pdfSrcAtom);
-  const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
-    sequenceAnalyzerEnabledAtom
-  );
+
   const [sqaEndpointURL, setSqaEndpointURL] = useAtom(
     sequenceAnalyzerEndpointURLAtom
   );
-
-  const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
 
   return (
     <AppConfigMenuSectionContainer title="SwapVid Player">
@@ -217,13 +243,6 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
         ],
         handleSetValue: setSwapVidInterfaceType,
       } as TAppConfigMultipleSelectProps<TInterfaceType>)}
-
-      <AppConfigToggle
-        labelText="Sequence Analyzer"
-        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
-        handleSetValue={setSequenceAnalyzerEnabled}
-        disabled={swapVidDesktopEnabled}
-      />
 
       <AppConfigInput
         labelText="Sequence Analyzer Endpoint URL"
