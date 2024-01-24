@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import useSubtitles from "../hooks/useSubtitles";
-import { useVideoCurrenttime } from "../hooks/useVideoCurrenttime";
+import useSubtitles from "@/hooks/useSubtitles";
+import { useVideoCurrenttime } from "@/hooks/useVideoCurrenttime";
 import {
   subtitlesActiveAtom,
   subtitlesDataAtom,
   videoElementRefAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { useAtomValue } from "jotai/react";
 
 export const VideoSubtitles: React.FC = () => {

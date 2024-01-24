@@ -11,21 +11,22 @@ import {
 import { usePreGeneratedScrollTimeline } from "@hooks/usePreGeneratedTimeline";
 import { useSequenceAnalyzer } from "@hooks/useSequenceAnalyzer";
 import {
-  assetIdAtom,
   documentPlayerActiveAtom,
   documentPlayerContainerElementRefAtom,
   documentPlayerLayoutAtom,
   documentPlayerStandbyAtom,
   documentPlayerStateAtom,
   documentPlayerWrapperElementRefAtom,
+  pdfSrcAtom,
   preGeneratedScrollTimelineDataAtom,
   relatedVideoTimeSectionsAtom,
   sequenceAnalyzerEnabledAtom,
+  sequenceAnalyzerEndpointURLAtom,
   sequenceAnalyzerStateAtom,
   userDocumentViewportAtom,
   videoElementRefAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { TBoundingBox } from "@/types/swapvid";
 import { cvtToWHArray } from "@utils/bboxUtil";
 import { VideoViewportRectangle } from "@/containers/VideoViewportRectangle";
@@ -40,12 +41,18 @@ export const DocumentPlayer: React.FC<{
   const preGeneratedScrollTimeline = useAtomValue(
     preGeneratedScrollTimelineDataAtom
   );
-  const assetId = useAtomValue(assetIdAtom);
+  const pdfSrc = useAtomValue(pdfSrcAtom);
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
+  const sequenceAnalyzerEndpointURL = useAtomValue(
+    sequenceAnalyzerEndpointURLAtom
+  );
   const [documentPlayerActive, setDocumentPlayerActive] = useAtom(
     documentPlayerActiveAtom
   );
   const [playerStandby, setPlayerStandby] = useAtom(documentPlayerStandbyAtom);
+  const [sequenceAnalyzerState, setSequenceAnalyzerState] = useAtom(
+    sequenceAnalyzerStateAtom
+  );
   const setDocumentPlayerState = useSetAtom(documentPlayerStateAtom);
   const setVideoViewport = useSetAtom(videoViewportAtom);
   const setUserDocumentViewport = useSetAtom(userDocumentViewportAtom);
@@ -57,29 +64,21 @@ export const DocumentPlayer: React.FC<{
     documentPlayerContainerElementRefAtom
   );
   const setRelatedVideoTimeSections = useSetAtom(relatedVideoTimeSectionsAtom);
-  const setSequenceAnalyzerState = useSetAtom(sequenceAnalyzerStateAtom);
 
   const videoElementRef = useAtomValue(videoElementRefAtom);
   const documentWrapperRef = useRef<HTMLDivElement>(null);
   const documentContainerRef = useRef<HTMLDivElement>(null);
   const renderingScaleVideoViewport = useRef(videoViewport);
 
-  const playerActive = documentPlayerActive || standaloneModeEnabled;
+  const playerActive = documentPlayerActive || !!standaloneModeEnabled;
 
   /** Video viewport fetcher/getter */
-  const {
-    timeline: scrollTimelineData,
-    getActiveVideoViewportFromCurrentTime,
-  } = usePreGeneratedScrollTimeline(preGeneratedScrollTimeline);
-  const { fetchVideoViewportFromCurrentTime } = useSequenceAnalyzer(
-    assetId,
-    videoElementRef
-  );
+  const { timeline: documentTimeline, getActiveVideoViewportFromCurrentTime } =
+    usePreGeneratedScrollTimeline(preGeneratedScrollTimeline);
+  const { fetchVideoViewportFromCurrentTime } =
+    useSequenceAnalyzer(videoElementRef);
 
   const getRelatedVideoTimeSections = useRelatedVideoTimeSectionParser();
-  const { timeline: documentTimeline } = usePreGeneratedScrollTimeline(
-    preGeneratedScrollTimeline
-  );
 
   /** State updater */
   const updatePlayerActive = useCallback(
@@ -102,7 +101,12 @@ export const DocumentPlayer: React.FC<{
   );
   const updateRelatedVideoTimeSections = useCallback(
     (v: TBoundingBox) => {
-      if (documentTimeline && videoElementRef?.current?.duration) {
+      const videoElementDuration = videoElementRef?.current?.duration;
+      if (
+        documentTimeline &&
+        !!videoElementDuration &&
+        videoElementDuration !== Infinity
+      ) {
         const relatedVideoTimeSections = getRelatedVideoTimeSections(
           v,
           documentTimeline,
@@ -177,7 +181,10 @@ export const DocumentPlayer: React.FC<{
   ]);
 
   useEffect(() => {
-    preGeneratedScrollTimeline &&
+    /**
+     * Automatically enable sequence analyzer when pre-generated timeline data is not available
+     */
+    !preGeneratedScrollTimeline &&
       setDocumentPlayerState((b) => ({ ...b, sequenceAnalyzerEnabled: true }));
   }, [setDocumentPlayerState, preGeneratedScrollTimeline]);
 
@@ -187,7 +194,7 @@ export const DocumentPlayer: React.FC<{
    */
   const getCurrentVideoViewport = useCallback(
     async (currentTime: number) => {
-      const preGeneratedScrollTimelineExists = scrollTimelineData.length > 0;
+      const preGeneratedScrollTimelineExists = documentTimeline.length > 0;
 
       if (!preGeneratedScrollTimelineExists || sequenceAnalyzerEnabled) {
         /** Use sequence analyzer to match */
@@ -195,6 +202,8 @@ export const DocumentPlayer: React.FC<{
         setSequenceAnalyzerState((b) => ({ ...b, running: true }));
 
         const fetchResult = await fetchVideoViewportFromCurrentTime(
+          sequenceAnalyzerEndpointURL,
+          sequenceAnalyzerState.activeAssetId,
           currentTime
         );
 
@@ -227,8 +236,10 @@ export const DocumentPlayer: React.FC<{
       return getActiveVideoViewportFromCurrentTime(currentTime);
     },
     [
+      sequenceAnalyzerEndpointURL,
       sequenceAnalyzerEnabled,
-      scrollTimelineData.length,
+      sequenceAnalyzerState.activeAssetId,
+      documentTimeline.length,
       setSequenceAnalyzerState,
       getActiveVideoViewportFromCurrentTime,
       fetchVideoViewportFromCurrentTime,
@@ -255,16 +266,19 @@ export const DocumentPlayer: React.FC<{
   /** Adjust pdf page width to render */
   const getRenderingScalePageWidth = useCallback(
     (videoViewport: TBoundingBox | null) => {
-      if (!documentContainerRef.current || !videoViewport) {
+      if (!documentContainerRef.current) {
         return 0;
       }
 
       const containerWidth = documentContainerRef.current.clientWidth;
+      if (!videoViewport) {
+        return containerWidth;
+      }
 
       const [videoViewportWidth] = cvtToWHArray(
         videoViewport ?? [
           [0, 0],
-          [0, 0],
+          [1, 0],
         ]
       );
 
@@ -297,7 +311,7 @@ export const DocumentPlayer: React.FC<{
   return (
     <div
       id="document_player_wrapper"
-      className={`overflow-scroll ${
+      className={`bg-white overflow-scroll ${
         standaloneModeEnabled ? "" : "scrollbar-hidden"
       }`}
       style={{
@@ -331,10 +345,13 @@ export const DocumentPlayer: React.FC<{
           visibility: playerActive ? "visible" : "hidden",
         }}
       >
-        {pageWidthToRender > 0 && (
+        {pdfSrc && (
           <>
             <PDFRenderer pageWidthPx={pageWidthToRender} />
-            <VideoViewportRectangle pageWidthPx={pageWidthToRender} />
+            <VideoViewportRectangle
+              pageWidthPx={pageWidthToRender}
+              standaloneModeEnabled={standaloneModeEnabled}
+            />
           </>
         )}
       </div>

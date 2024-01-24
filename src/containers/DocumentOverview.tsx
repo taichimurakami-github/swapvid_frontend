@@ -11,16 +11,16 @@ import { faFileInvoice, faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   documentOverviewActiveAtom,
-  documentOverviewImgSrcAtom,
   documentPlayerActiveAtom,
   documentPlayerLayoutAtom,
   documentPlayerWrapperElementRefAtom,
   userDocumentViewportAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { useAtom, useAtomValue } from "jotai/react";
 import { cvtToTLWHArray } from "@/utils/bboxUtil";
 import { usePointerDrag } from "@/hooks/usePointerDrag";
+import { PDFRenderer } from "./PDFRenderer";
 
 /**
  * FIXME:
@@ -42,7 +42,6 @@ const _DocumentOverview: React.FC<{
   const [documentOverviewActive, setDocumentOverviewActive] = useAtom(
     documentOverviewActiveAtom
   );
-  const imagedPdfSrc = useAtomValue(documentOverviewImgSrcAtom);
   const documentPlayerLayout = useAtomValue(documentPlayerLayoutAtom);
   const documentPlayerActive = useAtomValue(documentPlayerActiveAtom);
   const videoViewport = useAtomValue(videoViewportAtom);
@@ -215,7 +214,13 @@ const _DocumentOverview: React.FC<{
         onClick={(e) => e.stopPropagation()}
         ref={containerRef}
       >
-        <img className="w-full pointer-events-none" src={imagedPdfSrc ?? ""} />
+        {/* <img className="w-full pointer-events-none" src={imagedPdfSrc ?? ""} /> */}
+        {containerRef.current && (
+          <PDFRenderer
+            pageWidthPx={containerRef.current.clientWidth}
+            disableTextLayer
+          />
+        )}
       </div>
       <div
         className="absolute flex-xyc doc-overview-invid-focused-area bg-blue-600 z-10 opacity-70 pointer-events-none"

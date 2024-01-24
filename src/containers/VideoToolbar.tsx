@@ -10,7 +10,6 @@ import {
   documentOverviewActiveAtom,
   documentPlayerActiveAtom,
   documentPlayerStandbyAtom,
-  mediaSourceTypeAtom,
   pdfRendererStateAtom,
   pipVideoWindowActiveAtom,
   sequenceAnalyzerEnabledAtom,
@@ -20,7 +19,7 @@ import {
   videoElementRefAtom,
   videoElementStateAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 
 const _VideoToolbar: React.FC<{
   ambientBackgroundEnabled: boolean;
@@ -45,7 +44,6 @@ const _VideoToolbar: React.FC<{
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
   const videoElementRef = useAtomValue(videoElementRefAtom);
   const videoElementState = useAtomValue(videoElementStateAtom);
-  const mediaSourceType = useAtomValue(mediaSourceTypeAtom);
   const interfaceType = useAtomValue(swapvidInterfaceTypeAtom);
 
   const handlePlayAndPauseButtonClick = useCallback(() => {
@@ -98,11 +96,11 @@ const _VideoToolbar: React.FC<{
       : "";
   }
 
-  const wrapperStyle = `bg-toolbar flex justify-between py-3 ${
+  const wrapperStyle = `bg-toolbar flex justify-between py-2 ${
     ambientBackgroundEnabled ? wrapperStyleAmbientBackgroundEnabled : ""
   }`;
 
-  const liveStreamingEnabled = mediaSourceType === "live-streaming";
+  const liveStreamingEnabled = videoElementRef?.current?.duration === Infinity;
   const parallelViewEnabled = interfaceType === "parallel";
   const documentAvailableOnClient = pdfRendererState.loaded;
   const documentAvailableOnSequenceAnalyzer =
@@ -120,7 +118,7 @@ const _VideoToolbar: React.FC<{
         handleClickPlayAndPauseButton={handlePlayAndPauseButtonClick}
         handleChangeVideoVolumeSlider={handleChangeVideoVolumeSlider}
         handleToggleVideoVolumeMuted={handleToggleChangeVideoVolumeMuted}
-        liveModeEnabled={liveStreamingEnabled || sequenceAnalyzerEnabled}
+        liveModeEnabled={liveStreamingEnabled}
         videoPaused={videoElementState.paused}
         videoVolume={videoElementState.volume}
         playAndPauseButtonEnabled={playAndPauseButtonEnabled ?? true}

@@ -1,10 +1,10 @@
+import { useCallback, useMemo, useState } from "react";
 import {
   TBoundingBox,
   TDocumentTimeline,
   TServerGeneratedActivityTimeline,
   TServerGeneratedScrollTimeline,
 } from "@/types/swapvid";
-import { useCallback, useMemo, useState } from "react";
 
 export function usePreGeneratedScrollTimeline(
   timeline: TServerGeneratedScrollTimeline | null
@@ -71,14 +71,14 @@ export function usePreGeneratedActivityTimeline(
     activityTimeline.activities.map((_) => false)
   );
   const getActivityAssets = useCallback(() => {
-    const [vfWidth, vfHeght] = activityTimeline.video_metadata;
+    // const [vfWidth, vfHeght] = activityTimeline.video_metadata;
     return activityTimeline.activities.reduce<
       [
         number, //t_active
         [[number, number], [number, number]], // [position_pct_top, position_pct_left]
         string //dataurl
       ][]
-    >((prevResult, activity, i) => {
+    >((prevResult, activity) => {
       if (videoElem && renderedDocumentWrapperElem) {
         const t_active = activity[0][1];
         for (const asset of activity[2]) {

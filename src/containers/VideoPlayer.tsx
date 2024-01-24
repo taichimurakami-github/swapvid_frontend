@@ -1,33 +1,34 @@
 import React, { useEffect, useRef } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
+import { useAtom, useSetAtom } from "jotai/react";
 import {
-  mediaSourceTypeAtom,
+  assetLoaderStateAtom,
   sequenceAnalyzerEnabledAtom,
   videoElementRefAtom,
   videoElementStateAtom,
   videoMetadataAtom,
   videoPlayerLayoutAtom,
   videoSrcAtom,
-  videoSrcObjectAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 import { useDesktopCapture } from "@/hooks/useDesktopCapture";
+import { useAutoVideoSrcInjecter } from "@/hooks/useVideoSrcHelper";
 
 /**
  * Should not use "useCallback" in this component,
  * because it won't be re-rendered so frequently.
  */
-const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
-  desktopCaptureEnabled,
-}) => {
+const _VideoPlayer: React.FC<{
+  desktopCaptureEnabled?: boolean;
+  playerWidth?: number;
+  playerHeight?: number;
+}> = ({ desktopCaptureEnabled, playerWidth, playerHeight }) => {
   const errorContent = useRef("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const videoSrc = useAtomValue(videoSrcAtom);
-  const [videoSrcObject, setVideoSrcObject] = useAtom(videoSrcObjectAtom);
+  const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
   const setVideoElementRef = useSetAtom(videoElementRefAtom);
   const setVideoPlayerLayout = useSetAtom(videoPlayerLayoutAtom);
   const setVideoElementState = useSetAtom(videoElementStateAtom);
   const setVideoMetadata = useSetAtom(videoMetadataAtom);
-  const setMediaSourceType = useSetAtom(mediaSourceTypeAtom);
+  const setAssetLoaderState = useSetAtom(assetLoaderStateAtom);
   const setSequenceAnalyzerEnabled = useSetAtom(sequenceAnalyzerEnabledAtom);
 
   const captureDesktop = useDesktopCapture();
@@ -100,45 +101,40 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
     const result = await captureDesktop();
 
     if (result) {
-      setVideoSrcObject(result.captureStream);
-      setMediaSourceType("live-streaming");
+      setVideoSrc(result.captureStream);
+      setAssetLoaderState((b) => ({
+        ...b,
+        video: { presetsEnabled: false, sourceType: "streaming" },
+      }));
       setSequenceAnalyzerEnabled(true);
     }
   };
 
-  useEffect(() => {
-    if (videoRef.current) {
-      const videoElem = videoRef.current;
-      if (desktopCaptureEnabled) {
-        videoElem.srcObject = videoSrcObject;
-        return () => {
-          videoElem.srcObject = null;
-        };
-      }
+  useAutoVideoSrcInjecter(videoRef, videoSrc);
 
-      if (videoSrc) {
-        videoRef.current.src = videoSrc;
-      }
-    }
-  }, [videoSrc, desktopCaptureEnabled, videoSrcObject, videoRef]);
+  useEffect(() => {
+    videoRef.current &&
+      setVideoPlayerLayout((b) => ({
+        ...b,
+        width: videoRef.current?.clientWidth ?? b.width,
+        height: videoRef.current?.clientHeight ?? b.height,
+      }));
+  }, [
+    setVideoPlayerLayout,
+    videoSrc,
+    videoRef.current?.clientWidth,
+    videoRef.current?.clientHeight,
+  ]);
 
   if (errorContent.current) throw new Error(errorContent.current);
 
-  if (!desktopCaptureEnabled && !videoSrc) {
-    return (
-      <div className="flex-xyc bg-gray-300 text-2xl font-bold w-[1000px]">
-        Failed to load media : Video source is not found.
-      </div>
-    );
-  }
-
-  const videoReady =
-    (!desktopCaptureEnabled && !!videoSrc) ||
-    (desktopCaptureEnabled && !!videoSrcObject);
-
+  /**
+   * Must set max-width and max-height to video element
+   * to keep it in viewport.
+   */
   return (
     <>
-      {desktopCaptureEnabled && !videoReady && (
+      {desktopCaptureEnabled && !videoSrc && (
         <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] bg-gray-300">
           <p className="text-xl">Please choose app window from your desktop.</p>
           <button
@@ -150,16 +146,19 @@ const _VideoPlayer: React.FC<{ desktopCaptureEnabled?: boolean }> = ({
         </div>
       )}
 
-      {!desktopCaptureEnabled && !videoReady && (
-        <div className="flex-xyc bg-gray-300 text-2xl font-bold w-[1000px]">
-          Failed to load media : Video source is not found.
+      {!desktopCaptureEnabled && !videoSrc && (
+        <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] max-w-full max-h-full bg-gray-700 text-white font-bold">
+          <p className="text-2xl">Cannot find the video file.</p>
+          <p>Please choose the assets from Config to play.</p>
         </div>
       )}
 
       <video
-        className="max-h-[75vh] max-w-[100%] w-full"
+        className="max-w-full max-h-[80vh]"
         style={{
-          display: videoReady ? "block" : "none",
+          display: videoSrc ? "block" : "none",
+          width: playerWidth ?? "100%",
+          height: playerHeight ?? "auto",
         }}
         ref={videoRef}
         loop={false}

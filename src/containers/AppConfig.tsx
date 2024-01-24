@@ -1,23 +1,23 @@
 import React, { useCallback, useReducer } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { faCircleRight, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { TAssetId, TInterfaceType, TMediaSourceType } from "@/types/swapvid";
+import { TInterfaceType, TMediaSourceType } from "@/types/swapvid";
 import { useAtom, useAtomValue } from "jotai/react";
 import { AppStatesVisualizer } from "@/containers/AppStatesVisualizer";
+import {
+  assetLoaderStateAtom,
+  pdfSrcAtom,
+  sequenceAnalyzerEnabledAtom,
+  sequenceAnalyzerEndpointURLAtom,
+  sequenceAnalyzerStateAtom,
+  swapvidDesktopEnabledAtom,
+  swapvidInterfaceTypeAtom,
+  videoSrcAtom,
+} from "@/providers/jotai/store";
 import {
   AppConfigContentContainer,
   AppConfigModalContainer,
 } from "@/presentations/Modal";
-import {
-  assetIdAtom,
-  mediaSourceTypeAtom,
-  pdfSrcAtom,
-  sequenceAnalyzerEnabledAtom,
-  swapvidDesktopEnabledAtom,
-  swapvidInterfaceTypeAtom,
-  videoSrcAtom,
-} from "@/providers/jotai/swapVidPlayer";
 import {
   AppConfigInput,
   AppConfigLinkItem,
@@ -26,6 +26,7 @@ import {
   AppConfigToggle,
   TAppConfigMultipleSelectProps,
 } from "@/containers/AppConfigParts";
+import { AppConfigActivatorButton } from "@/presentations/Button";
 
 type AppMenuContents = {
   element: JSX.Element;
@@ -104,13 +105,11 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
 
   if (!appConfigActive)
     return (
-      <button
-        id="appmenu_activator"
-        className="fixed top-2 left-2 p-2 z-20"
-        onClick={toggleAppConfigActive}
-      >
-        <FontAwesomeIcon className="text-4xl text-white" icon={faGear} />
-      </button>
+      <div className="fixed top-2 left-2 z-20 bg-black-transparent-01">
+        <AppConfigActivatorButton
+          handleToggleAppConfigActive={toggleAppConfigActive}
+        />
+      </div>
     );
 
   return (
@@ -123,7 +122,7 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
               dispatchAppMenuContents({ type: "reset" });
             }}
           >
-            App Config
+            App Settings
           </a>
           {appMenuContents.map((v, i) => (
             <>
@@ -160,6 +159,7 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
             <div className="grid max-w-[750px] mx-auto pb-16">
               <div className="h-[50px]"></div>
               <AppConfigMenuPlayerOptions />
+              <AppConfigMenuSequenceAnalyzerOptions />
               <AppConfigMenuSwapVidDesktopOptions />
               <AppConfigMenuDebugger
                 toggleAppStatesVisualizer={handleToggleAppStatesVisualizer}
@@ -188,58 +188,51 @@ const AppConfigMenuSwapVidDesktopOptions: React.FC = () => {
   );
 };
 
+const AppConfigMenuSequenceAnalyzerOptions: React.FC = () => {
+  const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
+    sequenceAnalyzerEnabledAtom
+  );
+  const [sequenceAnalyzerState, setSequenceAnalyzerState] = useAtom(
+    sequenceAnalyzerStateAtom
+  );
+  const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
+
+  const handleSetSqaActiveAssetId = (v: string) =>
+    setSequenceAnalyzerState((b) => ({ ...b, activeAssetId: v }));
+
+  return (
+    <AppConfigMenuSectionContainer title="Sequence Analyzer">
+      <AppConfigToggle
+        labelText="Sequence Analyzer"
+        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
+        handleSetValue={setSequenceAnalyzerEnabled}
+        disabled={swapVidDesktopEnabled}
+      />
+
+      <AppConfigInput
+        labelText="Asset ID"
+        currentValue={sequenceAnalyzerState.activeAssetId}
+        handleSetValue={handleSetSqaActiveAssetId}
+      />
+    </AppConfigMenuSectionContainer>
+  );
+};
+
 const AppConfigMenuPlayerOptions: React.FC = () => {
-  const [mediaSourceType, _setMediaSourceType] = useAtom(mediaSourceTypeAtom);
+  const [assetLoaderState, setAssetLoaderState] = useAtom(assetLoaderStateAtom);
 
   const [swapVidInterfaceType, setSwapVidInterfaceType] = useAtom(
     swapvidInterfaceTypeAtom
   );
-  const [activeAssetId, setActiveAssetId] = useAtom(assetIdAtom);
-
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
   const [pdfSrc, setPdfSrc] = useAtom(pdfSrcAtom);
-  const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
-    sequenceAnalyzerEnabledAtom
-  );
 
-  const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
+  const [sqaEndpointURL, setSqaEndpointURL] = useAtom(
+    sequenceAnalyzerEndpointURLAtom
+  );
 
   return (
     <AppConfigMenuSectionContainer title="SwapVid Player">
-      {React.createElement(AppConfigMultipleSelect<TAssetId>, {
-        currentValue: activeAssetId,
-        selectElementId: "player_active_asset_id",
-        labelText: "Asset ID (presets)",
-        options: [
-          { value: "SampleLectureLLM01", name: "SampleLectureLLM01" },
-          { value: "CHI2021Fujita", name: "CHI2021Fujita" },
-          { value: "IEEEVR2022Hoshikawa", name: "IEEEVR2022Hoshikawa" },
-          { value: "IEEEVR2022Ogawa", name: "IEEEVR2022Ogawa" },
-          { value: "EdanMeyerVpt", name: "EdanMeyerVpt" },
-          { value: "EdanMeyerAlphaCode", name: "EdanMeyerAlphaCode" },
-        ],
-        handleSetValue: setActiveAssetId,
-      } as TAppConfigMultipleSelectProps<TAssetId>)}
-
-      {/* <AppConfigInput
-        labelText="Asset ID (custom)"
-        currentValue={activeAssetId ?? ""}
-        // @ts-ignore
-        handleSetValue={setActiveAssetId}
-      /> */}
-
-      <AppConfigInput
-        labelText="Video Source URL"
-        currentValue={videoSrc ?? ""}
-        handleSetValue={setVideoSrc}
-      />
-
-      <AppConfigInput
-        labelText="PDF Source URL"
-        currentValue={pdfSrc ?? ""}
-        handleSetValue={setPdfSrc}
-      />
-
       {React.createElement(AppConfigMultipleSelect<TInterfaceType>, {
         currentValue: swapVidInterfaceType,
         selectElementId: "player_ui_type",
@@ -251,28 +244,107 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
         handleSetValue: setSwapVidInterfaceType,
       } as TAppConfigMultipleSelectProps<TInterfaceType>)}
 
-      <div className="flex flex-wrap items-center justify-between p-4">
-        <span>media source type:</span>
-        <b className="text-teal-600">{mediaSourceType}</b>
-      </div>
-      {/* {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
-        currentValue: mediaSourceType,
-        selectElementId: "media_source_type",
-        labelText: "Media Source Type",
+      <AppConfigInput
+        labelText="Sequence Analyzer Endpoint URL"
+        currentValue={sqaEndpointURL}
+        handleSetValue={setSqaEndpointURL}
+      />
+
+      {/* {React.createElement(AppConfigMultipleSelect<TAssetId>, {
+        currentValue: activeAssetId,
+        selectElementId: "player_active_asset_id",
+        labelText: "Preset Asset",
         options: [
-          { value: "live-streaming", name: "Live Streaming" },
+          { value: "SampleLectureLLM01", name: "SampleLectureLLM01" },
+          { value: "CHI2021Fujita", name: "CHI2021Fujita" },
+          { value: "IEEEVR2022Hoshikawa", name: "IEEEVR2022Hoshikawa" },
+          { value: "IEEEVR2022Ogawa", name: "IEEEVR2022Ogawa" },
+          { value: "EdanMeyerVpt", name: "EdanMeyerVpt" },
+          { value: "EdanMeyerAlphaCode", name: "EdanMeyerAlphaCode" },
+        ],
+        handleSetValue: setActiveAssetId,
+      } as TAppConfigMultipleSelectProps<TAssetId>)} */}
+
+      {/* <AppConfigInput
+        labelText="Asset ID (custom)"
+        currentValue={activeAssetId ?? ""}
+        // @ts-ignore
+        handleSetValue={setActiveAssetId}
+      /> */}
+
+      {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
+        currentValue: assetLoaderState.video.sourceType,
+        selectElementId: "video_source_type",
+        labelText: "Video Source Type",
+        options: [
           { value: "streaming", name: "Streaming" },
           { value: "local", name: "Local File" },
         ],
-        handleSetValue: setMediaSourceType,
-      } as TAppConfigMultipleSelectProps<TMediaSourceType>)} */}
+        handleSetValue: (v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            video: { ...b.video, sourceType: v },
+          })),
+      } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
 
-      <AppConfigToggle
-        labelText="Sequence Analyzer"
-        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
-        handleSetValue={setSequenceAnalyzerEnabled}
+      {/* <AppConfigToggle
+        labelText="Use preset Video file"
+        currentValue={
+          swapVidDesktopEnabled ? true : assetLoaderState.video.presetsEnabled
+        }
+        handleSetValue={(v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            video: { ...b.video, presetsEnabled: v },
+          }))
+        }
         disabled={swapVidDesktopEnabled}
-      />
+      /> */}
+
+      {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
+        currentValue: assetLoaderState.pdf.sourceType,
+        selectElementId: "pdf_source_type",
+        labelText: "PDF Source Type",
+        options: [
+          { value: "streaming", name: "Streaming" },
+          { value: "local", name: "Local File" },
+        ],
+        handleSetValue: (v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            pdf: { ...b.pdf, sourceType: v },
+          })),
+      } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
+
+      {/* <AppConfigToggle
+        labelText="Use preset PDF file"
+        currentValue={
+          swapVidDesktopEnabled ? true : assetLoaderState.pdf.presetsEnabled
+        }
+        handleSetValue={(v) =>
+          setAssetLoaderState((b) => ({
+            ...b,
+            pdf: { ...b.pdf, presetsEnabled: v },
+          }))
+        }
+        disabled={swapVidDesktopEnabled}
+      /> */}
+
+      {typeof videoSrc === "string" && (
+        <AppConfigInput
+          labelText="Video Source URL"
+          currentValue={videoSrc ?? ""}
+          handleSetValue={setVideoSrc}
+        />
+      )}
+
+      {typeof pdfSrc === "string" && (
+        <AppConfigInput
+          labelText="PDF Source URL"
+          currentValue={pdfSrc ?? ""}
+          handleSetValue={setPdfSrc}
+        />
+      )}
     </AppConfigMenuSectionContainer>
   );
 };

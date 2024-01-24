@@ -10,12 +10,13 @@ import {
   pdfPageStateAtom,
   pdfRendererStateAtom,
   pdfSrcAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 ("@/providers/jotai/swapVidPlayer");
 
 const _PDFRenderer: React.FC<{
   pageWidthPx: number;
-}> = ({ pageWidthPx }) => {
+  disableTextLayer?: boolean;
+}> = ({ pageWidthPx, disableTextLayer }) => {
   const pdfSrc = useAtomValue(pdfSrcAtom);
   const [pdfState, setPdfState] = useAtom(pdfRendererStateAtom);
   const setPdfPageState = useSetAtom(pdfPageStateAtom);
@@ -62,7 +63,7 @@ const _PDFRenderer: React.FC<{
           width={pageWidthPx}
           pageNumber={i}
           key={`renderedPdf_p${i}`}
-          renderTextLayer
+          renderTextLayer={!disableTextLayer}
         />
       ))}
     </Document>

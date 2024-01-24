@@ -1,3 +1,10 @@
+import React from "react";
+import { VideoToolbarCurrentTimeDisplay } from "@/containers/VideoToolbarCurrentTimeDisplay";
+import {
+  VideoToolbarPanelTypeA,
+  VideoToolbarPanelTypeB,
+} from "@/presentations/Button";
+import { getRangeArray } from "@/utils/common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPause,
@@ -9,10 +16,6 @@ import {
   faVolumeUp,
   faVolumeMute,
 } from "@fortawesome/free-solid-svg-icons";
-import { VideoToolbarCurrentTimeDisplay } from "@/containers/VideoToolbarCurrentTimeDisplay";
-import { VideoToolbarPanelTypeA, VideoToolbarPanelTypeB } from "./Button";
-import { getRangeArray } from "@/utils/common";
-import React from "react";
 
 /** TODO: Refactor this component */
 
@@ -81,6 +84,7 @@ export const VideoToolbarPanelCenter: React.FC<{
   documentPlayerActive: boolean;
 }> = React.memo(
   ({
+    sequenceAnalyzerEnabled,
     documentAvailableOnClient,
     documentAvailableOnSequenceAnalyzer,
     documentPlayerStandby,
@@ -126,16 +130,25 @@ export const VideoToolbarPanelCenter: React.FC<{
         Document active
       </p>
     ) : (
-      <p className="flex-xyc gap-2 text-sm">
-        <span
-          className="block rounded-full bg-blue-400"
-          style={{
-            width: 10,
-            height: 10,
-          }}
-        ></span>
-        Document standby
-      </p>
+      <div className="flex-xyc flex-col text-sm">
+        <p className="flex-xyc gap-2">
+          <span
+            className="block rounded-full bg-blue-400"
+            style={{
+              width: 10,
+              height: 10,
+            }}
+          ></span>
+          Document standby
+        </p>
+        <p className="text-[11px]">
+          (
+          {sequenceAnalyzerEnabled
+            ? "Source: Sequence Analyzer"
+            : "Source: Pre-generated timeline"}
+          )
+        </p>
+      </div>
     );
   }
 );

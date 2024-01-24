@@ -1,4 +1,18 @@
+import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { PropsWithChildren } from "react";
+
+export const AppConfigActivatorButton: React.FC<{
+  handleToggleAppConfigActive: () => void;
+}> = ({ handleToggleAppConfigActive }) => (
+  <button
+    id="appmenu_activator"
+    className="p-2"
+    onClick={handleToggleAppConfigActive}
+  >
+    <FontAwesomeIcon className="text-4xl text-white" icon={faGear} />
+  </button>
+);
 
 export const AppTopMenuButtonTypeA: React.FC<
   PropsWithChildren & {

@@ -12,7 +12,7 @@ import {
   documentPlayerActiveAtom,
   sequenceAnalyzerEnabledAtom,
   videoElementRefAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 
 export const VideoSeekbar: React.FC<{
   seekbarHighlightEnabled?: boolean;

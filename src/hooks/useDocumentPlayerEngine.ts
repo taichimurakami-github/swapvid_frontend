@@ -2,7 +2,7 @@ import { TBoundingBox, TDocumentTimeline } from "@/types/swapvid";
 import { calcBboxArea } from "@/utils/bboxUtil";
 import { calcRectCollision } from "@/utils/collision";
 import React, { useCallback, useRef } from "react";
-import { useVideoCurrentTimeEffect } from "./useVideoCurrenttime";
+import { useVideoCurrentTimeEffect } from "@/hooks/useVideoCurrenttime";
 
 export const useRelatedVideoTimeSectionParser = () => {
   /**

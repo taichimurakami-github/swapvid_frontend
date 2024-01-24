@@ -1,86 +1,48 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai/react";
-import { useAssetData } from "@/hooks/useAssetDataLoader";
 import {
   PlayerCombinedView,
   PlayerParallelView,
 } from "@/presentations/SwapVidPlayerView";
 import {
   assetIdAtom,
-  documentOverviewImgSrcAtom,
+  assetLoaderStateAtom,
+  localFilePickerActiveAtom,
   pdfSrcAtom,
-  preGeneratedScrollTimelineDataAtom,
-  subtitlesDataAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
-} from "@/providers/jotai/swapVidPlayer";
-import { TAssetId } from "@/types/swapvid";
+} from "@/providers/jotai/store";
+// import { TAssetId } from "@/types/swapvid";
 
 export const SwapVidPlayerRoot: React.FC<{
+  mediaSourceType?: "streaming" | "local" | "presets";
   zIndex?: number;
   swapvidDesktopEnabled?: boolean;
 }> = ({ zIndex }) => {
   const assetId = useAtomValue(assetIdAtom);
   const interfaceType = useAtomValue(swapvidInterfaceTypeAtom);
   const swapvidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
+  const assetLoaderState = useAtomValue(assetLoaderStateAtom);
+  const videoSrc = useAtomValue(videoSrcAtom);
+  const pdfSrc = useAtomValue(pdfSrcAtom);
 
-  const setPdfSrc = useSetAtom(pdfSrcAtom);
-  const setVideoSrc = useSetAtom(videoSrcAtom);
-  const setDocumentOverviewImgSrc = useSetAtom(documentOverviewImgSrcAtom);
-  const setSubtitlesData = useSetAtom(subtitlesDataAtom);
-  const setPreGeneratedScrollTimelineData = useSetAtom(
-    preGeneratedScrollTimelineDataAtom
-  );
-
-  /** Load Assets Here */
-  const {
-    loadDocumentOverviewImgSrc,
-    loadPdfSrc,
-    loadVideoSrc,
-    loadSubtitlesData,
-    loadPreGeneratedScrollTimelineData,
-  } = useAssetData();
-
-  const importAssetsOnRuntime = useCallback(
-    async (assetId: TAssetId) => {
-      const [
-        documentOverviewImgSrc,
-        videoSrc,
-        pdfSrc,
-        subtitlesData,
-        preGeneratedScrollTimelineData,
-      ] = await Promise.all([
-        loadDocumentOverviewImgSrc(assetId),
-        loadVideoSrc(assetId),
-        loadPdfSrc(assetId),
-        loadSubtitlesData(assetId),
-        loadPreGeneratedScrollTimelineData(assetId),
-      ]);
-
-      setPdfSrc(pdfSrc);
-      setVideoSrc(videoSrc);
-      setDocumentOverviewImgSrc(documentOverviewImgSrc);
-      setSubtitlesData(subtitlesData);
-      setPreGeneratedScrollTimelineData(preGeneratedScrollTimelineData);
-    },
-    [
-      loadDocumentOverviewImgSrc,
-      loadPdfSrc,
-      loadVideoSrc,
-      loadSubtitlesData,
-      loadPreGeneratedScrollTimelineData,
-      setPdfSrc,
-      setVideoSrc,
-      setDocumentOverviewImgSrc,
-      setSubtitlesData,
-      setPreGeneratedScrollTimelineData,
-    ]
-  );
+  const setLocalFilePickerActive = useSetAtom(localFilePickerActiveAtom);
 
   useEffect(() => {
-    assetId && importAssetsOnRuntime(assetId);
-  }, [assetId, importAssetsOnRuntime, swapvidDesktopEnabled]);
+    const localSourceRegistered = !!(videoSrc && pdfSrc);
+
+    if (!localSourceRegistered) {
+      setLocalFilePickerActive(true);
+    }
+  }, [
+    assetId,
+    assetLoaderState,
+    swapvidDesktopEnabled,
+    setLocalFilePickerActive,
+    videoSrc,
+    pdfSrc,
+  ]);
 
   switch (interfaceType) {
     case "combined":

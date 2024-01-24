@@ -3,11 +3,10 @@ import { useAtomValue } from "jotai/react";
 import {
   appMenuActiveAtom,
   assetIdAtom,
-  documentOverviewImgSrcAtom,
+  assetLoaderStateAtom,
   documentPlayerActiveAtom,
   documentPlayerLayoutAtom,
   documentPlayerStandbyAtom,
-  mediaSourceTypeAtom,
   pdfPageStateAtom,
   pdfRendererStateAtom,
   pdfUploaderActiveAtom,
@@ -27,7 +26,7 @@ import {
   videoPlayerLayoutAtom,
   videoSrcAtom,
   videoViewportAtom,
-} from "@/providers/jotai/swapVidPlayer";
+} from "@/providers/jotai/store";
 
 export const AppStatesVisualizer: React.FC<{
   active: boolean;
@@ -51,13 +50,12 @@ export const AppStatesVisualizer: React.FC<{
   const pdfPageState = useAtomValue(pdfPageStateAtom);
 
   const swapVidInterfaceType = useAtomValue(swapvidInterfaceTypeAtom);
-  const mediaSourceType = useAtomValue(mediaSourceTypeAtom);
   const appMenuActive = useAtomValue(appMenuActiveAtom);
   const sequenceAnalyzerState = useAtomValue(sequenceAnalyzerStateAtom);
 
+  const assetLoaderState = useAtomValue(assetLoaderStateAtom);
   const assetId = useAtomValue(assetIdAtom);
   const videoSrc = useAtomValue(videoSrcAtom);
-  const documentOverviewImgSrc = useAtomValue(documentOverviewImgSrcAtom);
   const subtitlesData = useAtomValue(subtitlesDataAtom);
   const preGeneratedScrollTimelineData = useAtomValue(
     preGeneratedScrollTimelineDataAtom
@@ -102,8 +100,8 @@ export const AppStatesVisualizer: React.FC<{
       <Item label="pdfPageState" value={pdfPageState} />
 
       <SectionTitle>SwapVid Player</SectionTitle>
+      <Item label="assetLoaderState" value={assetLoaderState} />
       <Item label="swapVidInterfaceType" value={swapVidInterfaceType} />
-      <Item label="mediaSourceType" value={mediaSourceType} />
       <Item label="appMenuActive" value={appMenuActive} />
       <Item label="sequenceAnalyzerState" value={sequenceAnalyzerState} />
 
@@ -115,7 +113,6 @@ export const AppStatesVisualizer: React.FC<{
       <SectionTitle>Assets</SectionTitle>
       <Item label="assetId" value={assetId} />
       <Item label="videoSrc" value={videoSrc} />
-      <Item label="documentOverviewImgSrc" value={documentOverviewImgSrc} />
       <Item label="subtitlesData" value={subtitlesData} />
       <Item
         label="preGeneratedScrollTimelineData"

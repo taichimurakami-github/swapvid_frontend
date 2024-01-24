@@ -1,9 +1,14 @@
 import {
+  INITIAL_ASSET_ID,
+  SEQUENCE_ANALYZER_API_ENDPOINT_HTTP,
+} from "@/app.config";
+import {
   DOMRectLike,
   TAssetId,
   TBoundingBox,
   TDocumentTimeline,
   TInterfaceType,
+  TMediaSourceObject,
   TMediaSourceType,
   TServerGeneratedScrollTimeline,
   TSubtitlesData,
@@ -14,6 +19,40 @@ import React from "react";
 
 const _getStorageKey = (key: string, primitive = true) =>
   `jotai.atom.${primitive ? "primitive" : "derived"}.${key}`;
+
+/**
+ * Asset State
+ */
+export const assetLoaderStateAtom = atomWithStorage<{
+  video: {
+    sourceType: TMediaSourceType;
+  };
+  pdf: {
+    sourceType: TMediaSourceType;
+  };
+}>(
+  _getStorageKey("assetLoaderState"),
+  {
+    video: { sourceType: "local" },
+    pdf: { sourceType: "local" },
+  },
+  undefined,
+  { getOnInit: true }
+);
+
+export const localFilePickerActiveAtom = atom(false);
+export const assetIdAtom = atomWithStorage<TAssetId | null>(
+  _getStorageKey("assetId"),
+  "SampleLectureLLM01",
+  undefined,
+  { getOnInit: true }
+); // Set to true when !!videoSrc && !!pdfSrc === true
+
+export const videoSrcAtom = atom<string | TMediaSourceObject | null>(null); // Set to true when video file is found.
+export const pdfSrcAtom = atom<string | File | null>(null); // Set to true when pdf file is found.
+export const subtitlesDataAtom = atom<TSubtitlesData | null>(null); // Provide parsed .srt data
+export const preGeneratedScrollTimelineDataAtom =
+  atom<TServerGeneratedScrollTimeline | null>(null);
 
 // PlayerState.VideoPlayerElement
 export const videoPlayerLayoutAtom = atom({ width: 0, height: 0 });
@@ -83,13 +122,7 @@ export const pdfPageStateAtom = atom({
 // PlayerState.RootPlayerConfig
 export const swapvidInterfaceTypeAtom = atomWithStorage<TInterfaceType>(
   _getStorageKey("interfaceType"),
-  "parallel",
-  undefined,
-  { getOnInit: true }
-);
-export const mediaSourceTypeAtom = atomWithStorage<TMediaSourceType>(
-  _getStorageKey("mediaSourceType"),
-  "local",
+  "combined",
   undefined,
   { getOnInit: true }
 );
@@ -102,7 +135,15 @@ export const sequenceAnalyzerEnabledAtom = atomWithStorage(
   undefined,
   { getOnInit: true }
 );
+
+export const sequenceAnalyzerEndpointURLAtom = atomWithStorage(
+  _getStorageKey("sequenceAnalyzerEndpointURL"),
+  SEQUENCE_ANALYZER_API_ENDPOINT_HTTP,
+  undefined,
+  { getOnInit: true }
+);
 export const sequenceAnalyzerStateAtom = atom<{
+  activeAssetId: string;
   listening: boolean;
   running: boolean;
   pdfAvailable: boolean;
@@ -111,26 +152,12 @@ export const sequenceAnalyzerStateAtom = atom<{
     message: string;
   };
 }>({
+  activeAssetId: INITIAL_ASSET_ID,
   listening: false, // Whether the sequence analyzer sends the response or not.
   running: false, // True when the sequence analyzer is analyzing client's response.
   pdfAvailable: false, //  Whether the pdf file of active asset is available or not.
   error: null, // Infomation about current error response.
 });
-
-// AssetState
-export const assetIdAtom = atomWithStorage<TAssetId | null>(
-  _getStorageKey("assetId"),
-  "SampleLectureLLM01",
-  undefined,
-  { getOnInit: true }
-); // Set to true when !!videoSrc && !!pdfSrc === true
-export const videoSrcObjectAtom = atom<MediaStream | null>(null); // For SwapVid Desktop
-export const videoSrcAtom = atom<string | null>(null); // Set to true when video file is found.
-export const pdfSrcAtom = atom<string | null>(null); // Set to true when pdf file is found.
-export const documentOverviewImgSrcAtom = atom<string | null>(null); // Set to true when pdf file is found.
-export const subtitlesDataAtom = atom<TSubtitlesData | null>(null); // Provide parsed .srt data
-export const preGeneratedScrollTimelineDataAtom =
-  atom<TServerGeneratedScrollTimeline | null>(null);
 
 // SwapVid Desktop
 export const swapvidDesktopEnabledAtom = atomWithStorage(
@@ -139,9 +166,11 @@ export const swapvidDesktopEnabledAtom = atomWithStorage(
   undefined,
   { getOnInit: true }
 );
+
 export const userCroppedAreaAtom = atom<{
   raw: DOMRectLike;
   videoScale: DOMRectLike;
 } | null>(null);
+
 export const videoCropperActiveAtom = atom(false);
 export const pdfUploaderActiveAtom = atom(false);
