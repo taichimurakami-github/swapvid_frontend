@@ -1,6 +1,5 @@
 import React, { useCallback, useReducer } from "react";
 import {
-  documentOverviewImgSrcAtom,
   localFilePickerActiveAtom,
   pdfSrcAtom,
   preGeneratedScrollTimelineDataAtom,
@@ -12,21 +11,26 @@ import { AppModalTypeA, AppModalWrapper } from "@/presentations/Modal";
 import { useMultipleFilesInput } from "@/hooks/useFileInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { ScreenCaptureAuthorizationButton } from "@containers/SwapVidDesktopUtils";
+
+const CheckMark: React.FC<{ active: boolean }> = ({ active }) => (
+  <div
+    className="bg-teal-600 text-white rounded-full w-8 h-8 flex-xyc font-bold"
+    style={{
+      opacity: active ? 1 : 0.3,
+    }}
+  >
+    <FontAwesomeIcon icon={faCheck} />
+  </div>
+);
 
 const Item: React.FC<{
   title: string;
   errorMessage?: string;
   value: boolean;
 }> = ({ title, errorMessage, value }) => (
-  <div className="flex-xyc gap-4">
-    <div
-      className="bg-teal-600 text-white rounded-full w-8 h-8 flex-xyc font-bold"
-      style={{
-        opacity: value ? 1 : 0.3,
-      }}
-    >
-      <FontAwesomeIcon icon={faCheck} />
-    </div>
+  <div className="flex-xyc gap-2">
+    <CheckMark active={value} />
     <p className="grid">
       <span className="text-lg">{title}</span>
       <b className="text-red-600 text-md">{errorMessage ?? ""}</b>
@@ -86,13 +90,7 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
   const setPreGeneratedScrollTimelineData = useSetAtom(
     preGeneratedScrollTimelineDataAtom
   );
-  const setDocumentOverviewImgSrc = useSetAtom(documentOverviewImgSrcAtom);
-
   const [active, setActive] = useAtom(localFilePickerActiveAtom);
-
-  // const videoInput = useFileInput();
-  // const pdfInput = useFileInput();
-  // const scrollTimelineInput = useFileInput();
 
   const { files, handleOnInputChange } = useMultipleFilesInput();
   const handleChange = useCallback(
@@ -113,9 +111,7 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
 
       for (const f of e.target.files as FileList) {
         validationResult.video =
-          swapVidDesktopEnabled || // Skip validation of video file if swapVidDesktopEnabled is true.
-          validationResult.video ||
-          f.name.includes(".mp4");
+          validationResult.video || f.name.includes(".mp4");
 
         validationResult.document =
           validationResult.document || f.name.includes(".pdf");
@@ -183,15 +179,6 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
           f.name.includes(".scroll.json") &&
             setPreGeneratedScrollTimelineData(JSON.parse(await f.text()));
           break;
-
-        case "png":
-        case "jpg":
-        case "JPEG":
-        case "JPG":
-        case "webp":
-        case "svg":
-          setDocumentOverviewImgSrc(URL.createObjectURL(f));
-          break;
       }
     }
 
@@ -202,13 +189,10 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
     setVideoSrc,
     setPdfSrc,
     setPreGeneratedScrollTimelineData,
-    setDocumentOverviewImgSrc,
   ]);
 
-  const submissionReady =
-    (selectedAsset.video || swapVidDesktopEnabled) &&
-    selectedAsset.document &&
-    selectedAsset.overviewImage;
+  const submissionReady = selectedAsset.video && selectedAsset.document;
+  // && selectedAsset.overviewImage;
 
   return (
     <AppModalWrapper visibility={active} zIndex={zIndex}>
@@ -219,26 +203,35 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
           </h2>
 
           <div className="flex flex-col gap-6 items-start">
-            {!swapVidDesktopEnabled && (
+            {swapVidDesktopEnabled ? (
+              <div className="flex justify-between items-center w-full">
+                <Item
+                  title="Video Streaming"
+                  errorMessage={errorMessage.video}
+                  value={selectedAsset.video}
+                />
+                <ScreenCaptureAuthorizationButton
+                  onSetCaptureStream={() => {
+                    dispatchSelectedAsset({ video: true });
+                  }}
+                />
+              </div>
+            ) : (
               <Item
-                title="[REQUIRED] Video File (.mp4)"
+                title="【REQUIRED】 Video File (.mp4)"
                 errorMessage={errorMessage.video}
                 value={selectedAsset.video}
               />
             )}
 
             <Item
-              title="[REQUIRED] Document File (.pdf)"
+              title="【REQUIRED】 Document File (.pdf)"
               errorMessage={errorMessage.document}
               value={selectedAsset.document}
             />
+
             <Item
-              title="[REQUIRED] Document Overview Image (Any image format)"
-              errorMessage={errorMessage.overviewImage}
-              value={selectedAsset.overviewImage}
-            />
-            <Item
-              title="[OPTIONAL] Scroll Timeline (.json)"
+              title="【OPTIONAL】 Scroll Timeline (.json)"
               errorMessage={errorMessage.scrollTimeline}
               value={selectedAsset.scrollTimeline}
             />

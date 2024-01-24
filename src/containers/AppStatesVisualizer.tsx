@@ -4,7 +4,6 @@ import {
   appMenuActiveAtom,
   assetIdAtom,
   assetLoaderStateAtom,
-  documentOverviewImgSrcAtom,
   documentPlayerActiveAtom,
   documentPlayerLayoutAtom,
   documentPlayerStandbyAtom,
@@ -57,7 +56,6 @@ export const AppStatesVisualizer: React.FC<{
   const assetLoaderState = useAtomValue(assetLoaderStateAtom);
   const assetId = useAtomValue(assetIdAtom);
   const videoSrc = useAtomValue(videoSrcAtom);
-  const documentOverviewImgSrc = useAtomValue(documentOverviewImgSrcAtom);
   const subtitlesData = useAtomValue(subtitlesDataAtom);
   const preGeneratedScrollTimelineData = useAtomValue(
     preGeneratedScrollTimelineDataAtom
@@ -115,7 +113,6 @@ export const AppStatesVisualizer: React.FC<{
       <SectionTitle>Assets</SectionTitle>
       <Item label="assetId" value={assetId} />
       <Item label="videoSrc" value={videoSrc} />
-      <Item label="documentOverviewImgSrc" value={documentOverviewImgSrc} />
       <Item label="subtitlesData" value={subtitlesData} />
       <Item
         label="preGeneratedScrollTimelineData"

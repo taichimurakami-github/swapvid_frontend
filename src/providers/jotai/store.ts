@@ -50,7 +50,6 @@ export const assetIdAtom = atomWithStorage<TAssetId | null>(
 
 export const videoSrcAtom = atom<string | TMediaSourceObject | null>(null); // Set to true when video file is found.
 export const pdfSrcAtom = atom<string | File | null>(null); // Set to true when pdf file is found.
-export const documentOverviewImgSrcAtom = atom<string | null>(null); // Set to true when pdf file is found.
 export const subtitlesDataAtom = atom<TSubtitlesData | null>(null); // Provide parsed .srt data
 export const preGeneratedScrollTimelineDataAtom =
   atom<TServerGeneratedScrollTimeline | null>(null);

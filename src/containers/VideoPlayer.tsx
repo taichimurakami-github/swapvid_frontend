@@ -157,7 +157,7 @@ const _VideoPlayer: React.FC<{
         className="max-w-full max-h-[80vh]"
         style={{
           display: videoSrc ? "block" : "none",
-          width: playerWidth ?? "auto",
+          width: playerWidth ?? "100%",
           height: playerHeight ?? "auto",
         }}
         ref={videoRef}

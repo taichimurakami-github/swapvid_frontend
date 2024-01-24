@@ -7,7 +7,6 @@ import {
 import {
   assetIdAtom,
   assetLoaderStateAtom,
-  documentOverviewImgSrcAtom,
   localFilePickerActiveAtom,
   pdfSrcAtom,
   swapvidDesktopEnabledAtom,
@@ -27,15 +26,11 @@ export const SwapVidPlayerRoot: React.FC<{
   const assetLoaderState = useAtomValue(assetLoaderStateAtom);
   const videoSrc = useAtomValue(videoSrcAtom);
   const pdfSrc = useAtomValue(pdfSrcAtom);
-  const documentOverviewImgSrc = useAtomValue(documentOverviewImgSrcAtom);
 
   const setLocalFilePickerActive = useSetAtom(localFilePickerActiveAtom);
 
   useEffect(() => {
-    const localSourceRegistered =
-      (!!videoSrc || swapvidDesktopEnabled) &&
-      !!pdfSrc &&
-      !!documentOverviewImgSrc;
+    const localSourceRegistered = !!(videoSrc && pdfSrc);
 
     if (!localSourceRegistered) {
       setLocalFilePickerActive(true);
@@ -47,7 +42,6 @@ export const SwapVidPlayerRoot: React.FC<{
     setLocalFilePickerActive,
     videoSrc,
     pdfSrc,
-    documentOverviewImgSrc,
   ]);
 
   switch (interfaceType) {
