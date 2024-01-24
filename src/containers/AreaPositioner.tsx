@@ -1,5 +1,5 @@
 import { userCroppedAreaAtom } from "@/providers/jotai/store";
-import { useAtomValue } from "jotai";
+import { useAtomValue } from "jotai/react";
 import { PropsWithChildren } from "react";
 
 export const CroppedAreaPositioner: React.FC<

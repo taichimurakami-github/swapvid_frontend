@@ -1,4 +1,7 @@
-import { SEQUENCE_ANALYZER_API_ENDPOINT_HTTP } from "@/app.config";
+import {
+  INITIAL_ASSET_ID,
+  SEQUENCE_ANALYZER_API_ENDPOINT_HTTP,
+} from "@/app.config";
 import {
   DOMRectLike,
   TAssetId,
@@ -141,6 +144,7 @@ export const sequenceAnalyzerEndpointURLAtom = atomWithStorage(
   { getOnInit: true }
 );
 export const sequenceAnalyzerStateAtom = atom<{
+  activeAssetId: string;
   listening: boolean;
   running: boolean;
   pdfAvailable: boolean;
@@ -149,6 +153,7 @@ export const sequenceAnalyzerStateAtom = atom<{
     message: string;
   };
 }>({
+  activeAssetId: INITIAL_ASSET_ID,
   listening: false, // Whether the sequence analyzer sends the response or not.
   running: false, // True when the sequence analyzer is analyzing client's response.
   pdfAvailable: false, //  Whether the pdf file of active asset is available or not.

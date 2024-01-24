@@ -73,17 +73,12 @@ export const DocumentPlayer: React.FC<{
   const playerActive = documentPlayerActive || !!standaloneModeEnabled;
 
   /** Video viewport fetcher/getter */
-  const {
-    timeline: scrollTimelineData,
-    getActiveVideoViewportFromCurrentTime,
-  } = usePreGeneratedScrollTimeline(preGeneratedScrollTimeline);
+  const { timeline: documentTimeline, getActiveVideoViewportFromCurrentTime } =
+    usePreGeneratedScrollTimeline(preGeneratedScrollTimeline);
   const { fetchVideoViewportFromCurrentTime } =
     useSequenceAnalyzer(videoElementRef);
 
   const getRelatedVideoTimeSections = useRelatedVideoTimeSectionParser();
-  const { timeline: documentTimeline } = usePreGeneratedScrollTimeline(
-    preGeneratedScrollTimeline
-  );
 
   /** State updater */
   const updatePlayerActive = useCallback(
@@ -106,7 +101,12 @@ export const DocumentPlayer: React.FC<{
   );
   const updateRelatedVideoTimeSections = useCallback(
     (v: TBoundingBox) => {
-      if (documentTimeline && videoElementRef?.current?.duration) {
+      const videoElementDuration = videoElementRef?.current?.duration;
+      if (
+        documentTimeline &&
+        !!videoElementDuration &&
+        videoElementDuration !== Infinity
+      ) {
         const relatedVideoTimeSections = getRelatedVideoTimeSections(
           v,
           documentTimeline,
@@ -194,7 +194,7 @@ export const DocumentPlayer: React.FC<{
    */
   const getCurrentVideoViewport = useCallback(
     async (currentTime: number) => {
-      const preGeneratedScrollTimelineExists = scrollTimelineData.length > 0;
+      const preGeneratedScrollTimelineExists = documentTimeline.length > 0;
 
       if (!preGeneratedScrollTimelineExists || sequenceAnalyzerEnabled) {
         /** Use sequence analyzer to match */
@@ -239,7 +239,7 @@ export const DocumentPlayer: React.FC<{
       sequenceAnalyzerEndpointURL,
       sequenceAnalyzerEnabled,
       sequenceAnalyzerState.activeAssetId,
-      scrollTimelineData.length,
+      documentTimeline.length,
       setSequenceAnalyzerState,
       getActiveVideoViewportFromCurrentTime,
       fetchVideoViewportFromCurrentTime,
