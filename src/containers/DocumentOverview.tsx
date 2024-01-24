@@ -111,7 +111,11 @@ const _DocumentOverview: React.FC<{
    * VideoArea is rendered as a WrapperElem scale (same as the background image region)
    */
   const videoAreaStyle = useMemo<CSSProperties>(() => {
-    if (!videoViewport || !containerRef.current) return {};
+    if (!videoViewport || !containerRef.current) {
+      return {
+        visibility: "hidden",
+      };
+    }
 
     const [topPct, leftPct, widthPct, heightPct] =
       cvtToTLWHArray(videoViewport);
@@ -219,6 +223,7 @@ const _DocumentOverview: React.FC<{
           <PDFRenderer
             pageWidthPx={containerRef.current.clientWidth}
             disableTextLayer
+            enablePresentationMode
           />
         )}
       </div>

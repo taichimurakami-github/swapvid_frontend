@@ -16,7 +16,8 @@ import {
 const _PDFRenderer: React.FC<{
   pageWidthPx: number;
   disableTextLayer?: boolean;
-}> = ({ pageWidthPx, disableTextLayer }) => {
+  enablePresentationMode?: boolean;
+}> = ({ pageWidthPx, disableTextLayer, enablePresentationMode }) => {
   const pdfSrc = useAtomValue(pdfSrcAtom);
   const [pdfState, setPdfState] = useAtom(pdfRendererStateAtom);
   const setPdfPageState = useSetAtom(pdfPageStateAtom);
@@ -46,11 +47,12 @@ const _PDFRenderer: React.FC<{
   }, []);
 
   useEffect(() => {
-    setPdfPageState((b) => ({
-      ...b,
-      width: pageWidthPx,
-    })); /** Update pdfPageState.(rendered)width */
-  }, [setPdfPageState, pageWidthPx]);
+    enablePresentationMode &&
+      setPdfPageState((b) => ({
+        ...b,
+        width: pageWidthPx,
+      })); /** Update pdfPageState.(rendered)width */
+  }, [setPdfPageState, pageWidthPx, enablePresentationMode]);
 
   return (
     <Document
