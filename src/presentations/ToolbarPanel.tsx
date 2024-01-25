@@ -78,6 +78,8 @@ export const VideoToolbarPanelLeft: React.FC<{
 
 export const VideoToolbarPanelCenter: React.FC<{
   sequenceAnalyzerEnabled: boolean;
+  sequenceAnalyzerRunning: boolean;
+  preGeneratedScrollTimelineExists: boolean;
   documentAvailableOnClient: boolean;
   documentAvailableOnSequenceAnalyzer: boolean;
   documentPlayerStandby: boolean;
@@ -86,7 +88,9 @@ export const VideoToolbarPanelCenter: React.FC<{
   ({
     sequenceAnalyzerEnabled,
     documentAvailableOnClient,
+    preGeneratedScrollTimelineExists,
     documentAvailableOnSequenceAnalyzer,
+    sequenceAnalyzerRunning,
     documentPlayerStandby,
     documentPlayerActive,
   }) => {
@@ -102,15 +106,58 @@ export const VideoToolbarPanelCenter: React.FC<{
       );
     }
 
-    if (!documentAvailableOnSequenceAnalyzer) {
+    /**
+     * Sequence Analyzerを使わない設定だが，事前生成されたScrollTimelineDataが存在しない
+     */
+    if (!sequenceAnalyzerEnabled && !preGeneratedScrollTimelineExists) {
       return (
-        <p className="flex-xyc gap-2 text-sm">
-          <FontAwesomeIcon
-            className="text-2xl text-yellow-400"
-            icon={faCircleExclamation}
-          />
-          Sequence analyzer is stopped.
-        </p>
+        <div className="grid place-items-center">
+          <p className="flex-xyc gap-2 text-sm">
+            <FontAwesomeIcon
+              className="text-2xl text-yellow-400"
+              icon={faCircleExclamation}
+            />
+            Please select scroll timeline data.
+          </p>
+          <p className="text-[11px]">(Source: Pre-generated timeline)</p>
+        </div>
+      );
+    }
+
+    /**
+     * Sequence Analyzerを使う設定だが，Sequence Analyzerが停止している
+     */
+    if (sequenceAnalyzerEnabled && !sequenceAnalyzerRunning) {
+      return (
+        <div className="grid">
+          <p className="flex-xyc gap-2 text-sm">
+            <FontAwesomeIcon
+              className="text-2xl text-yellow-400"
+              icon={faCircleExclamation}
+            />
+            Sequence analyzer is stopped.
+          </p>
+          <p className="text-[11px]">(Source: Sequence Analyzer)</p>
+        </div>
+      );
+    }
+
+    /**
+     * Sequence Analyzerを使う設定で，Sequence Analyzerと接続できているが，
+     * PDFデータ及びその解析データ(**.index.json)がSequence Analyzer上に存在しない
+     */
+    if (sequenceAnalyzerEnabled && !documentAvailableOnSequenceAnalyzer) {
+      return (
+        <div className="grid">
+          <p className="flex-xyc gap-2 text-sm">
+            <FontAwesomeIcon
+              className="text-2xl text-yellow-400"
+              icon={faCircleExclamation}
+            />
+            Please upload PDF file.
+          </p>
+          <p className="text-[11px]">(Source: Sequence Analyzer)</p>
+        </div>
       );
     }
 
@@ -130,7 +177,7 @@ export const VideoToolbarPanelCenter: React.FC<{
         Document active
       </p>
     ) : (
-      <div className="flex-xyc flex-col text-sm">
+      <div className="grid text-sm">
         <p className="flex-xyc gap-2">
           <span
             className="block rounded-full bg-blue-400"

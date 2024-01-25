@@ -179,7 +179,7 @@ export function useSequenceAnalyzer(
         body: imgDataURL,
       })
         .then(async (res) => {
-          const bodyContent = await res.json();
+          const bodyContent: unknown = await res.json();
 
           const result =
             res.status === 200
@@ -196,7 +196,19 @@ export function useSequenceAnalyzer(
         })
         .catch((e) => {
           console.error(e);
-          return null;
+          return {
+            status: "ERROR",
+            bodyContent: {
+              document_available: false,
+              estimated_viewport: null,
+              matched_content_vf: null,
+              matched_content_doc: null,
+              score_ngram: 0,
+              score_sqmatch: 0,
+              error_type: "FETCH_ERROR",
+              error_message: e.message,
+            } as SequenceAnalyzerErrorResponseBody,
+          } as MatchContentSequenceResult;
         })
         .finally(() => {
           // Turn off the flag

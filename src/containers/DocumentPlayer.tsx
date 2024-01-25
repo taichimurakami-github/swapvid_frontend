@@ -194,9 +194,7 @@ export const DocumentPlayer: React.FC<{
    */
   const getCurrentVideoViewport = useCallback(
     async (currentTime: number) => {
-      const preGeneratedScrollTimelineExists = documentTimeline.length > 0;
-
-      if (!preGeneratedScrollTimelineExists || sequenceAnalyzerEnabled) {
+      if (sequenceAnalyzerEnabled) {
         /** Use sequence analyzer to match */
 
         setSequenceAnalyzerState((b) => ({ ...b, running: true }));
@@ -205,7 +203,21 @@ export const DocumentPlayer: React.FC<{
           sequenceAnalyzerEndpointURL,
           sequenceAnalyzerState.activeAssetId,
           currentTime
-        );
+        ).catch((e) => {
+          // Failed to fetch from sequence analyzer
+          console.log(e);
+
+          setSequenceAnalyzerState((b) => ({
+            ...b,
+            running: false,
+            pdfAvailable: false,
+            // error:
+            //      {
+            //         code: e.message,
+            //         message: fetchResult.bodyContent.error_message,
+            //       }
+          }));
+        });
 
         /**
          * if fetchResult is null,
@@ -214,9 +226,14 @@ export const DocumentPlayer: React.FC<{
          */
         if (!fetchResult) return null;
 
+        const isRunning = !(
+          fetchResult.status === "ERROR" &&
+          fetchResult.bodyContent.error_type === "FETCH_ERROR"
+        );
+
         setSequenceAnalyzerState((b) => ({
           ...b,
-          running: true,
+          running: isRunning,
           pdfAvailable: fetchResult.bodyContent.document_available, // Update sequence analyzer state
           error:
             fetchResult.status === "ERROR"
@@ -239,7 +256,6 @@ export const DocumentPlayer: React.FC<{
       sequenceAnalyzerEndpointURL,
       sequenceAnalyzerEnabled,
       sequenceAnalyzerState.activeAssetId,
-      documentTimeline.length,
       setSequenceAnalyzerState,
       getActiveVideoViewportFromCurrentTime,
       fetchVideoViewportFromCurrentTime,
