@@ -203,21 +203,7 @@ export const DocumentPlayer: React.FC<{
           sequenceAnalyzerEndpointURL,
           sequenceAnalyzerState.activeAssetId,
           currentTime
-        ).catch((e) => {
-          // Failed to fetch from sequence analyzer
-          console.log(e);
-
-          setSequenceAnalyzerState((b) => ({
-            ...b,
-            running: false,
-            pdfAvailable: false,
-            // error:
-            //      {
-            //         code: e.message,
-            //         message: fetchResult.bodyContent.error_message,
-            //       }
-          }));
-        });
+        );
 
         /**
          * if fetchResult is null,

@@ -41,7 +41,6 @@ const Item: React.FC<{
 type PickedAssetState<T> = {
   video: T;
   document: T;
-  overviewImage: T;
   scrollTimeline: T;
 };
 
@@ -65,7 +64,6 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
     {
       video: false,
       document: false,
-      overviewImage: false,
       scrollTimeline: false,
     }
   );
@@ -78,7 +76,6 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
     {
       video: "",
       document: "",
-      overviewImage: "",
       scrollTimeline: "",
     }
   );
@@ -103,9 +100,7 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
 
       /** Requirements validation */
       const validationResult: SelectedAssetState = {
-        video: false,
-        document: false,
-        overviewImage: false,
+        ...selectedAsset,
         scrollTimeline: true,
       };
 
@@ -115,10 +110,6 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
 
         validationResult.document =
           validationResult.document || f.name.includes(".pdf");
-        validationResult.overviewImage =
-          validationResult.overviewImage ||
-          f.name.includes(".png") ||
-          f.name.includes(".jpg");
       }
 
       Object.keys(errorMessage).map((key) =>
@@ -129,12 +120,6 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
         })
       );
 
-      dispatchSelectedAsset({
-        video: false,
-        document: false,
-        overviewImage: false,
-        scrollTimeline: false,
-      });
       /** Update selectedAssetState */
       for (const f of e.currentTarget.files as FileList) {
         const ext = f.name.split(".").pop();
@@ -150,22 +135,16 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
           case "json":
             dispatchSelectedAsset({ scrollTimeline: true });
             break;
-
-          case "png":
-          case "jpg":
-            dispatchSelectedAsset({ overviewImage: true });
-            break;
         }
       }
     },
-    [errorMessage, handleOnInputChange]
+    [errorMessage, handleOnInputChange, selectedAsset]
   );
 
   const handleSubmit = useCallback(async () => {
     /** Registration */
     for (const f of files as FileList) {
       const ext = f.name.split(".").pop();
-
       switch (ext) {
         case "mp4":
           setVideoSrc(URL.createObjectURL(f));
