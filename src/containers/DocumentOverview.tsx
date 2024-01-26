@@ -93,7 +93,7 @@ const _DocumentOverview: React.FC<{
   const handleWheel = useCallback(
     (e: WheelEvent) => {
       // dragging中は発火しない
-      if (isDragging) return;
+      if (isDragging.current) return;
 
       /** Syncronize documentPlayerWrapper.scrollTop with documentOverview.scrollTop */
       if (documentPlayerWrapperRef?.current) {
@@ -195,16 +195,16 @@ const _DocumentOverview: React.FC<{
   return (
     <div
       id="document_overview"
-      className={`document-overview-outer overflow-hidden select-none w-full h-full bg-black-transparent-01`}
+      className={`document-overview-outer overflow-hidden w-full h-full bg-black-transparent-01`}
       style={{
         position: !standaloneModeEnabled ? "absolute" : "static",
         width: !standaloneModeEnabled ? "100%" : widthPx + "px",
         top: 0,
         left: 0,
         pointerEvents: componentVisible ? "auto" : "none",
-        zIndex: zIndex ?? "auto",
         transition: "background 0.2s ease-in-out",
         visibility: componentVisible ? "visible" : "hidden",
+        zIndex: zIndex ?? "auto",
       }}
       onWheel={handleWheel}
       onClick={handleClose}
