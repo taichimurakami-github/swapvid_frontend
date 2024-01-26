@@ -5,8 +5,9 @@ import { PropsWithChildren } from "react";
 export const CroppedAreaPositioner: React.FC<
   PropsWithChildren<{
     rawScaleEnabled?: boolean;
+    zIndex?: number;
   }>
-> = ({ rawScaleEnabled, children }) => {
+> = ({ rawScaleEnabled, zIndex, children }) => {
   const userCroppedArea = useAtomValue(userCroppedAreaAtom);
 
   if (!userCroppedArea)
@@ -28,6 +29,7 @@ export const CroppedAreaPositioner: React.FC<
         left: left,
         width: width,
         height: height,
+        zIndex: zIndex ?? "auto",
       }}
     >
       {children}
