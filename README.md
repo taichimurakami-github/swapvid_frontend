@@ -24,8 +24,8 @@ The command `make run` activates the container and dev server. After the contain
 
 And if you want to build the app, please use  `make build` command.
 
-You can use `make deploy` command to build and deploy the development build.
+You can use `make deploy` command to build and deploy the development build. (needs your own firebase project)
 
 
 ## Components
-![SwapVid_frontend_components_v1 1](https://github.com/taichimurakami-github/swapvid_frontend/assets/64308722/73b93785-a33c-4dd0-9034-b62137b101ef)
+![SwapVid_frontend_components_v2](https://github.com/taichimurakami-github/swapvid_frontend/assets/64308722/2921b9b8-44b8-4882-9ed1-f724e7585b4e)
