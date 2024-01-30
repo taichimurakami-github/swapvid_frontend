@@ -134,27 +134,27 @@ const _VideoPlayer: React.FC<{
    */
   return (
     <>
-      {desktopCaptureEnabled && !videoSrc && (
-        <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] bg-gray-300">
-          <p className="text-xl">Please choose app window from your desktop.</p>
-          <button
-            className="py-2 px-4 rounded-full bg-teal-600 hover:bg-teal-700 font-bold text-white text-2xl"
-            onClick={handleCaptureDesktop}
-          >
-            Capture Desktop
-          </button>
-        </div>
-      )}
-
-      {!desktopCaptureEnabled && !videoSrc && (
-        <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] max-w-full max-h-full bg-gray-700 text-white font-bold">
-          <p className="text-2xl">Cannot find the video file.</p>
-          <p>Please choose the assets from Config to play.</p>
-        </div>
-      )}
-
+      {!videoSrc &&
+        (desktopCaptureEnabled ? (
+          <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] bg-gray-300">
+            <p className="text-xl">
+              Please choose app window from your desktop.
+            </p>
+            <button
+              className="py-2 px-4 rounded-full bg-teal-600 hover:bg-teal-700 font-bold text-white text-2xl"
+              onClick={handleCaptureDesktop}
+            >
+              Capture Desktop
+            </button>
+          </div>
+        ) : (
+          <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] max-w-full max-h-full bg-gray-700 text-white font-bold">
+            <p className="text-2xl">Cannot find the video file.</p>
+            <p>Please choose the assets from Config to play.</p>
+          </div>
+        ))}
       <video
-        className="max-w-full max-h-[80vh]"
+        className="max-w-[90vw] max-h-[80vh] bg-gray-200"
         style={{
           display: videoSrc ? "block" : "none",
           width: playerWidth ?? "100%",
