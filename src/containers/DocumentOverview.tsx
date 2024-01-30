@@ -34,7 +34,7 @@ const _DocumentOverview: React.FC<{
   standaloneModeEnabled?: boolean;
 }> = ({ widthPx, zIndex, standaloneModeEnabled }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
   // const backgroundImgRef = useRef<HTMLImageElement>(null);
 
   // const [documentAreaStyle, setDocumentAreaStyle] = useState<CSSProperties>({});
@@ -93,7 +93,7 @@ const _DocumentOverview: React.FC<{
   const handleWheel = useCallback(
     (e: WheelEvent) => {
       // dragging中は発火しない
-      if (isDragging) return;
+      if (isDragging.current) return;
 
       /** Syncronize documentPlayerWrapper.scrollTop with documentOverview.scrollTop */
       if (documentPlayerWrapperRef?.current) {
@@ -111,61 +111,70 @@ const _DocumentOverview: React.FC<{
    * VideoArea is rendered as a WrapperElem scale (same as the background image region)
    */
   const videoAreaStyle = useMemo<CSSProperties>(() => {
-    if (!videoViewport || !containerRef.current) return {};
+    if (!videoViewport || !pdfContainerRef.current) {
+      return {
+        visibility: "hidden",
+      };
+    }
 
     const [topPct, leftPct, widthPct, heightPct] =
       cvtToTLWHArray(videoViewport);
 
-    const containerWidth = containerRef.current.clientWidth;
-    const containerHeight = containerRef.current.clientHeight;
-
     return {
-      top: topPct * containerHeight,
-      left: leftPct * containerWidth,
-      width: widthPct * containerWidth,
-      height: heightPct * containerHeight * 2,
+      top: topPct * 100 + "%",
+      left: leftPct * 100 + "%",
+      width: widthPct * 100 + "%",
+      height: heightPct * 100 + "%",
     };
-  }, [videoViewport, containerRef]);
-
-  const calcWrapperScrollYAdjustmentDelta = useCallback(
-    (
-      documentAreaHeightPx: number,
-      documentAreaTopPct: number,
-      wrapperHeight: number,
-      containerHeight: number
-    ) =>
-      documentAreaTopPct *
-      (documentAreaHeightPx + (containerHeight - wrapperHeight)),
-    []
-  );
+  }, [videoViewport, pdfContainerRef]);
 
   const documentAreaStyle = useMemo<CSSProperties>(() => {
-    if (!userDocumentViewport || !wrapperRef.current || !containerRef.current)
-      return {};
+    if (
+      !userDocumentViewport ||
+      !wrapperRef.current ||
+      !pdfContainerRef.current
+    ) {
+      return { visibility: "hidden" };
+    }
 
     const [topPct, leftPct, widthPct, heightPct] =
       cvtToTLWHArray(userDocumentViewport);
 
-    /** Update wrapperRef.current.scrollTop to keep the documentArea in the viewport */
-    wrapperRef.current.scrollTop = calcWrapperScrollYAdjustmentDelta(
-      heightPct * wrapperRef.current.scrollHeight,
-      topPct,
-      wrapperRef.current.clientHeight,
-      containerRef.current.clientHeight
-    );
+    const [pdfContainerWidth, pdfContainerHeight] = [
+      pdfContainerRef.current.clientWidth,
+      pdfContainerRef.current.clientHeight,
+    ];
 
     return {
-      left: leftPct * wrapperRef.current.clientWidth,
-      top: topPct * containerRef.current.clientHeight,
-      width: widthPct * containerRef.current.clientWidth,
-      height: heightPct * wrapperRef.current.scrollHeight,
+      left: leftPct * 100 + "%",
+      top: topPct * 100 + "%",
+      width: widthPct * pdfContainerWidth,
+      height: heightPct * pdfContainerHeight,
     };
-  }, [
-    userDocumentViewport,
-    wrapperRef,
-    containerRef,
-    calcWrapperScrollYAdjustmentDelta,
-  ]);
+  }, [userDocumentViewport, wrapperRef, pdfContainerRef]);
+
+  const pdfContainerStyle = useMemo<CSSProperties>(() => {
+    if (
+      !userDocumentViewport ||
+      !wrapperRef.current ||
+      !pdfContainerRef.current
+    ) {
+      return { visibility: "hidden" };
+    }
+
+    const [topPct, _leftPct, _widthPct, heightPct] =
+      cvtToTLWHArray(userDocumentViewport);
+
+    const overflowHeight =
+      wrapperRef.current.clientHeight - pdfContainerRef.current.clientHeight;
+
+    const pdfContainerTranslateY =
+      overflowHeight * (topPct + topPct * heightPct);
+
+    return {
+      transform: `translate(0, ${pdfContainerTranslateY}px)`,
+    };
+  }, [userDocumentViewport, wrapperRef, pdfContainerRef]);
 
   useEffect(() => {
     if (
@@ -185,25 +194,23 @@ const _DocumentOverview: React.FC<{
 
   return (
     <div
-      id="document_overview_wrapper"
-      className={`overflow-hidden select-none w-full h-full bg-black-transparent-01`}
+      id="document_overview"
+      className={`document-overview-outer overflow-hidden w-full h-full bg-black-transparent-01`}
       style={{
-        position: !standaloneModeEnabled ? "absolute" : "relative",
+        position: !standaloneModeEnabled ? "absolute" : "static",
         width: !standaloneModeEnabled ? "100%" : widthPx + "px",
         top: 0,
         left: 0,
         pointerEvents: componentVisible ? "auto" : "none",
-        zIndex: zIndex ?? "auto",
         transition: "background 0.2s ease-in-out",
         visibility: componentVisible ? "visible" : "hidden",
+        zIndex: zIndex ?? "auto",
       }}
-      ref={wrapperRef}
       onWheel={handleWheel}
       onClick={handleClose}
     >
       <div
-        id="document_overview_container"
-        className="relative select-none z-10"
+        className="document-overview-container absolute select-none z-10 overflow-hidden"
         style={{
           width: widthPx + "px",
           height: "100%",
@@ -212,27 +219,37 @@ const _DocumentOverview: React.FC<{
         }}
         {...handlers}
         onClick={(e) => e.stopPropagation()}
-        ref={containerRef}
+        ref={wrapperRef}
       >
-        {/* <img className="w-full pointer-events-none" src={imagedPdfSrc ?? ""} /> */}
-        {containerRef.current && (
-          <PDFRenderer
-            pageWidthPx={containerRef.current.clientWidth}
-            disableTextLayer
-          />
-        )}
-      </div>
-      <div
-        className="absolute flex-xyc doc-overview-invid-focused-area bg-blue-600 z-10 opacity-70 pointer-events-none"
-        style={videoAreaStyle}
-      >
-        <FontAwesomeIcon className="text-4xl text-white" icon={faPlay} />
-      </div>
-      <div
-        className="absolute flex-xyc flex-col doc-overview-indoc-focused-area bg-red-600 z-10 opacity-70 pointer-events-none"
-        style={documentAreaStyle}
-      >
-        <FontAwesomeIcon className="text-4xl text-white" icon={faFileInvoice} />
+        <div
+          className="pdf-container absolute w-full"
+          ref={pdfContainerRef}
+          style={pdfContainerStyle}
+        >
+          {pdfContainerRef.current && (
+            <PDFRenderer
+              pageWidthPx={pdfContainerRef.current.clientWidth}
+              disableTextLayer
+              enablePresentationMode
+            />
+          )}
+
+          <div
+            className="video-viewport-area absolute flex-xyc doc-overview-invid-focused-area bg-blue-600 z-10 opacity-70 pointer-events-none"
+            style={videoAreaStyle}
+          >
+            <FontAwesomeIcon className="text-4xl text-white" icon={faPlay} />
+          </div>
+          <div
+            className="user-document-viewport-area absolute flex-xyc flex-col doc-overview-indoc-focused-area bg-red-600 z-10 opacity-70 pointer-events-none"
+            style={documentAreaStyle}
+          >
+            <FontAwesomeIcon
+              className="text-4xl text-white"
+              icon={faFileInvoice}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -62,6 +62,6 @@ export function usePointerDrag<DragCanvasElem extends HTMLDivElement>(options: {
       onPointerUp: handlePointerUp,
       onPointerMove: handlePointerMove,
     },
-    isDragging: isDragging.current,
+    isDragging,
   };
 }

@@ -105,7 +105,7 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
 
   if (!appConfigActive)
     return (
-      <div className="fixed top-2 left-2 z-20 bg-black-transparent-01">
+      <div className="fixed top-2 left-2 z-20 bg-black-transparent-01 rounded-full">
         <AppConfigActivatorButton
           handleToggleAppConfigActive={toggleAppConfigActive}
         />

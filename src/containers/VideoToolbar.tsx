@@ -12,6 +12,7 @@ import {
   documentPlayerStandbyAtom,
   pdfRendererStateAtom,
   pipVideoWindowActiveAtom,
+  preGeneratedScrollTimelineDataAtom,
   sequenceAnalyzerEnabledAtom,
   sequenceAnalyzerStateAtom,
   subtitlesActiveAtom,
@@ -45,6 +46,9 @@ const _VideoToolbar: React.FC<{
   const videoElementRef = useAtomValue(videoElementRefAtom);
   const videoElementState = useAtomValue(videoElementStateAtom);
   const interfaceType = useAtomValue(swapvidInterfaceTypeAtom);
+  const preGeneratedScrollTimelineData = useAtomValue(
+    preGeneratedScrollTimelineDataAtom
+  );
 
   const handlePlayAndPauseButtonClick = useCallback(() => {
     const videoElement = videoElementRef?.current;
@@ -102,6 +106,7 @@ const _VideoToolbar: React.FC<{
 
   const liveStreamingEnabled = videoElementRef?.current?.duration === Infinity;
   const parallelViewEnabled = interfaceType === "parallel";
+
   const documentAvailableOnClient = pdfRendererState.loaded;
   const documentAvailableOnSequenceAnalyzer =
     !sequenceAnalyzerEnabled || sequenceAnalyzerState.pdfAvailable;
@@ -127,6 +132,8 @@ const _VideoToolbar: React.FC<{
       {interfaceType === "combined" && (
         <VideoToolbarPanelCenter
           sequenceAnalyzerEnabled={sequenceAnalyzerEnabled}
+          sequenceAnalyzerRunning={sequenceAnalyzerState.running}
+          preGeneratedScrollTimelineExists={!!preGeneratedScrollTimelineData}
           documentAvailableOnClient={documentAvailableOnClient}
           documentAvailableOnSequenceAnalyzer={
             documentAvailableOnSequenceAnalyzer

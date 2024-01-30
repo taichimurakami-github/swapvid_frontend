@@ -10,6 +10,7 @@ import {
   ShowDocumentPlayerOnDesktopCaptured,
   SwapVidDesktopMenu,
 } from "@/containers/SwapVidDesktopUtils";
+import { DocumentOverviewActivator } from "@/containers/DocumentOverviewActivator";
 // import { DocumentOverviewActivator } from "@/containers/DocumentOverviewActivator";
 
 export const PlayerCombinedView: React.FC<{
@@ -17,7 +18,7 @@ export const PlayerCombinedView: React.FC<{
   swapvidDesktopEnabled?: boolean;
 }> = ({ zIndex, swapvidDesktopEnabled }) => (
   <div
-    className="combined-view-container max-w-full max-h-full p-2"
+    className="combined-view-container max-w-full max-h-full p-4"
     style={{ zIndex: zIndex ?? "auto" }}
   >
     <div className="player-container relative max-w-full max-h-full z-0">
@@ -25,17 +26,18 @@ export const PlayerCombinedView: React.FC<{
 
       {swapvidDesktopEnabled ? (
         <ShowDocumentPlayerOnDesktopCaptured>
-          <CroppedAreaPositioner>
+          <CroppedAreaPositioner zIndex={10}>
             <DocumentPlayer />
           </CroppedAreaPositioner>
         </ShowDocumentPlayerOnDesktopCaptured>
       ) : (
-        <div className="absolute top-0 left-0 w-full h-full">
+        <div className="absolute top-0 left-0 w-full h-full z-10">
           <DocumentPlayer />
         </div>
       )}
 
-      <DocumentOverview widthPx={200} />
+      <DocumentOverviewActivator width={50} height={"100%"} zIndex={30} />
+      <DocumentOverview widthPx={200} zIndex={30} />
       <VideoSubtitles />
     </div>
 

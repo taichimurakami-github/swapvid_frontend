@@ -10,7 +10,10 @@ export const AppConfigActivatorButton: React.FC<{
     className="p-2"
     onClick={handleToggleAppConfigActive}
   >
-    <FontAwesomeIcon className="text-4xl text-white" icon={faGear} />
+    <FontAwesomeIcon
+      className="text-4xl text-white user-select-none"
+      icon={faGear}
+    />
   </button>
 );
 

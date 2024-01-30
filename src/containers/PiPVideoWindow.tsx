@@ -1,7 +1,6 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import Draggable from "react-draggable";
 import { useHandleClickWithDrag } from "@hooks/useDraggable";
-import { useVideoCurrenttime } from "@hooks/useVideoCurrenttime";
 // import useIntersectionObserver from "@hooks/useIntersectionObserver";
 
 import { useAtom, useAtomValue } from "jotai/react";
@@ -37,15 +36,12 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
   const parentVideoRef = useAtomValue(videoElementRefAtom);
   const pipVideoRef = useRef<HTMLVideoElement>(null);
 
-  const videoCurrentTime = useVideoCurrenttime(parentVideoRef);
-
   const handleCloseWindow = () => setDocumentPlayerActive(false);
 
   const eventHandlers = useHandleClickWithDrag<HTMLDivElement>(
     handleCloseWindow,
     200
   );
-  const wrapperElemRef = useRef(null);
 
   // FIXME: intersectionObserver doesn't work properly
   // const { intersectionEntry } = useIntersectionObserver(wrapperElemRef);
@@ -74,22 +70,26 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
   const initialPositionLeft = parentVideoBCRect?.left ?? 0;
   const initialWidth = parentVideoBCRect?.width ?? 0;
 
-  const syncParentVideoCurrentTime = useCallback(
-    (targetVideo: HTMLVideoElement, currentTime: number) => {
-      if (typeof videoSrc === "string") {
-        targetVideo.currentTime = currentTime;
-      }
-    },
-    [videoSrc]
-  );
+  const syncParentVideoCurrentTime = useCallback(() => {
+    if (
+      pipVideoRef.current &&
+      parentVideoRef?.current &&
+      parentVideoRef.current.duration !== Infinity
+    ) {
+      pipVideoRef.current.currentTime = parentVideoRef.current.currentTime;
+    }
+  }, [pipVideoRef, parentVideoRef]);
+
+  useEffect(() => {
+    const timeout = setInterval(syncParentVideoCurrentTime, 1000 / 15);
+
+    return () => clearInterval(timeout);
+  }, [syncParentVideoCurrentTime]);
 
   useAutoVideoSrcInjecter(pipVideoRef, videoSrc);
 
   const componentActive =
-    !documentPlayerActive || !pipVideoWindowActive || !parentVideoElem;
-
-  const isVideoSrcObject =
-    typeof videoSrc !== "string" && typeof videoSrc === "object" && !!videoSrc;
+    parentVideoElem && documentPlayerActive && pipVideoWindowActive;
 
   return (
     <>
@@ -98,22 +98,18 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
           id="pip_video_window"
           className={`pip-video-window-container fixed cursor-pointer bg-gray-600`}
           style={{
-            display: componentActive ? "none" : "block",
+            display: componentActive ? "" : "none",
             zIndex: zIndex ?? "auto",
             transition: "width top left 0.3s ease-in-out",
           }}
-          ref={wrapperElemRef}
           {...eventHandlers}
         >
           <video
             id="pip_video"
             className={`w-full border-4`}
             muted
-            autoPlay={isVideoSrcObject}
+            // autoPlay={true}
             ref={pipVideoRef}
-            onLoadedData={(e) => {
-              syncParentVideoCurrentTime(e.currentTarget, videoCurrentTime);
-            }}
           />
         </div>
       </Draggable>
@@ -121,7 +117,8 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
       <style>
         {`
           .pip-video-window-container {
-            animation: pip-video-window-container-opening 0.5s ease-in-out forwards;
+            animation: pip-video-window-container-opening 1s ease-in-out forwards;
+              pointer-events: none;
           }
 
           @keyframes pip-video-window-container-opening {
@@ -137,13 +134,22 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
               */
               pointer-events: none;
             }
+            50% {
+              top: ${afterAnimatedPositionTop}px;
+              left: ${afterAnimatedPositionLeft}px;
+              width: ${afterAnimatedWidth}px;
+              opacity: 0.5;
+
+              /* To keep user's manipulations on documentPlayer active */
+              pointer-events: none;
+            }
             99% {
               top: ${afterAnimatedPositionTop}px;
               left: ${afterAnimatedPositionLeft}px;
               width: ${afterAnimatedWidth}px;
               opacity: 1;
 
-              /* To keep user's manipulations on documentPlayer active */
+              /* To enable user's manipulations(e.g., drag, click) on PiPVideoWindow  */
               pointer-events: none;
             }
             100% {

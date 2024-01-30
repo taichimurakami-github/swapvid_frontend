@@ -53,7 +53,7 @@ export const AppModalTypeA: React.FC<
         <FontAwesomeIcon className="text-3xl px-2" icon={faXmark} />
       </button>
     </h2>
-    <div className="flex-xyc p-4 overflow-scroll scrollbar-hidden">
+    <div className="flex-xyc p-4 h-full overflow-scroll scrollbar-hidden">
       {children}
     </div>
   </div>
