@@ -163,19 +163,10 @@ export const useUserDocumentViewportSyncEffect = (
 
 export const useVideoViewportSyncEffect = (
   videoElementRef: React.RefObject<HTMLVideoElement> | null,
-  getCurrentVideoViewport: (
-    currentTime: number
-  ) => Promise<TBoundingBox | null>,
+  getCurrentVideoViewport: (t: number) => Promise<null | TBoundingBox>,
   updateDocumentPlayerStandby: (v: boolean) => void,
-  updateVideoViewport: (v: TBoundingBox | null) => void,
-  syncCurrentVideoViewportHook?: (v: TBoundingBox) => void
+  updateVideoViewport: (v: TBoundingBox | null) => void
 ) => {
-  /**
-   * DocPlayer state updation hooks (Video Current Time driven)
-   * 1. Get active timeline section
-   * 2. Calculate new document states
-   * 3. Dispatch changes depending on specific conditions
-   */
   useVideoCurrentTimeEffect(videoElementRef, async (currentTime: number) => {
     if (!updateDocumentPlayerStandby || !updateVideoViewport) {
       return;
@@ -189,16 +180,7 @@ export const useVideoViewportSyncEffect = (
       return;
     }
 
-    /** Calculate renderScale from  */
-    // const [videoViewportWidth] = cvtToWHArray(activeVideoViewport);
-    // const renderScale = videoViewportWidth > 0 ? 1 / videoViewportWidth : 1.0;
-    // updatePdfRenderScale(renderScale);
-
     /** Record current viewport */
     updateVideoViewport(activeVideoViewport);
-
-    /** Update UserDocumentViewport hook */
-    syncCurrentVideoViewportHook &&
-      syncCurrentVideoViewportHook(activeVideoViewport);
   });
 };

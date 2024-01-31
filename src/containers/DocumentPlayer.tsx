@@ -37,7 +37,6 @@ export const DocumentPlayer: React.FC<{
   zIndex?: number;
   standaloneModeEnabled?: boolean;
 }> = ({ playerWidth, playerHeight, zIndex, standaloneModeEnabled }) => {
-  const videoViewport = useAtomValue(videoViewportAtom);
   const preGeneratedScrollTimeline = useAtomValue(
     preGeneratedScrollTimelineDataAtom
   );
@@ -50,9 +49,10 @@ export const DocumentPlayer: React.FC<{
     documentPlayerActiveAtom
   );
   const [playerStandby, setPlayerStandby] = useAtom(documentPlayerStandbyAtom);
+  const [videoViewport, setVideoViewport] = useAtom(videoViewportAtom);
+
   const setSequenceAnalyzerState = useSetAtom(sequenceAnalyzerStateAtom);
   const setDocumentPlayerState = useSetAtom(documentPlayerStateAtom);
-  const setVideoViewport = useSetAtom(videoViewportAtom);
   const setUserDocumentViewport = useSetAtom(userDocumentViewportAtom);
   const setDocumentPlayerLayout = useSetAtom(documentPlayerLayoutAtom);
   const setDocumentPlayerWrapperElementRef = useSetAtom(
@@ -90,12 +90,12 @@ export const DocumentPlayer: React.FC<{
   const updateVideoViewport = useCallback(
     (v: TBoundingBox | null) => {
       setVideoViewport(v);
-
-      if (!playerActive) {
-        renderingScaleVideoViewport.current = v; // Update renderingScale video viewport to re-render PDFRenderer, while player is unactive.
-      }
+      // console.log("Update renderingScleVideoViewport");
+      // if (!playerActive) {
+      //   renderingScaleVideoViewport.current = v; // Update renderingScale video viewport to re-render PDFRenderer, while player is unactive.
+      // }
     },
-    [setVideoViewport, playerActive]
+    [setVideoViewport]
   );
   const updateRelatedVideoTimeSections = useCallback(
     (v: TBoundingBox) => {
@@ -128,25 +128,6 @@ export const DocumentPlayer: React.FC<{
       v && updateRelatedVideoTimeSections(v);
     },
     [setUserDocumentViewport, updateRelatedVideoTimeSections]
-  );
-  const updateDocumentScrollPositions = useCallback(
-    (viewport: TBoundingBox) => {
-      if (!documentWrapperRef.current || documentPlayerActive) return;
-
-      const currentScrollLeft =
-        documentWrapperRef.current.scrollWidth * viewport[0][0];
-      const currentScrollTop =
-        documentWrapperRef.current.scrollHeight * viewport[0][1];
-      documentWrapperRef.current.scrollLeft = currentScrollLeft;
-      documentWrapperRef.current.scrollTop = currentScrollTop;
-
-      /**
-       * userDocumentViewport will be updated automatically,
-       * because the onScroll event handler will be triggered
-       * when the scrollLeft/scrollTop is changed.
-       */
-    },
-    [documentWrapperRef, documentPlayerActive]
   );
 
   const updateDocumentPlayerLayout = useCallback(() => {
@@ -255,8 +236,8 @@ export const DocumentPlayer: React.FC<{
     videoElementRef,
     getCurrentVideoViewport,
     updatePlayerStandby,
-    updateVideoViewport,
-    !standaloneModeEnabled ? updateDocumentScrollPositions : undefined // Only update document scroll positions when player is not in standalone mode
+    updateVideoViewport
+    // !standaloneModeEnabled ? updateDocumentScrollPositions : undefined // Only update document scroll positions when player is not in standalone mode
   );
 
   const { handlePlayerOnScroll } = useUserDocumentViewportSyncEffect(
@@ -264,6 +245,37 @@ export const DocumentPlayer: React.FC<{
     documentContainerRef,
     updateUserDocumentViewport
   );
+
+  const updateDocumentScrollPositions = useCallback(
+    (viewport: TBoundingBox, wrapperElement: HTMLDivElement) => {
+      const currentScrollLeft = wrapperElement.scrollWidth * viewport[0][0];
+      const currentScrollTop = wrapperElement.scrollHeight * viewport[0][1];
+      wrapperElement.scrollLeft = currentScrollLeft;
+      wrapperElement.scrollTop = currentScrollTop;
+
+      /**
+       * userDocumentViewport will be updated automatically,
+       * because the onScroll event handler will be triggered
+       * when the scrollLeft/scrollTop is changed.
+       */
+    },
+    []
+  );
+
+  /**
+   * Update the scroll position of document player
+   * at every time rendered (only if player is unactive)
+   */
+  if (documentWrapperRef.current && videoViewport && !playerActive) {
+    updateDocumentScrollPositions(videoViewport, documentWrapperRef.current);
+  }
+
+  /**
+   * Update renderingScaleVideoViewport cache
+   */
+  if (playerActive) {
+    renderingScaleVideoViewport.current = videoViewport;
+  }
 
   /** Adjust pdf page width to render */
   const getRenderingScalePageWidth = useCallback(
