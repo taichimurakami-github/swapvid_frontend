@@ -50,9 +50,7 @@ export const DocumentPlayer: React.FC<{
     documentPlayerActiveAtom
   );
   const [playerStandby, setPlayerStandby] = useAtom(documentPlayerStandbyAtom);
-  const [sequenceAnalyzerState, setSequenceAnalyzerState] = useAtom(
-    sequenceAnalyzerStateAtom
-  );
+  const setSequenceAnalyzerState = useSetAtom(sequenceAnalyzerStateAtom);
   const setDocumentPlayerState = useSetAtom(documentPlayerStateAtom);
   const setVideoViewport = useSetAtom(videoViewportAtom);
   const setUserDocumentViewport = useSetAtom(userDocumentViewportAtom);
@@ -194,14 +192,16 @@ export const DocumentPlayer: React.FC<{
    */
   const getCurrentVideoViewport = useCallback(
     async (currentTime: number) => {
-      if (sequenceAnalyzerEnabled) {
+      if (sequenceAnalyzerEnabled && pdfSrc) {
         /** Use sequence analyzer to match */
 
         setSequenceAnalyzerState((b) => ({ ...b, running: true }));
 
+        const assetId = pdfSrc.name.split(".")[0];
+
         const fetchResult = await fetchVideoViewportFromCurrentTime(
           sequenceAnalyzerEndpointURL,
-          sequenceAnalyzerState.activeAssetId,
+          assetId,
           currentTime
         );
 
@@ -241,7 +241,7 @@ export const DocumentPlayer: React.FC<{
     [
       sequenceAnalyzerEndpointURL,
       sequenceAnalyzerEnabled,
-      sequenceAnalyzerState.activeAssetId,
+      pdfSrc,
       setSequenceAnalyzerState,
       getActiveVideoViewportFromCurrentTime,
       fetchVideoViewportFromCurrentTime,
