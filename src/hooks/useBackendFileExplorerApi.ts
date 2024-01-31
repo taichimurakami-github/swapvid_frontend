@@ -1,4 +1,5 @@
 import { FILE_EXPLORER_API_ENDPOINT_HTTP } from "@/app.config";
+import { FileExplorerAPIResponse } from "@/types/backend";
 import React, { useCallback } from "react";
 
 export function useBackendFileExplorerApi() {
