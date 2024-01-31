@@ -70,4 +70,8 @@ export default defineConfig({
       "@styles": `${__dirname}/src/styles/`,
     },
   },
+
+  define: {
+    APP_VERSION: JSON.stringify(process.env.npm_package_version),
+  },
 });

@@ -6,7 +6,6 @@ import { useAtom, useAtomValue } from "jotai/react";
 import { AppStatesVisualizer } from "@/containers/AppStatesVisualizer";
 import {
   assetLoaderStateAtom,
-  pdfSrcAtom,
   sequenceAnalyzerEnabledAtom,
   sequenceAnalyzerEndpointURLAtom,
   swapvidDesktopEnabledAtom,
@@ -156,7 +155,10 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
         ) : (
           <div id="modal_content_root">
             <div className="grid max-w-[750px] mx-auto pb-16">
-              <div className="h-[50px]"></div>
+              <p className="py-2 text-sm text-slate-600 font-bold">
+                SwapVid Demo version {APP_VERSION}
+              </p>
+              <div className="h-8"></div>
               <AppConfigMenuPlayerOptions />
               <AppConfigMenuSequenceAnalyzerOptions />
               <AppConfigMenuSwapVidDesktopOptions />
@@ -218,7 +220,6 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
     swapvidInterfaceTypeAtom
   );
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
-  const [pdfSrc, setPdfSrc] = useAtom(pdfSrcAtom);
 
   const [sqaEndpointURL, setSqaEndpointURL] = useAtom(
     sequenceAnalyzerEndpointURLAtom
