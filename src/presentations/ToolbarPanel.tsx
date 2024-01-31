@@ -111,7 +111,7 @@ export const VideoToolbarPanelCenter: React.FC<{
      */
     if (!sequenceAnalyzerEnabled && !preGeneratedScrollTimelineExists) {
       return (
-        <div className="grid place-items-center">
+        <div className="text-center">
           <p className="flex-xyc gap-2 text-sm">
             <FontAwesomeIcon
               className="text-2xl text-yellow-400"
@@ -129,7 +129,7 @@ export const VideoToolbarPanelCenter: React.FC<{
      */
     if (sequenceAnalyzerEnabled && !sequenceAnalyzerRunning) {
       return (
-        <div className="grid">
+        <div className="text-center">
           <p className="flex-xyc gap-2 text-sm">
             <FontAwesomeIcon
               className="text-2xl text-yellow-400"
@@ -148,7 +148,7 @@ export const VideoToolbarPanelCenter: React.FC<{
      */
     if (sequenceAnalyzerEnabled && !documentAvailableOnSequenceAnalyzer) {
       return (
-        <div className="grid">
+        <div className="flex-xyc flex-col">
           <p className="flex-xyc gap-2 text-sm">
             <FontAwesomeIcon
               className="text-2xl text-yellow-400"
