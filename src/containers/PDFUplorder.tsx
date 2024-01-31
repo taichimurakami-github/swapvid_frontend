@@ -3,14 +3,13 @@ import usePDFReceiver from "@hooks/usePDFReceiver";
 import {
   faFileLines,
   faFilePdf,
-  faCloudArrowUp,
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useRef, useState } from "react";
 import { useAtom } from "jotai/react";
 import { pdfUploaderActiveAtom } from "@/providers/jotai/store";
-import { FileUploaderForm, ProgressForm } from "@/presentations/BackendApi";
+import { FileUploaderForm, AppProgressBar } from "@/presentations/BackendApi";
 
 type UploaderProgress =
   | "INIT"
@@ -173,10 +172,25 @@ export const PdfUplorder: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
         )}
 
         {progress === "ANALYZING" && (
-          <ProgressForm
-            text="PDFを解析してIndexデータを作成しています..."
-            progressPct={analysisProgressPct}
-          />
+          <div className="grid gap-4">
+            <div className="flex-xyc gap-8 w-full text-black">
+              <FontAwesomeIcon
+                icon={faFilePdf}
+                size="3x"
+                className="text-red-600"
+              />
+              <span className="text-4xl">&gt;&gt;</span>
+              <FontAwesomeIcon
+                icon={faFileLines}
+                size="3x"
+                className="text-blue-500"
+              />
+            </div>
+            <p className="text-black">
+              PDFを解析してIndexデータを作成しています...
+            </p>
+            <AppProgressBar progressPct={analysisProgressPct} />
+          </div>
         )}
 
         {progress === "DONE" && (
