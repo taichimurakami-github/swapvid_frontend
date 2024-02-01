@@ -1,4 +1,3 @@
-import { SEQUENCE_ANALYZER_API_ENDPOINT_HTTP } from "@/app.config";
 import {
   DOMRectLike,
   TAssetId,
@@ -133,9 +132,9 @@ export const sequenceAnalyzerEnabledAtom = atomWithStorage(
   { getOnInit: true }
 );
 
-export const sequenceAnalyzerEndpointURLAtom = atomWithStorage(
-  _getStorageKey("sequenceAnalyzerEndpointURL"),
-  SEQUENCE_ANALYZER_API_ENDPOINT_HTTP,
+export const backendServiceHostAtom = atomWithStorage(
+  _getStorageKey("backendServiceHostAtom"),
+  "127.0.0.1",
   undefined,
   { getOnInit: true }
 );

@@ -1,4 +1,4 @@
-import { PDF_ANALYZER_API_ENDPOINT_WS } from "@/app.config";
+import { BACKEND_SERVICES } from "@/app.config";
 import { useCallback, useEffect, useRef } from "react";
 
 const PDF_ANALYZER_QUERY_SEP = "&";
@@ -20,7 +20,7 @@ const cmdToDispatch = {
   close: () => "close",
 };
 
-export default function usePDFAnalyzer() {
+export default function usePDFAnalyzer(apiHost: string) {
   const wsRef = useRef<WebSocket | null>(null);
 
   const wsEventListenersRef = useRef<Map<string, EventListener>>(
@@ -52,7 +52,9 @@ export default function usePDFAnalyzer() {
     ) => {
       if (!wsRef.current) {
         console.log("Connecting to PDF Analyzer...");
-        const ws = new WebSocket(PDF_ANALYZER_API_ENDPOINT_WS);
+        const ws = new WebSocket(
+          `${BACKEND_SERVICES.PROTOCOL.PDF_ANALYZER}://${apiHost}:${BACKEND_SERVICES.PORT.PDF_ANALYZER}`
+        );
         const listeners = wsEventListenersRef.current;
 
         const handleOnOpen = () => {

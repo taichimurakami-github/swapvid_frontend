@@ -5,6 +5,7 @@ import {
   SequenceAnalyzerErrorResponseBody,
   SequenceAnalyzerOkResponseBody,
 } from "@/types/backend";
+import { BACKEND_SERVICES } from "@/app.config";
 
 export function useSequenceAnalyzer(
   videoElementRef: React.RefObject<HTMLVideoElement> | null
@@ -128,7 +129,7 @@ export function useSequenceAnalyzer(
 
   const fetchVideoViewport = useCallback(
     async (
-      endpointURL: string,
+      apiHost: string,
       assetId: string,
       imgDataURL: string
     ): Promise<MatchContentSequenceResult | null> => {
@@ -140,7 +141,7 @@ export function useSequenceAnalyzer(
       prevResReseived.current = false;
 
       /** TODO: エラーレスポンスのハンドリング */
-      const requestURL = endpointURL + assetId;
+      const requestURL = `${BACKEND_SERVICES.PROTOCOL.SEQUENCE_ANALYZER}://${apiHost}:${BACKEND_SERVICES.PORT.SEQUENCE_ANALYZER}/${assetId}`;
       const result = await fetch(requestURL, {
         method: "POST",
         headers: {

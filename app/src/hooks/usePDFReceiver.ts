@@ -1,13 +1,15 @@
+import { BACKEND_SERVICES } from "@/app.config";
 import { useCallback } from "react";
-import { PDF_RECEIVER_API_ENDPOINT_HTTP } from "@/app.config";
 
 /**
  * FIXME: The file name and hooks name is confusing. need to be changed.
  */
-export default function usePDFReceiver() {
+export default function usePDFReceiver(apiHost: string) {
   const uploadPDF = useCallback(async (pdfFile: File, assetId?: string) => {
     return await fetch(
-      PDF_RECEIVER_API_ENDPOINT_HTTP + (assetId ?? pdfFile.name.split(".")[0]),
+      `${BACKEND_SERVICES.PROTOCOL.PDF_RECEIVER}://${apiHost}:${
+        BACKEND_SERVICES.PORT.PDF_RECEIVER
+      }/${assetId ?? pdfFile.name.split(".")[0]}`,
       {
         method: "POST",
         headers: {

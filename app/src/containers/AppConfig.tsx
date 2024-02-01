@@ -7,7 +7,7 @@ import { AppStatesVisualizer } from "@/containers/AppStatesVisualizer";
 import {
   assetLoaderStateAtom,
   sequenceAnalyzerEnabledAtom,
-  sequenceAnalyzerEndpointURLAtom,
+  backendServiceHostAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
@@ -221,8 +221,8 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
   );
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
 
-  const [sqaEndpointURL, setSqaEndpointURL] = useAtom(
-    sequenceAnalyzerEndpointURLAtom
+  const [backendServiceHost, setBackendServiceHost] = useAtom(
+    backendServiceHostAtom
   );
 
   return (
@@ -239,9 +239,9 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
       } as TAppConfigMultipleSelectProps<TInterfaceType>)}
 
       <AppConfigInput
-        labelText="Sequence Analyzer Endpoint URL"
-        currentValue={sqaEndpointURL}
-        handleSetValue={setSqaEndpointURL}
+        labelText="Backend Service Host"
+        currentValue={backendServiceHost}
+        handleSetValue={setBackendServiceHost}
       />
 
       {/* {React.createElement(AppConfigMultipleSelect<TAssetId>, {

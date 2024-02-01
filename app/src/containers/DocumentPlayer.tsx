@@ -21,7 +21,7 @@ import {
   preGeneratedScrollTimelineDataAtom,
   relatedVideoTimeSectionsAtom,
   sequenceAnalyzerEnabledAtom,
-  sequenceAnalyzerEndpointURLAtom,
+  backendServiceHostAtom,
   sequenceAnalyzerStateAtom,
   userDocumentViewportAtom,
   videoElementRefAtom,
@@ -42,8 +42,8 @@ export const DocumentPlayer: React.FC<{
   );
   const pdfSrc = useAtomValue(pdfSrcAtom);
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
-  const sequenceAnalyzerEndpointURL = useAtomValue(
-    sequenceAnalyzerEndpointURLAtom
+  const backendServiceHost= useAtomValue(
+    backendServiceHostAtom
   );
   const [documentPlayerActive, setDocumentPlayerActive] = useAtom(
     documentPlayerActiveAtom
@@ -181,7 +181,7 @@ export const DocumentPlayer: React.FC<{
         const assetId = pdfSrc.name.split(".")[0];
 
         const fetchResult = await fetchVideoViewportFromCurrentTime(
-          sequenceAnalyzerEndpointURL,
+          backendServiceHost,
           assetId,
           currentTime
         );
@@ -220,7 +220,7 @@ export const DocumentPlayer: React.FC<{
       return getActiveVideoViewportFromCurrentTime(currentTime);
     },
     [
-      sequenceAnalyzerEndpointURL,
+      backendServiceHost,
       sequenceAnalyzerEnabled,
       pdfSrc,
       setSequenceAnalyzerState,

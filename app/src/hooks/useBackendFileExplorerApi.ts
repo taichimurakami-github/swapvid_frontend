@@ -1,10 +1,12 @@
-import { FILE_EXPLORER_API_ENDPOINT_HTTP } from "@/app.config";
+import { BACKEND_SERVICES } from "@/app.config";
 import { FileExplorerAPIResponse } from "@/types/backend";
 import { useCallback } from "react";
 
-export function useBackendFileExplorerApi() {
+export function useBackendFileExplorerApi(apiHost: string) {
   const fetchBackendAssetFiles = useCallback(async () => {
-    return (await fetch(FILE_EXPLORER_API_ENDPOINT_HTTP)
+    return (await fetch(
+      `${BACKEND_SERVICES.PROTOCOL.FILE_EXPLORER}://${apiHost}:${BACKEND_SERVICES.PORT.FILE_EXPLORER}/`
+    )
       .then((v) => v.json())
       .catch((e) => {
         console.log(e);
