@@ -9,7 +9,6 @@ RUN corepack enable
 
 COPY ./app /app
 WORKDIR /app
-RUN rm -rf .git/
-RUN rm -rf node_modules
 
-RUN npm i
+
+RUN pnpm i

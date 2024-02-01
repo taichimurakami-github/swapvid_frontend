@@ -1,4 +1,8 @@
 version: "3"
+
+volumes:
+  swapvid_ui_node_modules: # Volume Trick
+
 services:
   swapvid_ui:
     image: taichimurakami/swapvid_frontend
@@ -8,6 +12,7 @@ services:
     container_name: swapvid_frontend
     volumes:
       - ./app:/app
+      - swapvid_ui_node_modules:/app/node_modules
     ports:
       - 3070:3070
     tty: true
