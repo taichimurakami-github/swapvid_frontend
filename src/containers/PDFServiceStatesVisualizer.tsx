@@ -1,4 +1,3 @@
-import React from "react";
 import { AppProgressBar } from "@/presentations/BackendApi";
 import { backendPdfAnalyzerApiStateAtom } from "@/providers/jotai/store";
 import { useAtomValue } from "jotai/react";

@@ -123,9 +123,12 @@ export const useUserDocumentViewportSyncEffect = (
 ) => {
   const previousUpdatedTimeRef = useRef<number>(0);
 
-  const _shouldUpdate = useCallback((currentTime_ms: number) => {
-    return currentTime_ms - previousUpdatedTimeRef.current > interval_ms;
-  }, []);
+  const _shouldUpdate = useCallback(
+    (currentTime_ms: number) => {
+      return currentTime_ms - previousUpdatedTimeRef.current > interval_ms;
+    },
+    [interval_ms]
+  );
 
   const handlePlayerOnScroll = useCallback(
     () => {

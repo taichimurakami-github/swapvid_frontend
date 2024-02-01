@@ -37,7 +37,7 @@ export function useAutoVideoSrcInjecter(
           };
       }
     },
-    []
+    [onVideoSrcSetHook, videoRef]
   );
 
   useEffect(() => {
