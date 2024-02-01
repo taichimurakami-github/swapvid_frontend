@@ -267,14 +267,8 @@ export const DocumentPlayer: React.FC<{
    * at every time rendered (only if player is unactive)
    */
   if (documentWrapperRef.current && videoViewport && !playerActive) {
-    updateDocumentScrollPositions(videoViewport, documentWrapperRef.current);
-  }
-
-  /**
-   * Update renderingScaleVideoViewport cache
-   */
-  if (playerActive) {
     renderingScaleVideoViewport.current = videoViewport;
+    updateDocumentScrollPositions(videoViewport, documentWrapperRef.current);
   }
 
   /** Adjust pdf page width to render */
@@ -351,24 +345,19 @@ export const DocumentPlayer: React.FC<{
         !standaloneModeEnabled ? dispatchVideoElementClickEvent : undefined // Set video element event dispatcher if player is not standalone mode
       }
     >
-      <div
-        id="document_player_container"
-        ref={documentContainerRef}
-        className="w-full relative"
-        style={{
-          visibility: playerActive ? "visible" : "hidden",
-        }}
-      >
-        {pdfSrc && (
-          <>
-            <PDFRenderer pageWidthPx={pageWidthToRender} />
-            <VideoViewportRectangle
-              pageWidthPx={pageWidthToRender}
-              standaloneModeEnabled={standaloneModeEnabled}
-            />
-          </>
-        )}
-      </div>
+      {pdfSrc && (
+        <div
+          id="document_player_container"
+          ref={documentContainerRef}
+          className="w-full relative"
+        >
+          <PDFRenderer pageWidthPx={pageWidthToRender} />
+          <VideoViewportRectangle
+            pageWidthPx={pageWidthToRender}
+            standaloneModeEnabled={standaloneModeEnabled}
+          />
+        </div>
+      )}
     </div>
   );
 };
