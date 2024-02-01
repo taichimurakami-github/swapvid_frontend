@@ -1,40 +1,10 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { DOMRectLike, TBoundingBox } from "@/types/swapvid";
-
-export type SequenceAnalyzerOkResponseBody = {
-  document_available: boolean;
-  estimated_viewport: TBoundingBox | null;
-  matched_content_vf: string | null;
-  matched_content_doc: string | null;
-  score_ngram: number;
-  score_sqmatch: number;
-};
-
-// content_sequence_matched: boolean,
-// content_matching_result TBoundingBox | None,
-// document_available: boolean,
-// viewport_estimation_result: TBoundingBox | None,
-
-export type SequenceAnalyzerErrorResponseBody = {
-  document_available: boolean;
-  estimated_viewport: TBoundingBox | null;
-  matched_content_vf: string | null;
-  matched_content_doc: string | null;
-  score_ngram: number;
-  score_sqmatch: number;
-  error_type: string;
-  error_message: string;
-};
-
-type MatchContentSequenceResult =
-  | {
-      status: "OK";
-      bodyContent: SequenceAnalyzerOkResponseBody;
-    }
-  | {
-      status: "ERROR";
-      bodyContent: SequenceAnalyzerErrorResponseBody;
-    };
+import { DOMRectLike } from "@/types/swapvid";
+import {
+  MatchContentSequenceResult,
+  SequenceAnalyzerErrorResponseBody,
+  SequenceAnalyzerOkResponseBody,
+} from "@/types/backend";
 
 export function useSequenceAnalyzer(
   videoElementRef: React.RefObject<HTMLVideoElement> | null
@@ -228,7 +198,7 @@ export function useSequenceAnalyzer(
       endpointURL: string,
       assetId: string,
       currentTime: number,
-      maxSamplingRate_sec = 0.5
+      maxSamplingRate_sec = 0.8
     ) => {
       const timeDiff = Math.abs(currentTime - prevSampledCurrentTime.current);
 

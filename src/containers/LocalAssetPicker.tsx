@@ -106,7 +106,9 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
 
       for (const f of e.target.files as FileList) {
         validationResult.video =
-          validationResult.video || f.name.includes(".mp4");
+          validationResult.video ||
+          f.name.includes(".mp4") ||
+          f.name.includes(".mov");
 
         validationResult.document =
           validationResult.document || f.name.includes(".pdf");
@@ -125,6 +127,7 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
         const ext = f.name.split(".").pop();
         switch (ext) {
           case "mp4":
+          case "mov":
             dispatchSelectedAsset({ video: true });
             break;
 
@@ -147,11 +150,13 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
       const ext = f.name.split(".").pop();
       switch (ext) {
         case "mp4":
+        case "mov":
           setVideoSrc(URL.createObjectURL(f));
           break;
 
         case "pdf":
-          setPdfSrc(URL.createObjectURL(f));
+          // setPdfSrc(URL.createObjectURL(f));
+          setPdfSrc(f);
           break;
 
         case "json":
@@ -209,19 +214,19 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
               value={selectedAsset.document}
             />
 
-            <Item
-              title="【OPTIONAL】 Scroll Timeline (.json)"
-              errorMessage={errorMessage.scrollTimeline}
-              value={selectedAsset.scrollTimeline}
-            />
+            {!swapVidDesktopEnabled && (
+              <Item
+                title="【OPTIONAL】 Scroll Timeline (.json)"
+                errorMessage={errorMessage.scrollTimeline}
+                value={selectedAsset.scrollTimeline}
+              />
+            )}
           </div>
 
           <input
             className="bg-slate-200 p-2 rounded-sm hover:bg-slate-300"
             type="file"
-            accept={`${
-              swapVidDesktopEnabled ? "" : "video/*"
-            },image/*,.pdf,.json`}
+            accept={`${swapVidDesktopEnabled ? "" : "video/*"},.pdf,.json`}
             onChange={handleChange}
             maxLength={3}
             minLength={2}

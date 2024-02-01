@@ -40,6 +40,10 @@ export default function usePDFAnalyzer() {
     wsEventListenersRef.current.clear();
   }, [wsRef, wsEventListenersRef]);
 
+  const parseProgressMessage = useCallback((msg: string) => {
+    return msg.split("=")[1].replace("%", ""); // ex) 90
+  }, []);
+
   const runPDFContentAnalysis = useCallback(
     async (
       assetId: string,
@@ -66,7 +70,7 @@ export default function usePDFAnalyzer() {
           console.log("【MSG RECEIVED】", currentMessage);
 
           if (currentMessage.includes("progress") && progressReceiver) {
-            progressReceiver(currentMessage);
+            progressReceiver(parseProgressMessage(currentMessage));
           }
 
           if (currentMessage === "success") {
@@ -99,5 +103,5 @@ export default function usePDFAnalyzer() {
     };
   }, [_initalize]);
 
-  return { runPDFContentAnalysis };
+  return { runPDFContentAnalysis, parseProgressMessage };
 }

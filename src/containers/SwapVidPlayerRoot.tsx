@@ -7,12 +7,16 @@ import {
 import {
   assetIdAtom,
   assetLoaderStateAtom,
+  backendPdfAnalyzerApiStateAtom,
   localFilePickerActiveAtom,
   pdfSrcAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
 } from "@/providers/jotai/store";
+import { useBackendFileExplorerApi } from "@/hooks/useBackendFileExplorerApi";
+import usePDFAnalyzer from "@/hooks/usePDFAnalyzer";
+import usePDFReceiver from "@/hooks/usePDFReceiver";
 // import { TAssetId } from "@/types/swapvid";
 
 export const SwapVidPlayerRoot: React.FC<{
@@ -28,6 +32,9 @@ export const SwapVidPlayerRoot: React.FC<{
   const pdfSrc = useAtomValue(pdfSrcAtom);
 
   const setLocalFilePickerActive = useSetAtom(localFilePickerActiveAtom);
+  const setBackendPdfAnalyzerApiState = useSetAtom(
+    backendPdfAnalyzerApiStateAtom
+  );
 
   useEffect(() => {
     const localSourceRegistered = !!(videoSrc && pdfSrc);
@@ -42,6 +49,59 @@ export const SwapVidPlayerRoot: React.FC<{
     setLocalFilePickerActive,
     videoSrc,
     pdfSrc,
+  ]);
+
+  const { fetchBackendAssetFiles } = useBackendFileExplorerApi();
+  const { runPDFContentAnalysis } = usePDFAnalyzer();
+  const { uploadPDF } = usePDFReceiver();
+
+  useEffect(() => {
+    if (!pdfSrc) return;
+
+    const assetId = pdfSrc.name.split(".")[0];
+
+    (async () => {
+      const currentBackendFiles = await fetchBackendAssetFiles();
+      console.log("current available files:", currentBackendFiles);
+
+      if (!currentBackendFiles) {
+        console.log(
+          "ERROR: Backend server does not responded. Please chech if the contaienr is running."
+        );
+        return;
+      }
+
+      if (!currentBackendFiles.pdf_files.includes(pdfSrc.name)) {
+        /**
+         * If the pdf file does not exist in Backend directory,
+         * Upload current file first.
+         */
+
+        await uploadPDF(pdfSrc, assetId);
+      } else {
+        console.log("The current PDF file already exists.");
+      }
+
+      /**
+       * The index-data generation will be skipped
+       * if there the index file already exists.
+       */
+      runPDFContentAnalysis(
+        assetId,
+        () => setBackendPdfAnalyzerApiState(null),
+        (msg: string) => {
+          setBackendPdfAnalyzerApiState({ progress: Number(msg) });
+        }
+      );
+
+      // if(!backendFiles)
+    })();
+  }, [
+    pdfSrc,
+    fetchBackendAssetFiles,
+    uploadPDF,
+    runPDFContentAnalysis,
+    setBackendPdfAnalyzerApiState,
   ]);
 
   switch (interfaceType) {

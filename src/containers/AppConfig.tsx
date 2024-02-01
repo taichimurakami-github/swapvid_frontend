@@ -6,10 +6,8 @@ import { useAtom, useAtomValue } from "jotai/react";
 import { AppStatesVisualizer } from "@/containers/AppStatesVisualizer";
 import {
   assetLoaderStateAtom,
-  pdfSrcAtom,
   sequenceAnalyzerEnabledAtom,
   sequenceAnalyzerEndpointURLAtom,
-  sequenceAnalyzerStateAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
@@ -157,7 +155,10 @@ export const AppConfig: React.FC<{ zIndex?: number }> = ({ zIndex }) => {
         ) : (
           <div id="modal_content_root">
             <div className="grid max-w-[750px] mx-auto pb-16">
-              <div className="h-[50px]"></div>
+              <p className="py-2 text-sm text-slate-600 font-bold">
+                SwapVid Demo version {APP_VERSION}
+              </p>
+              <div className="h-8"></div>
               <AppConfigMenuPlayerOptions />
               <AppConfigMenuSequenceAnalyzerOptions />
               <AppConfigMenuSwapVidDesktopOptions />
@@ -192,13 +193,7 @@ const AppConfigMenuSequenceAnalyzerOptions: React.FC = () => {
   const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
     sequenceAnalyzerEnabledAtom
   );
-  const [sequenceAnalyzerState, setSequenceAnalyzerState] = useAtom(
-    sequenceAnalyzerStateAtom
-  );
   const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
-
-  const handleSetSqaActiveAssetId = (v: string) =>
-    setSequenceAnalyzerState((b) => ({ ...b, activeAssetId: v }));
 
   return (
     <AppConfigMenuSectionContainer title="Sequence Analyzer">
@@ -209,11 +204,11 @@ const AppConfigMenuSequenceAnalyzerOptions: React.FC = () => {
         disabled={swapVidDesktopEnabled}
       />
 
-      <AppConfigInput
+      {/* <AppConfigInput
         labelText="Asset ID"
         currentValue={sequenceAnalyzerState.activeAssetId}
         handleSetValue={handleSetSqaActiveAssetId}
-      />
+      /> */}
     </AppConfigMenuSectionContainer>
   );
 };
@@ -225,7 +220,6 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
     swapvidInterfaceTypeAtom
   );
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
-  const [pdfSrc, setPdfSrc] = useAtom(pdfSrcAtom);
 
   const [sqaEndpointURL, setSqaEndpointURL] = useAtom(
     sequenceAnalyzerEndpointURLAtom
@@ -287,20 +281,6 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
           })),
       } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
 
-      {/* <AppConfigToggle
-        labelText="Use preset Video file"
-        currentValue={
-          swapVidDesktopEnabled ? true : assetLoaderState.video.presetsEnabled
-        }
-        handleSetValue={(v) =>
-          setAssetLoaderState((b) => ({
-            ...b,
-            video: { ...b.video, presetsEnabled: v },
-          }))
-        }
-        disabled={swapVidDesktopEnabled}
-      /> */}
-
       {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
         currentValue: assetLoaderState.pdf.sourceType,
         selectElementId: "pdf_source_type",
@@ -316,33 +296,11 @@ const AppConfigMenuPlayerOptions: React.FC = () => {
           })),
       } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
 
-      {/* <AppConfigToggle
-        labelText="Use preset PDF file"
-        currentValue={
-          swapVidDesktopEnabled ? true : assetLoaderState.pdf.presetsEnabled
-        }
-        handleSetValue={(v) =>
-          setAssetLoaderState((b) => ({
-            ...b,
-            pdf: { ...b.pdf, presetsEnabled: v },
-          }))
-        }
-        disabled={swapVidDesktopEnabled}
-      /> */}
-
       {typeof videoSrc === "string" && (
         <AppConfigInput
           labelText="Video Source URL"
           currentValue={videoSrc ?? ""}
           handleSetValue={setVideoSrc}
-        />
-      )}
-
-      {typeof pdfSrc === "string" && (
-        <AppConfigInput
-          labelText="PDF Source URL"
-          currentValue={pdfSrc ?? ""}
-          handleSetValue={setPdfSrc}
         />
       )}
     </AppConfigMenuSectionContainer>

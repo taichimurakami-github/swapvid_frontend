@@ -11,6 +11,7 @@ import {
   SwapVidDesktopMenu,
 } from "@/containers/SwapVidDesktopUtils";
 import { DocumentOverviewActivator } from "@/containers/DocumentOverviewActivator";
+import { PDFServiceStatesVisualizer } from "@/containers/PDFServiceStatesVisualizer";
 // import { DocumentOverviewActivator } from "@/containers/DocumentOverviewActivator";
 
 export const PlayerCombinedView: React.FC<{
@@ -21,6 +22,7 @@ export const PlayerCombinedView: React.FC<{
     className="combined-view-container max-w-full max-h-full p-4"
     style={{ zIndex: zIndex ?? "auto" }}
   >
+    <PDFServiceStatesVisualizer />
     <div className="player-container relative max-w-full max-h-full z-0">
       <VideoPlayer desktopCaptureEnabled={swapvidDesktopEnabled} />
 

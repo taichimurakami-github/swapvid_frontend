@@ -11,7 +11,7 @@ export const ACTIVE_VIEW_MODE_LS_CACHE_KEY = "__lastActiveViewMode";
 export const SEQUENCE_ANALYZER_API_ENDPOINT_HTTP = "http://0.0.0.0:8881/";
 export const PDF_RECEIVER_API_ENDPOINT_HTTP = "http://0.0.0.0:8882/";
 export const PDF_ANALYZER_API_ENDPOINT_WS = "ws://0.0.0.0:8883/";
-export const INITIAL_ASSET_ID = "SampleLectureLLM01";
+export const FILE_EXPLORER_API_ENDPOINT_HTTP = "http://0.0.0.0:8884/";
 
 export const ENABLE_POC_USER_STUDY_MODE = false;
 

@@ -31,12 +31,13 @@ export function useAutoVideoSrcInjecter(
 
         default:
           videoElement.srcObject = videoSrc;
+          videoElement.play();
           return () => {
             videoElement.srcObject = null;
           };
       }
     },
-    []
+    [onVideoSrcSetHook, videoRef]
   );
 
   useEffect(() => {
