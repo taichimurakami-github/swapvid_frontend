@@ -2,7 +2,6 @@ import { TBoundingBox, TDocumentTimeline } from "@/types/swapvid";
 import { calcBboxArea } from "@/utils/bboxUtil";
 import { calcRectCollision } from "@/utils/collision";
 import React, { useCallback, useRef } from "react";
-import { useVideoCurrentTimeEffect } from "@/hooks/useVideoCurrenttime";
 
 export const useRelatedVideoTimeSectionParser = () => {
   /**
@@ -118,72 +117,30 @@ export const usePlayerActivator = (
 export const useUserDocumentViewportSyncEffect = (
   wrapperRef: React.RefObject<HTMLDivElement | null>,
   containerRef: React.RefObject<HTMLDivElement | null>,
-  updateUserDocumentViewport: (viewport: TBoundingBox) => void,
-  interval_ms = 50
+  updateUserDocumentViewport: (viewport: TBoundingBox) => void
 ) => {
-  const previousUpdatedTimeRef = useRef<number>(0);
+  const handlePlayerOnScroll = useCallback(() => {
+    const containerElem = containerRef.current;
+    const wrapperElem = wrapperRef.current;
 
-  const _shouldUpdate = useCallback(
-    (currentTime_ms: number) => {
-      return currentTime_ms - previousUpdatedTimeRef.current > interval_ms;
-    },
-    [interval_ms]
-  );
+    if (wrapperElem && containerElem) {
+      const documentWidth = containerElem.clientWidth;
+      const documentHeight = containerElem.clientHeight;
+      const playerViewportWidth = wrapperElem.clientWidth;
+      const playerViewportHeight = wrapperElem.clientHeight;
 
-  const handlePlayerOnScroll = useCallback(
-    () => {
-      const now = Date.now();
-      if (!_shouldUpdate(now)) return;
-      previousUpdatedTimeRef.current = now;
+      const currDocLeft = wrapperElem.scrollLeft / documentWidth;
+      const currDocTop = wrapperElem.scrollTop / documentHeight;
+      const currDocWidth = playerViewportWidth / documentWidth;
+      const currDocHeight = playerViewportHeight / documentHeight;
 
-      const containerElem = containerRef.current;
-      const wrapperElem = wrapperRef.current;
+      const documentViewport: [[number, number], [number, number]] = [
+        [currDocLeft, currDocTop],
+        [currDocLeft + currDocWidth, currDocTop + currDocHeight],
+      ];
 
-      if (wrapperElem && containerElem) {
-        const documentWidth = containerElem.clientWidth;
-        const documentHeight = containerElem.clientHeight;
-        const playerViewportWidth = wrapperElem.clientWidth;
-        const playerViewportHeight = wrapperElem.clientHeight;
-
-        const currDocLeft = wrapperElem.scrollLeft / documentWidth;
-        const currDocTop = wrapperElem.scrollTop / documentHeight;
-        const currDocWidth = playerViewportWidth / documentWidth;
-        const currDocHeight = playerViewportHeight / documentHeight;
-
-        const documentViewport: [[number, number], [number, number]] = [
-          [currDocLeft, currDocTop],
-          [currDocLeft + currDocWidth, currDocTop + currDocHeight],
-        ];
-
-        updateUserDocumentViewport(documentViewport); // Dispatch current user's document viewport
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [updateUserDocumentViewport, previousUpdatedTimeRef.current]
-  );
+      updateUserDocumentViewport(documentViewport); // Dispatch current user's document viewport
+    }
+  }, [containerRef, wrapperRef, updateUserDocumentViewport]);
   return { handlePlayerOnScroll };
-};
-
-export const useVideoViewportSyncEffect = (
-  videoElementRef: React.RefObject<HTMLVideoElement> | null,
-  getCurrentVideoViewport: (t: number) => Promise<null | TBoundingBox>,
-  updateDocumentPlayerStandby: (v: boolean) => void,
-  updateVideoViewport: (v: TBoundingBox | null) => void
-) => {
-  useVideoCurrentTimeEffect(videoElementRef, async (currentTime: number) => {
-    if (!updateDocumentPlayerStandby || !updateVideoViewport) {
-      return;
-    }
-
-    const activeVideoViewport = await getCurrentVideoViewport(currentTime);
-    updateDocumentPlayerStandby(!!activeVideoViewport);
-
-    // Failed to found active section from scroll timeline
-    if (!activeVideoViewport) {
-      return;
-    }
-
-    /** Record current viewport */
-    updateVideoViewport(activeVideoViewport);
-  });
 };

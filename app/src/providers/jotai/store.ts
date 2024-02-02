@@ -96,6 +96,7 @@ export const pipVideoWindowActiveAtom = atom(true);
 // PlayerState.ContentLocationSync
 export const userDocumentViewportAtom = atom<TBoundingBox | null>(null);
 export const videoViewportAtom = atom<TBoundingBox | null>(null);
+export const videoCurrentTimeAtom = atom(0);
 export const scrollTimelineDataAtom = atom<TDocumentTimeline | null>(null);
 export const relatedVideoTimeSectionsAtom = atom<[number, number, number][]>(
   []

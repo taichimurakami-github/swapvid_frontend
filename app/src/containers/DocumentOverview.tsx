@@ -176,13 +176,11 @@ const _DocumentOverview: React.FC<{
     };
   }, [userDocumentViewport, wrapperRef, pdfContainerRef]);
 
+  /** Close this component automatically */
   useEffect(() => {
-    if (
-      !documentPlayerActive &&
-      documentOverviewActive &&
-      !standaloneModeEnabled
-    )
-      handleClose();
+    if (standaloneModeEnabled) return;
+
+    if (!documentPlayerActive && documentOverviewActive) handleClose();
   }, [
     documentPlayerActive,
     documentOverviewActive,

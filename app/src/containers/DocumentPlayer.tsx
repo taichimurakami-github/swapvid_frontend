@@ -6,7 +6,6 @@ import {
   usePlayerActivator,
   useRelatedVideoTimeSectionParser,
   useUserDocumentViewportSyncEffect,
-  useVideoViewportSyncEffect,
 } from "@hooks/useDocumentPlayerEngine";
 import { usePreGeneratedScrollTimeline } from "@hooks/usePreGeneratedTimeline";
 import { useSequenceAnalyzer } from "@hooks/useSequenceAnalyzer";
@@ -26,6 +25,7 @@ import {
   userDocumentViewportAtom,
   videoElementRefAtom,
   videoViewportAtom,
+  videoCurrentTimeAtom,
 } from "@/providers/jotai/store";
 import { TBoundingBox } from "@/types/swapvid";
 import { cvtToWHArray } from "@utils/bboxUtil";
@@ -42,9 +42,9 @@ export const DocumentPlayer: React.FC<{
   );
   const pdfSrc = useAtomValue(pdfSrcAtom);
   const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
-  const backendServiceHost= useAtomValue(
-    backendServiceHostAtom
-  );
+  const videoCurrentTime = useAtomValue(videoCurrentTimeAtom);
+
+  const backendServiceHost = useAtomValue(backendServiceHostAtom);
   const [documentPlayerActive, setDocumentPlayerActive] = useAtom(
     documentPlayerActiveAtom
   );
@@ -229,17 +229,6 @@ export const DocumentPlayer: React.FC<{
     ]
   );
 
-  /**
-   * Get new video viewport when video.currentTime is changed, and Update states
-   */
-  useVideoViewportSyncEffect(
-    videoElementRef,
-    getCurrentVideoViewport,
-    updatePlayerStandby,
-    updateVideoViewport
-    // !standaloneModeEnabled ? updateDocumentScrollPositions : undefined // Only update document scroll positions when player is not in standalone mode
-  );
-
   const { handlePlayerOnScroll } = useUserDocumentViewportSyncEffect(
     documentWrapperRef,
     documentContainerRef,
@@ -247,7 +236,11 @@ export const DocumentPlayer: React.FC<{
   );
 
   const updateDocumentScrollPositions = useCallback(
-    (viewport: TBoundingBox, wrapperElement: HTMLDivElement) => {
+    (viewport: TBoundingBox) => {
+      const wrapperElement = documentWrapperRef.current;
+
+      if (!wrapperElement) return;
+
       const currentScrollLeft = wrapperElement.scrollWidth * viewport[0][0];
       const currentScrollTop = wrapperElement.scrollHeight * viewport[0][1];
       wrapperElement.scrollLeft = currentScrollLeft;
@@ -258,18 +251,50 @@ export const DocumentPlayer: React.FC<{
        * because the onScroll event handler will be triggered
        * when the scrollLeft/scrollTop is changed.
        */
+
+      renderingScaleVideoViewport.current = viewport;
     },
-    []
+    [documentWrapperRef, renderingScaleVideoViewport]
   );
 
   /**
    * Update the scroll position of document player
-   * at every time rendered (only if player is unactive)
+   * if the player is unactive
+   *
+   * at:
+   * 1. every time videoViewport is changed
+   * 2. every time videoCurrentTime is changed
    */
-  if (documentWrapperRef.current && videoViewport && !playerActive) {
-    renderingScaleVideoViewport.current = videoViewport;
-    updateDocumentScrollPositions(videoViewport, documentWrapperRef.current);
+  if (videoViewport && !playerActive) {
+    updateDocumentScrollPositions(videoViewport);
   }
+
+  /**
+   * Update the current video viewport
+   * at every time videoCurrentTime changed
+   */
+  const isResponded = useRef(true);
+  useEffect(() => {
+    if (isResponded.current) {
+      (async () => {
+        isResponded.current = false;
+
+        const activeVideoViewport = await getCurrentVideoViewport(
+          videoCurrentTime
+        );
+        updatePlayerStandby(!!activeVideoViewport);
+        updateVideoViewport(activeVideoViewport); // Record current viewport
+
+        isResponded.current = true;
+      })();
+    }
+  }, [
+    videoCurrentTime,
+    isResponded,
+    updatePlayerStandby,
+    getCurrentVideoViewport,
+    updateVideoViewport,
+  ]);
 
   /** Adjust pdf page width to render */
   const getRenderingScalePageWidth = useCallback(
@@ -327,7 +352,7 @@ export const DocumentPlayer: React.FC<{
         height: playerHeight ?? "100%",
         zIndex: zIndex ?? "auto",
         transition: "opacity 0.3s ease-out",
-        opacity: playerActive ? 1 : 0,
+        opacity: playerActive ? 1 : 0.5,
       }}
       ref={documentWrapperRef}
       onResize={updateDocumentPlayerLayout}
@@ -345,11 +370,14 @@ export const DocumentPlayer: React.FC<{
         !standaloneModeEnabled ? dispatchVideoElementClickEvent : undefined // Set video element event dispatcher if player is not standalone mode
       }
     >
-      {pdfSrc && (
+      {
         <div
           id="document_player_container"
           ref={documentContainerRef}
           className="w-full relative"
+          onResize={(e) => {
+            console.log(e);
+          }}
         >
           <PDFRenderer pageWidthPx={pageWidthToRender} />
           <VideoViewportRectangle
@@ -357,7 +385,7 @@ export const DocumentPlayer: React.FC<{
             standaloneModeEnabled={standaloneModeEnabled}
           />
         </div>
-      )}
+      }
     </div>
   );
 };

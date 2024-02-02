@@ -3,6 +3,7 @@ import { useAtom, useSetAtom } from "jotai/react";
 import {
   assetLoaderStateAtom,
   sequenceAnalyzerEnabledAtom,
+  videoCurrentTimeAtom,
   videoElementRefAtom,
   videoElementStateAtom,
   videoMetadataAtom,
@@ -30,6 +31,7 @@ const _VideoPlayer: React.FC<{
   const setVideoMetadata = useSetAtom(videoMetadataAtom);
   const setAssetLoaderState = useSetAtom(assetLoaderStateAtom);
   const setSequenceAnalyzerEnabled = useSetAtom(sequenceAnalyzerEnabledAtom);
+  const setVideoCurrentTime = useSetAtom(videoCurrentTimeAtom);
 
   const captureDesktop = useDesktopCapture();
 
@@ -110,6 +112,10 @@ const _VideoPlayer: React.FC<{
     }
   };
 
+  const handleOnTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    setVideoCurrentTime(e.currentTarget.currentTime);
+  };
+
   useAutoVideoSrcInjecter(videoRef, videoSrc);
 
   useEffect(() => {
@@ -174,6 +180,7 @@ const _VideoPlayer: React.FC<{
         onPlay={handleOnPlay}
         onVolumeChange={handleOnVolumeChange}
         onResize={handleOnResize}
+        onTimeUpdate={handleOnTimeUpdate}
       />
     </>
   );
