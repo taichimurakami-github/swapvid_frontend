@@ -6,9 +6,9 @@ export const AppProgressBar: React.FC<{
   progressPct: number;
   heightPx?: number;
 }> = ({ progressPct, heightPx }) => (
-  <div className="flex justify-start p-1 bg-gray-300 w-full">
+  <div className="flex justify-start p-[2px] w-full bg-gray-200 rounded-full overflow-hidden">
     <div
-      className="h-full bg-teal-600"
+      className="h-full bg-teal-500 rounded-full"
       style={{
         width: progressPct + "%",
         height: heightPx ?? "15px",

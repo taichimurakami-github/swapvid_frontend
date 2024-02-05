@@ -1,12 +1,23 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import "@styles/VideoToolbar.scss";
 import {
-  VideoToolbarPanelCenter,
-  VideoToolbarPanelLeft,
-  VideoToolbarPanelRight,
+  DocumentOverviewSwitch,
+  NotificationAnalyzingPdfOnServer,
+  NotificationDocumentPlayerActive,
+  NotificationDocumentPlayerStandby,
+  NotificationPdfUnavailableOnClient,
+  NotificationPdfUnavailableOnServer,
+  NotificationPreGeneratedTimelineUnavailable,
+  NotificationSequenceAnalyzerStopped,
+  PipVideoWindowSwitch,
+  PlayerSwitch,
+  SubtitlesSwitch,
+  VideoPlayAndPauseButton,
+  VideoVolumeSlider,
 } from "@/presentations/ToolbarPanel";
 import { useAtom, useAtomValue } from "jotai/react";
 import {
+  backendPdfAnalyzerApiStateAtom,
   documentOverviewActiveAtom,
   documentPlayerActiveAtom,
   documentPlayerStandbyAtom,
@@ -21,12 +32,12 @@ import {
   videoElementStateAtom,
   videoViewportAtom,
 } from "@/providers/jotai/store";
+import { VideoCurrentTimeDisplay } from "./VideoCurrentTime";
 
 const _VideoToolbar: React.FC<{
   ambientBackgroundEnabled: boolean;
-  playAndPauseButtonEnabled?: boolean;
   zIndex?: number;
-}> = ({ ambientBackgroundEnabled, playAndPauseButtonEnabled, zIndex }) => {
+}> = ({ ambientBackgroundEnabled, zIndex }) => {
   const videoViewport = useAtomValue(videoViewportAtom);
   const [documentPlayerActive, setDocumentPlayerActive] = useAtom(
     documentPlayerActiveAtom
@@ -48,6 +59,9 @@ const _VideoToolbar: React.FC<{
   const interfaceType = useAtomValue(swapvidInterfaceTypeAtom);
   const preGeneratedScrollTimelineData = useAtomValue(
     preGeneratedScrollTimelineDataAtom
+  );
+  const backendPdfAnalyzerApiState = useAtomValue(
+    backendPdfAnalyzerApiStateAtom
   );
 
   const handlePlayAndPauseButtonClick = useCallback(() => {
@@ -105,11 +119,71 @@ const _VideoToolbar: React.FC<{
   }`;
 
   const liveStreamingEnabled = videoElementRef?.current?.duration === Infinity;
-  const parallelViewEnabled = interfaceType === "parallel";
 
-  const documentAvailableOnClient = pdfRendererState.loaded;
-  const documentAvailableOnSequenceAnalyzer =
-    !sequenceAnalyzerEnabled || sequenceAnalyzerState.pdfAvailable;
+  const ToolbarCenterPanelContent = useMemo(() => {
+    if (!pdfRendererState.loaded) {
+      return <NotificationPdfUnavailableOnClient />;
+    }
+
+    /**
+     * Sequence Analyzer is disabled, but no pre-generated ScrollTimelineData is available
+     */
+    if (!sequenceAnalyzerEnabled && !preGeneratedScrollTimelineData) {
+      return <NotificationPreGeneratedTimelineUnavailable />;
+    }
+
+    /**
+     * Sequence Analyzer is enabled
+     */
+    if (sequenceAnalyzerEnabled) {
+      /**
+       * Backend api is not running (no response from the server)
+       */
+      if (!sequenceAnalyzerState.running) {
+        return <NotificationSequenceAnalyzerStopped />;
+      }
+
+      /**
+       * The client has connected to the server,
+       * but the PDF data and its analysis data (**.index.json) do not exist on backend.
+       *
+       * If the backendPdfAnalyzerApiState is not null, the client is waiting for the server to complete pdf analysis.
+       */
+      if (!sequenceAnalyzerState.pdfAvailable) {
+        return backendPdfAnalyzerApiState ? (
+          <NotificationAnalyzingPdfOnServer
+            progress={backendPdfAnalyzerApiState.progress}
+          />
+        ) : (
+          <NotificationPdfUnavailableOnServer />
+        );
+      }
+    }
+
+    /**
+     * documentPlayer is not on standby, where the scene does not contain a document
+     */
+    if (!documentPlayerStandby) {
+      return null;
+    }
+
+    return documentPlayerActive ? (
+      <NotificationDocumentPlayerActive />
+    ) : (
+      <NotificationDocumentPlayerStandby
+        sequenceAnalyzerEnabled={sequenceAnalyzerEnabled}
+      />
+    );
+  }, [
+    backendPdfAnalyzerApiState,
+    documentPlayerActive,
+    documentPlayerStandby,
+    pdfRendererState.loaded,
+    preGeneratedScrollTimelineData,
+    sequenceAnalyzerEnabled,
+    sequenceAnalyzerState.pdfAvailable,
+    sequenceAnalyzerState.running,
+  ]);
 
   return (
     <div
@@ -119,47 +193,54 @@ const _VideoToolbar: React.FC<{
         zIndex: zIndex ?? "auto",
       }}
     >
-      <VideoToolbarPanelLeft
-        handleClickPlayAndPauseButton={handlePlayAndPauseButtonClick}
-        handleChangeVideoVolumeSlider={handleChangeVideoVolumeSlider}
-        handleToggleVideoVolumeMuted={handleToggleChangeVideoVolumeMuted}
-        liveModeEnabled={liveStreamingEnabled}
-        videoPaused={videoElementState.paused}
-        videoVolume={videoElementState.volume}
-        playAndPauseButtonEnabled={playAndPauseButtonEnabled ?? true}
-      />
-
-      {interfaceType === "combined" && (
-        <VideoToolbarPanelCenter
-          sequenceAnalyzerEnabled={sequenceAnalyzerEnabled}
-          sequenceAnalyzerRunning={sequenceAnalyzerState.running}
-          preGeneratedScrollTimelineExists={!!preGeneratedScrollTimelineData}
-          documentAvailableOnClient={documentAvailableOnClient}
-          documentAvailableOnSequenceAnalyzer={
-            documentAvailableOnSequenceAnalyzer
-          }
-          documentPlayerActive={documentPlayerActive}
-          documentPlayerStandby={documentPlayerStandby}
+      {/* Left Panels */}
+      <div className="flex justify-between">
+        <VideoPlayAndPauseButton
+          videoPaused={videoElementState.paused}
+          handleClickPlayAndPauseButton={handlePlayAndPauseButtonClick}
         />
+
+        <p className="flex items-center text-lg h-full select-none px-4">
+          <VideoCurrentTimeDisplay liveModeEnabled={liveStreamingEnabled} />
+        </p>
+
+        <VideoVolumeSlider
+          videoVolume={videoElementState.volume}
+          handleChangeVideoVolumeSlider={handleChangeVideoVolumeSlider}
+          handleToggleVideoVolumeMuted={handleToggleChangeVideoVolumeMuted}
+        />
+      </div>
+
+      {/* Center Panels (visble only when combined view is enabled) */}
+      {interfaceType === "combined" && (
+        <div className="flex-xyc flex-col">{ToolbarCenterPanelContent}</div>
       )}
 
-      <VideoToolbarPanelRight
-        subtitlesPanelEnabled
-        documentPlayerActive={documentPlayerActive}
-        subtitlesActive={subtitlesActive}
-        pipVideoWindowActive={pipVideoWindowActive}
-        documentOverviewActive={documentOverviewActive}
-        hidePipVideoWindowButtonEnabled={
-          liveStreamingEnabled || parallelViewEnabled
-        }
-        hideDocumentOverviewButtonEnabled={
-          liveStreamingEnabled || parallelViewEnabled
-        }
-        handlePiPVideoWindowButtonClick={handlePiPVideoWindowButonClick}
-        handleDocumentOverviewButtonClick={handleDocumentOverviewButtonClick}
-        handlePlayerButtonClick={handlePlayerButtonClick}
-        handleSubtitlesButtonClick={handleSubtitlesButtonClick}
-      />
+      {/* Right Panels */}
+      <div className="flex justify-between gap-2">
+        <DocumentOverviewSwitch
+          documentPlayerActive={documentPlayerActive}
+          documentOverviewActive={documentOverviewActive}
+          hideDocumentOverviewButtonEnabled={false}
+          handleDocumentOverviewButtonClick={handleDocumentOverviewButtonClick}
+        />
+
+        <PipVideoWindowSwitch
+          documentPlayerActive={documentPlayerActive}
+          pipVideoWindowActive={pipVideoWindowActive}
+          handlePiPVideoWindowButtonClick={handlePiPVideoWindowButonClick}
+        />
+
+        <PlayerSwitch
+          documentPlayerActive={documentPlayerActive}
+          handlePlayerButtonClick={handlePlayerButtonClick}
+        />
+
+        <SubtitlesSwitch
+          subtitlesActive={subtitlesActive}
+          handleSubtitlesButtonClick={handleSubtitlesButtonClick}
+        />
+      </div>
     </div>
   );
 };

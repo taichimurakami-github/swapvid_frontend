@@ -7,7 +7,7 @@ import { videoElementRefAtom } from "@/providers/jotai/store";
 /**
  * Use standalone container for video toolbar current time container
  */
-export const VideoToolbarCurrentTimeDisplay: React.FC<{
+export const VideoCurrentTimeDisplay: React.FC<{
   liveModeEnabled?: boolean;
 }> = ({ liveModeEnabled }) => {
   const videoElementRef = useAtomValue(videoElementRefAtom);
