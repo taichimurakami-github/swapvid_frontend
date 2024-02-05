@@ -11,8 +11,6 @@ import {
   SwapVidDesktopMenu,
 } from "@/containers/SwapVidDesktopUtils";
 import { DocumentOverviewActivator } from "@/containers/DocumentOverviewActivator";
-import { PDFServiceStatesVisualizer } from "@/containers/PDFServiceStatesVisualizer";
-// import { DocumentOverviewActivator } from "@/containers/DocumentOverviewActivator";
 
 export const PlayerCombinedView: React.FC<{
   zIndex?: number;
@@ -22,7 +20,6 @@ export const PlayerCombinedView: React.FC<{
     className="combined-view-container max-w-full max-h-full p-4"
     style={{ zIndex: zIndex ?? "auto" }}
   >
-    <PDFServiceStatesVisualizer />
     <div className="player-container relative max-w-full max-h-full z-0">
       <VideoPlayer desktopCaptureEnabled={swapvidDesktopEnabled} />
 
@@ -46,11 +43,7 @@ export const PlayerCombinedView: React.FC<{
     {!swapvidDesktopEnabled && (
       <VideoSeekbar seekbarHighlightEnabled zIndex={20} />
     )}
-    <VideoToolbar
-      playAndPauseButtonEnabled
-      ambientBackgroundEnabled
-      zIndex={10}
-    />
+    <VideoToolbar ambientBackgroundEnabled zIndex={10} />
     <PiPVideoWindow windowWidthPx={250} zIndex={30} />
 
     {swapvidDesktopEnabled && (
@@ -76,10 +69,7 @@ export const PlayerParallelView: React.FC<{ zIndex?: number }> = ({
       </div>
 
       <VideoSeekbar />
-      <VideoToolbar
-        playAndPauseButtonEnabled
-        ambientBackgroundEnabled={false}
-      />
+      <VideoToolbar ambientBackgroundEnabled={false} />
     </div>
 
     <div className="document-player-outer relative flex-xyc gap-2 max-w-[50%] h-full z-0">

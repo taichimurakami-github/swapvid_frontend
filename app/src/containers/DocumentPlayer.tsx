@@ -352,7 +352,7 @@ export const DocumentPlayer: React.FC<{
         height: playerHeight ?? "100%",
         zIndex: zIndex ?? "auto",
         transition: "opacity 0.3s ease-out",
-        opacity: playerActive ? 1 : 0.5,
+        opacity: playerActive ? 1 : 0,
       }}
       ref={documentWrapperRef}
       onResize={updateDocumentPlayerLayout}

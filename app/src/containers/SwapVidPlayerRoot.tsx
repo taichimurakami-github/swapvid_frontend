@@ -11,6 +11,7 @@ import {
   backendServiceHostAtom,
   localFilePickerActiveAtom,
   pdfSrcAtom,
+  sequenceAnalyzerEnabledAtom,
   swapvidDesktopEnabledAtom,
   swapvidInterfaceTypeAtom,
   videoSrcAtom,
@@ -32,6 +33,7 @@ export const SwapVidPlayerRoot: React.FC<{
   const videoSrc = useAtomValue(videoSrcAtom);
   const pdfSrc = useAtomValue(pdfSrcAtom);
   const backendServiceHost = useAtomValue(backendServiceHostAtom);
+  const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
 
   const setLocalFilePickerActive = useSetAtom(localFilePickerActiveAtom);
   const setBackendPdfAnalyzerApiState = useSetAtom(
@@ -59,7 +61,7 @@ export const SwapVidPlayerRoot: React.FC<{
   const { uploadPDF } = usePDFReceiver(backendServiceHost);
 
   useEffect(() => {
-    if (!pdfSrc) return;
+    if (!pdfSrc || !sequenceAnalyzerEnabled) return;
 
     const assetId = pdfSrc.name.split(".")[0];
 
@@ -101,6 +103,7 @@ export const SwapVidPlayerRoot: React.FC<{
     })();
   }, [
     pdfSrc,
+    sequenceAnalyzerEnabled,
     fetchBackendAssetFiles,
     uploadPDF,
     runPDFContentAnalysis,
