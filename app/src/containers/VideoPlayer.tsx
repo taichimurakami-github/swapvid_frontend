@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from "react";
-import { useAtom, useSetAtom } from "jotai/react";
+import React, { CSSProperties, useEffect, useRef } from "react";
+import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
 import {
   assetLoaderStateAtom,
   sequenceAnalyzerEnabledAtom,
+  swapvidInterfaceTypeAtom,
   videoCurrentTimeAtom,
   videoElementRefAtom,
   videoElementStateAtom,
@@ -18,10 +19,9 @@ import { useAutoVideoSrcInjecter } from "@/hooks/useVideoSrcHelper";
  * because it won't be re-rendered so frequently.
  */
 const _VideoPlayer: React.FC<{
-  desktopCaptureEnabled?: boolean;
   playerWidth?: number;
   playerHeight?: number;
-}> = ({ desktopCaptureEnabled, playerWidth, playerHeight }) => {
+}> = ({ playerWidth, playerHeight }) => {
   const errorContent = useRef("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
@@ -99,24 +99,16 @@ const _VideoPlayer: React.FC<{
       e.currentTarget.error?.message ?? "Video loading error.";
   };
 
-  const handleCaptureDesktop = async () => {
-    const result = await captureDesktop();
-
-    if (result) {
-      setVideoSrc(result.captureStream);
-      setAssetLoaderState((b) => ({
-        ...b,
-        video: { presetsEnabled: false, sourceType: "streaming" },
-      }));
-      setSequenceAnalyzerEnabled(true);
-    }
-  };
-
   const handleOnTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     setVideoCurrentTime(e.currentTarget.currentTime);
   };
 
-  useAutoVideoSrcInjecter(videoRef, videoSrc);
+  const handleSetVideoSrc = useAutoVideoSrcInjecter(videoRef);
+  useEffect(() => {
+    if (videoRef.current) {
+      handleSetVideoSrc(videoSrc, videoRef.current);
+    }
+  }, [videoRef, handleSetVideoSrc, videoSrc]);
 
   useEffect(() => {
     videoRef.current &&
@@ -134,37 +126,31 @@ const _VideoPlayer: React.FC<{
 
   if (errorContent.current) throw new Error(errorContent.current);
 
+  const interfaceType = useAtomValue(swapvidInterfaceTypeAtom);
+
+  const videoStyles =
+    interfaceType === "combined"
+      ? {
+          maxWidth: "90vw",
+          maxHeight: "80vh",
+        }
+      : {
+          maxwidth: "100%",
+          maxHeight: "auto",
+        };
+
   /**
    * Must set max-width and max-height to video element
    * to keep it in viewport.
    */
   return (
-    <>
-      {!videoSrc &&
-        (desktopCaptureEnabled ? (
-          <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] bg-gray-300">
-            <p className="text-xl">
-              Please choose app window from your desktop.
-            </p>
-            <button
-              className="py-2 px-4 rounded-full bg-teal-600 hover:bg-teal-700 font-bold text-white text-2xl"
-              onClick={handleCaptureDesktop}
-            >
-              Capture Desktop
-            </button>
-          </div>
-        ) : (
-          <div className="flex-xyc flex-col gap-4 w-[1000px] h-[500px] max-w-full max-h-full bg-gray-700 text-white font-bold">
-            <p className="text-2xl">Cannot find the video file.</p>
-            <p>Please choose the assets from Config to play.</p>
-          </div>
-        ))}
+    <div className="relative w-full h-full bg-gray-200">
       <video
-        className="max-w-[90vw] max-h-[80vh] bg-gray-200"
         style={{
           display: videoSrc ? "block" : "none",
           width: playerWidth ?? "100%",
           height: playerHeight ?? "auto",
+          ...videoStyles,
         }}
         ref={videoRef}
         loop={false}
@@ -172,6 +158,9 @@ const _VideoPlayer: React.FC<{
         onError={handleOnLoadError}
         onInvalid={(e) => {
           console.log(e);
+        }}
+        onLoad={(e) => {
+          console.log(e.currentTarget.currentTime, e.currentTarget.load);
         }}
         onLoadedMetadata={handleOnLoadedMetadata}
         onLoadedData={handleOnLoadedData}
@@ -182,7 +171,13 @@ const _VideoPlayer: React.FC<{
         onResize={handleOnResize}
         onTimeUpdate={handleOnTimeUpdate}
       />
-    </>
+
+      {!videoSrc && (
+        <div className="p-2 flex-xyc text-center text-2xl w-[50vw] h-[50vh]">
+          Cannot find video source.<br></br> Please select it from App Settings.
+        </div>
+      )}
+    </div>
   );
 };
 

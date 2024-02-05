@@ -1,17 +1,17 @@
 import { TMediaSourceObject } from "@/types/swapvid";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 
 type CleanupFunction = () => void;
 
 export function useAutoVideoSrcInjecter(
   videoRef: React.RefObject<HTMLVideoElement> | null | undefined,
-  videoSrc: string | TMediaSourceObject | null | undefined,
+  // videoSrc: string | TMediaSourceObject | null | undefined,
   onVideoSrcSetHook?: (
     videoRef: React.RefObject<HTMLVideoElement> | null | undefined,
     videoSrc: string | TMediaSourceObject | null | undefined
   ) => void
 ) {
-  const videoElement = videoRef?.current;
+  // const videoElement = videoRef?.current;
 
   const handleSetVideoSrc = useCallback(
     (
@@ -39,12 +39,6 @@ export function useAutoVideoSrcInjecter(
     },
     [onVideoSrcSetHook, videoRef]
   );
-
-  useEffect(() => {
-    if (videoElement) {
-      handleSetVideoSrc(videoSrc, videoElement);
-    }
-  }, [videoSrc, handleSetVideoSrc, videoRef, videoElement]);
 
   return handleSetVideoSrc;
 }

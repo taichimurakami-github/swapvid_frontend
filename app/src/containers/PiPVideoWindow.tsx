@@ -86,7 +86,12 @@ const _PiPVideoWindow: React.FC<{ windowWidthPx: number; zIndex?: number }> = ({
     return () => clearInterval(timeout);
   }, [syncParentVideoCurrentTime]);
 
-  useAutoVideoSrcInjecter(pipVideoRef, videoSrc);
+  const handleSetVideoSrc = useAutoVideoSrcInjecter(pipVideoRef);
+  useEffect(() => {
+    if (pipVideoRef.current) {
+      handleSetVideoSrc(videoSrc, pipVideoRef.current);
+    }
+  }, [handleSetVideoSrc, videoSrc]);
 
   const componentActive =
     parentVideoElem && documentPlayerActive && pipVideoWindowActive;

@@ -30,7 +30,12 @@ const _SeekbarPreviewVideo: React.FC<{
     [videoCurrentTime.current]
   );
 
-  useAutoVideoSrcInjecter(videoRef, videoSrc);
+  const handleSetVideoSrc = useAutoVideoSrcInjecter(videoRef);
+  useEffect(() => {
+    if (videoRef.current) {
+      handleSetVideoSrc(videoSrc, videoRef.current);
+    }
+  }, [handleSetVideoSrc, videoSrc]);
 
   return (
     <video
