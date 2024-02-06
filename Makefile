@@ -1,15 +1,14 @@
+init:
+	docker compose up --build
 
+run:
+	docker compose up
 
-asset-generate:
-	@echo "Starting asset generation process..."
-	pnpm run generate-pwa-assets
+remove:
+	docker compose down --rmi "all" --remove-orphans -v
 
-build: asset-generate
-	@echo "Starting build process..."
-	pnpm build
+generate-assets:
+	docker compose exec swapvid_ui bash -c "pnpm run generate-pwa-assets"
 
-
-deploy: build
-	@echo "Starting deploy process..."
-	firebase deploy --only hosting
-
+build: generate-assets
+	docker compose exec swapvid_ui bash -c "pnpm build"
