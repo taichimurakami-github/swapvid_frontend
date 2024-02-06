@@ -1,10 +1,8 @@
-
-
-asset-generate:
+generate-assets:
 	@echo "Starting asset generation process..."
 	pnpm run generate-pwa-assets
 
-build: asset-generate
+build: generate-assets
 	@echo "Starting build process..."
 	pnpm build
 

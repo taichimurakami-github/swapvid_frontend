@@ -184,7 +184,7 @@ export type AppModalElementAtomReducerActions =
 export const appModalElementAtom = atomWithReducer<
   null | React.ReactElement,
   AppModalElementAtomReducerActions
->(null, (value, action) => {
+>(null, (_value, action) => {
   if (!action) throw new Error("Action is not defined.");
 
   switch (action.type) {
