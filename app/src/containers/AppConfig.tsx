@@ -1,11 +1,10 @@
 import React, { useCallback, useReducer } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleRight, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { TInterfaceType, TMediaSourceType } from "@/types/swapvid";
-import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
+import { TInterfaceType } from "@/types/swapvid";
+import { useAtom } from "jotai/react";
 import { AppStatesVisualizer } from "@/containers/AppStatesVisualizer";
 import {
-  assetLoaderStateAtom,
   sequenceAnalyzerEnabledAtom,
   backendServiceHostAtom,
   swapvidDesktopEnabledAtom,
@@ -21,11 +20,14 @@ import {
   AppConfigLinkItem,
   AppConfigMenuSectionContainer,
   AppConfigMultipleSelect,
-  AppConfigToggle,
   TAppConfigMultipleSelectProps,
 } from "@/containers/AppConfigParts";
-import { AppConfigActivatorButton } from "@/presentations/Button";
+import {
+  AppConfigActivatorButton,
+  AppConfigToggle,
+} from "@/presentations/Button";
 import { PdfUplorder } from "./PDFUplorder";
+import { LocalAssetRegistrationForm } from "./LocalAssetPicker";
 
 type AppMenuContents = {
   element: JSX.Element;
@@ -58,6 +60,10 @@ const APP_CONFIG_CHILD_ITEM = {
   PDF_UPLOADER: {
     id: "pdf_uploader",
     title: "PDF Uploader",
+  },
+  LOCAL_ASSET_PICKER: {
+    id: "local_asset_picker",
+    title: "Asset Picker",
   },
 };
 
@@ -106,8 +112,13 @@ export const AppConfig: React.FC<{
             payload: { ...content },
           });
     },
-    []
+    [appMenuContents]
   );
+
+  const handleCloseAppConfig = useCallback(() => {
+    dispatchAppMenuContents({ type: "reset" });
+    toggleAppConfigActive();
+  }, [toggleAppConfigActive, dispatchAppMenuContents]);
 
   const handleToggleAppStatesVisualizer = useCallback(() => {
     handleToggleChildContent({
@@ -118,15 +129,27 @@ export const AppConfig: React.FC<{
 
   const handleTogglePdfUploader = useCallback(() => {
     handleToggleChildContent({
-      element: <PdfUplorder />,
+      element: (
+        <div className="w-full h-full flex-xyc">
+          <PdfUplorder />
+        </div>
+      ),
       ...APP_CONFIG_CHILD_ITEM.PDF_UPLOADER,
     });
   }, [handleToggleChildContent]);
 
-  const handleCloseAppConfig = useCallback(() => {
-    dispatchAppMenuContents({ type: "reset" });
-    toggleAppConfigActive();
-  }, [toggleAppConfigActive, dispatchAppMenuContents]);
+  const handleToggleAssetPicker = useCallback(() => {
+    handleToggleChildContent({
+      element: (
+        <div className="w-full h-full flex-xyc">
+          <LocalAssetRegistrationForm
+            handleClose={() => dispatchAppMenuContents({ type: "remove" })}
+          />
+        </div>
+      ),
+      ...APP_CONFIG_CHILD_ITEM.LOCAL_ASSET_PICKER,
+    });
+  }, [handleToggleChildContent]);
 
   if (!appConfigActive)
     return (
@@ -188,9 +211,11 @@ export const AppConfig: React.FC<{
               <div className="h-8"></div>
               <AppConfigMenuPlayerOptions
                 togglePdfUploader={handleTogglePdfUploader}
+                toggleAssetPicker={handleToggleAssetPicker}
               />
-              <AppConfigMenuSequenceAnalyzerOptions />
-              <AppConfigMenuSwapVidDesktopOptions />
+              <AppConfigBackendServiceOptions />
+              {/* <AppConfigMenuSequenceAnalyzerOptions /> */}
+              {/* <AppConfigMenuSwapVidDesktopOptions /> */}
               <AppConfigMenuDebugger
                 toggleAppStatesVisualizer={handleToggleAppStatesVisualizer}
               />
@@ -202,73 +227,50 @@ export const AppConfig: React.FC<{
   );
 };
 
-const AppConfigMenuSwapVidDesktopOptions: React.FC = () => {
-  const [swapVidDesktopEnabled, setSwapVidDesktopEnabled] = useAtom(
-    swapvidDesktopEnabledAtom
+const AppConfigBackendServiceOptions: React.FC = () => {
+  const [backendServiceHost, setBackendServiceHost] = useAtom(
+    backendServiceHostAtom
   );
-  const setSequenceAnalyzerEnabled = useSetAtom(sequenceAnalyzerEnabledAtom);
-
-  const handleSwitchSwapVidDesktop = (v: boolean) => {
-    setSwapVidDesktopEnabled(v);
-    v && setSequenceAnalyzerEnabled(v);
-  };
 
   return (
-    <AppConfigMenuSectionContainer title="SwapVid Desktop">
-      <AppConfigToggle
-        labelText="SwapVid Desktop"
-        currentValue={swapVidDesktopEnabled}
-        handleSetValue={handleSwitchSwapVidDesktop}
+    <AppConfigMenuSectionContainer title="Backend Service Options">
+      <AppConfigInput
+        labelText="Backend Service Host"
+        currentValue={backendServiceHost}
+        handleSetValue={setBackendServiceHost}
       />
-    </AppConfigMenuSectionContainer>
-  );
-};
-
-const AppConfigMenuSequenceAnalyzerOptions: React.FC = () => {
-  const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
-    sequenceAnalyzerEnabledAtom
-  );
-  const swapVidDesktopEnabled = useAtomValue(swapvidDesktopEnabledAtom);
-
-  return (
-    <AppConfigMenuSectionContainer title="Sequence Analyzer">
-      <AppConfigToggle
-        labelText="Sequence Analyzer"
-        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
-        handleSetValue={setSequenceAnalyzerEnabled}
-        disabled={swapVidDesktopEnabled}
-      />
-
-      {/* <AppConfigInput
-        labelText="Asset ID"
-        currentValue={sequenceAnalyzerState.activeAssetId}
-        handleSetValue={handleSetSqaActiveAssetId}
-      /> */}
     </AppConfigMenuSectionContainer>
   );
 };
 
 const AppConfigMenuPlayerOptions: React.FC<{
   togglePdfUploader: () => void;
-}> = ({ togglePdfUploader }) => {
-  const [assetLoaderState, setAssetLoaderState] = useAtom(assetLoaderStateAtom);
-
+  toggleAssetPicker: () => void;
+}> = ({ togglePdfUploader, toggleAssetPicker }) => {
   const [swapVidInterfaceType, setSwapVidInterfaceType] = useAtom(
     swapvidInterfaceTypeAtom
   );
   const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
 
-  const [backendServiceHost, setBackendServiceHost] = useAtom(
-    backendServiceHostAtom
+  const [sequenceAnalyzerEnabled, setSequenceAnalyzerEnabled] = useAtom(
+    sequenceAnalyzerEnabledAtom
   );
+  const [swapVidDesktopEnabled, setSwapVidDesktopEnabled] = useAtom(
+    swapvidDesktopEnabledAtom
+  );
+
+  const handleToggleSwapVidDesktop = () => {
+    const nextValue = !swapVidDesktopEnabled;
+    setSwapVidDesktopEnabled(nextValue);
+    nextValue && setSequenceAnalyzerEnabled(nextValue);
+  };
+
+  const handleToggleSequenceAnalyzerEnabled = () => {
+    setSequenceAnalyzerEnabled(!sequenceAnalyzerEnabled);
+  };
 
   return (
     <AppConfigMenuSectionContainer title="SwapVid Player">
-      <AppConfigLinkItem handleClick={togglePdfUploader}>
-        Upload PDF{" "}
-        <FontAwesomeIcon icon={faCircleRight} className="text-black" />
-      </AppConfigLinkItem>
-
       {React.createElement(AppConfigMultipleSelect<TInterfaceType>, {
         currentValue: swapVidInterfaceType,
         selectElementId: "player_ui_type",
@@ -280,35 +282,30 @@ const AppConfigMenuPlayerOptions: React.FC<{
         handleSetValue: setSwapVidInterfaceType,
       } as TAppConfigMultipleSelectProps<TInterfaceType>)}
 
-      <AppConfigInput
-        labelText="Backend Service Host"
-        currentValue={backendServiceHost}
-        handleSetValue={setBackendServiceHost}
+      <AppConfigToggle
+        labelText="Sequence Analyzer"
+        currentValue={swapVidDesktopEnabled ? true : sequenceAnalyzerEnabled}
+        handleClick={handleToggleSequenceAnalyzerEnabled}
+        disabled={swapVidDesktopEnabled}
       />
 
-      {/* {React.createElement(AppConfigMultipleSelect<TAssetId>, {
-        currentValue: activeAssetId,
-        selectElementId: "player_active_asset_id",
-        labelText: "Preset Asset",
-        options: [
-          { value: "SampleLectureLLM01", name: "SampleLectureLLM01" },
-          { value: "CHI2021Fujita", name: "CHI2021Fujita" },
-          { value: "IEEEVR2022Hoshikawa", name: "IEEEVR2022Hoshikawa" },
-          { value: "IEEEVR2022Ogawa", name: "IEEEVR2022Ogawa" },
-          { value: "EdanMeyerVpt", name: "EdanMeyerVpt" },
-          { value: "EdanMeyerAlphaCode", name: "EdanMeyerAlphaCode" },
-        ],
-        handleSetValue: setActiveAssetId,
-      } as TAppConfigMultipleSelectProps<TAssetId>)} */}
+      <AppConfigToggle
+        labelText="SwapVid Desktop"
+        currentValue={swapVidDesktopEnabled}
+        handleClick={handleToggleSwapVidDesktop}
+      />
 
-      {/* <AppConfigInput
-        labelText="Asset ID (custom)"
-        currentValue={activeAssetId ?? ""}
-        // @ts-ignore
-        handleSetValue={setActiveAssetId}
-      /> */}
+      <AppConfigLinkItem handleClick={togglePdfUploader}>
+        Upload PDF{" "}
+        <FontAwesomeIcon icon={faCircleRight} className="text-black" />
+      </AppConfigLinkItem>
 
-      {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
+      <AppConfigLinkItem handleClick={toggleAssetPicker}>
+        Open Asset Picker{" "}
+        <FontAwesomeIcon icon={faCircleRight} className="text-black" />
+      </AppConfigLinkItem>
+
+      {/* {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
         currentValue: assetLoaderState.video.sourceType,
         selectElementId: "video_source_type",
         labelText: "Video Source Type",
@@ -336,7 +333,7 @@ const AppConfigMenuPlayerOptions: React.FC<{
             ...b,
             pdf: { ...b.pdf, sourceType: v },
           })),
-      } as TAppConfigMultipleSelectProps<TMediaSourceType>)}
+      } as TAppConfigMultipleSelectProps<TMediaSourceType>)} */}
 
       {typeof videoSrc === "string" && (
         <AppConfigInput
@@ -358,6 +355,7 @@ const AppConfigMenuDebugger: React.FC<{
         App States Visualizer{" "}
         <FontAwesomeIcon icon={faCircleRight} className="text-black" />
       </AppConfigLinkItem>
+
       <AppConfigLinkItem handleClick={toggleAppStatesVisualizer} disabled>
         Sequence Analyzer Debugger{" "}
         <FontAwesomeIcon icon={faCircleRight} className="text-black" />

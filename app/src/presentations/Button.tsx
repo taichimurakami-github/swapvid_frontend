@@ -1,4 +1,4 @@
-import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { PropsWithChildren } from "react";
 
@@ -73,4 +73,30 @@ export const VideoToolbarPanelTypeC: React.FC<
   >
     {children}
   </button>
+);
+
+export const AppConfigToggle: React.FC<{
+  labelText: string;
+  currentValue: boolean;
+  handleClick: () => void;
+  disabled?: boolean;
+}> = ({ labelText, currentValue, handleClick, disabled }) => (
+  <div className="flex flex-wrap items-center justify-between w-full p-4">
+    <label htmlFor="app_config_toggle">{labelText}</label>
+    <button
+      className={`relative p-2 rounded-full cursor-pointer text-white font-bold w-20 h-11 disabled:opacity-40 ${
+        currentValue ? "bg-teal-600" : "bg-gray-600"
+      }`}
+      onClick={handleClick}
+      disabled={disabled}
+    >
+      <FontAwesomeIcon
+        icon={faCircle}
+        className={`absolute top-1/2 -translate-y-1/2 text-4xl text-white ${
+          currentValue ? "right-1" : "left-1"
+        }`}
+        style={{ transition: "left right 0.1s ease-in-out" }}
+      />
+    </button>
+  </div>
 );

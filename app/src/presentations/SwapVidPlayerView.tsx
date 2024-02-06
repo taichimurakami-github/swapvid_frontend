@@ -5,12 +5,12 @@ import { VideoSubtitles } from "@/containers/VideoSubtitles";
 import { VideoSeekbar } from "@/containers/VideoSeekbar";
 import { VideoToolbar } from "@/containers/VideoToolbar";
 import { DocumentOverview } from "@/containers/DocumentOverview";
-import { CroppedAreaPositioner } from "@/containers/AreaPositioner";
 import {
   ShowDocumentPlayerOnDesktopCaptured,
   SwapVidDesktopMenu,
 } from "@/containers/SwapVidDesktopUtils";
 import { DocumentOverviewActivator } from "@/containers/DocumentOverviewActivator";
+import { DocumentPlayerPositioner } from "@/containers/DocumentPlayerPositioner";
 
 export const PlayerCombinedView: React.FC<{
   zIndex?: number;
@@ -25,14 +25,14 @@ export const PlayerCombinedView: React.FC<{
 
       {swapvidDesktopEnabled ? (
         <ShowDocumentPlayerOnDesktopCaptured>
-          <CroppedAreaPositioner zIndex={10}>
+          <DocumentPlayerPositioner zIndex={10} useCroppedAreaEnabled>
             <DocumentPlayer />
-          </CroppedAreaPositioner>
+          </DocumentPlayerPositioner>
         </ShowDocumentPlayerOnDesktopCaptured>
       ) : (
-        <div className="absolute top-0 left-0 w-full h-full z-10">
+        <DocumentPlayerPositioner zIndex={10}>
           <DocumentPlayer />
-        </div>
+        </DocumentPlayerPositioner>
       )}
 
       <DocumentOverviewActivator width={50} height={"100%"} zIndex={30} />

@@ -21,6 +21,7 @@ import { useBackendFileExplorerApi } from "@/hooks/useBackendFileExplorerApi";
 import usePDFAnalyzer from "@/hooks/usePDFAnalyzer";
 import usePDFReceiver from "@/hooks/usePDFReceiver";
 import { LocalAssetRegistrationForm } from "./LocalAssetPicker";
+import { AppModalWrapper } from "@/presentations/Modal";
 // import { TAssetId } from "@/types/swapvid";
 
 export const SwapVidPlayerRoot: React.FC<{
@@ -69,9 +70,13 @@ export const SwapVidPlayerRoot: React.FC<{
       return dispatchAppModalElement({
         type: "open",
         payload: (
-          <LocalAssetRegistrationForm
-            handleClose={() => dispatchAppModalElement({ type: "close" })}
-          />
+          <AppModalWrapper title="App Initializer">
+            <LocalAssetRegistrationForm
+              sequenceAnalyzerToggleEnabled
+              swapVidDesktopToggleEnabled
+              handleClose={() => dispatchAppModalElement({ type: "close" })}
+            />
+          </AppModalWrapper>
         ),
       });
     }

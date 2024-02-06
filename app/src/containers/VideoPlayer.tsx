@@ -1,8 +1,7 @@
-import React, { CSSProperties, useEffect, useRef } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
+import React, { useEffect, useRef } from "react";
+import { useAtomValue, useSetAtom } from "jotai/react";
 import {
-  assetLoaderStateAtom,
-  sequenceAnalyzerEnabledAtom,
+  appModalElementAtom,
   swapvidInterfaceTypeAtom,
   videoCurrentTimeAtom,
   videoElementRefAtom,
@@ -11,8 +10,9 @@ import {
   videoPlayerLayoutAtom,
   videoSrcAtom,
 } from "@/providers/jotai/store";
-import { useDesktopCapture } from "@/hooks/useDesktopCapture";
 import { useAutoVideoSrcInjecter } from "@/hooks/useVideoSrcHelper";
+import { LocalAssetRegistrationForm } from "./LocalAssetPicker";
+import { AppModalWrapper } from "@/presentations/Modal";
 
 /**
  * Should not use "useCallback" in this component,
@@ -24,16 +24,12 @@ const _VideoPlayer: React.FC<{
 }> = ({ playerWidth, playerHeight }) => {
   const errorContent = useRef("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoSrc, setVideoSrc] = useAtom(videoSrcAtom);
+  const videoSrc = useAtomValue(videoSrcAtom);
   const setVideoElementRef = useSetAtom(videoElementRefAtom);
   const setVideoPlayerLayout = useSetAtom(videoPlayerLayoutAtom);
   const setVideoElementState = useSetAtom(videoElementStateAtom);
   const setVideoMetadata = useSetAtom(videoMetadataAtom);
-  const setAssetLoaderState = useSetAtom(assetLoaderStateAtom);
-  const setSequenceAnalyzerEnabled = useSetAtom(sequenceAnalyzerEnabledAtom);
   const setVideoCurrentTime = useSetAtom(videoCurrentTimeAtom);
-
-  const captureDesktop = useDesktopCapture();
 
   const handleOnLoadedMetadata = (
     e: React.SyntheticEvent<HTMLVideoElement, Event>
@@ -139,6 +135,8 @@ const _VideoPlayer: React.FC<{
           maxHeight: "auto",
         };
 
+  const dispatchAppModalElement = useSetAtom(appModalElementAtom);
+
   /**
    * Must set max-width and max-height to video element
    * to keep it in viewport.
@@ -173,8 +171,31 @@ const _VideoPlayer: React.FC<{
       />
 
       {!videoSrc && (
-        <div className="p-2 flex-xyc text-center text-2xl w-[50vw] h-[50vh]">
-          Cannot find video source.<br></br> Please select it from App Settings.
+        <div className="p-2 flex-xyc flex-col gap-8 text-center text-2xl w-[50vw] h-[50vh]">
+          <span>
+            Cannot find video source.<br></br> Please select the asset files.
+          </span>
+          <button
+            className="flex-xyc rounded-full bg-teal-600 p-4 text-white font-bold"
+            onClick={() =>
+              dispatchAppModalElement({
+                type: "open",
+                payload: (
+                  <AppModalWrapper title="Asset Picker">
+                    <LocalAssetRegistrationForm
+                      sequenceAnalyzerToggleEnabled
+                      swapVidDesktopToggleEnabled
+                      handleClose={() =>
+                        dispatchAppModalElement({ type: "close" })
+                      }
+                    />
+                  </AppModalWrapper>
+                ),
+              })
+            }
+          >
+            Open Asset Picker
+          </button>
         </div>
       )}
     </div>
