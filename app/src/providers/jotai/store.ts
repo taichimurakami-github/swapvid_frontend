@@ -9,12 +9,10 @@ import {
   TServerGeneratedScrollTimeline,
   TSubtitlesData,
 } from "@/types/swapvid";
+import { getJotaiStorageKey } from "@/utils/getKeyString";
 import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atomWithReducer, atomWithStorage } from "jotai/utils";
 import React from "react";
-
-const _getStorageKey = (key: string, primitive = true) =>
-  `jotai.atom.${primitive ? "primitive" : "derived"}.${key}`;
 
 /**
  * Asset State
@@ -27,7 +25,7 @@ export const assetLoaderStateAtom = atomWithStorage<{
     sourceType: TMediaSourceType;
   };
 }>(
-  _getStorageKey("assetLoaderState"),
+  getJotaiStorageKey("assetLoaderState"),
   {
     video: { sourceType: "local" },
     pdf: { sourceType: "local" },
@@ -38,7 +36,7 @@ export const assetLoaderStateAtom = atomWithStorage<{
 
 export const localFilePickerActiveAtom = atom(false);
 export const assetIdAtom = atomWithStorage<TAssetId | null>(
-  _getStorageKey("assetId"),
+  getJotaiStorageKey("assetId"),
   "SampleLectureLLM01",
   undefined,
   { getOnInit: true }
@@ -118,7 +116,7 @@ export const pdfPageStateAtom = atom({
 
 // PlayerState.RootPlayerConfig
 export const swapvidInterfaceTypeAtom = atomWithStorage<TInterfaceType>(
-  _getStorageKey("interfaceType"),
+  getJotaiStorageKey("interfaceType"),
   "combined",
   undefined,
   { getOnInit: true }
@@ -127,14 +125,14 @@ export const appMenuActiveAtom = atom(false);
 
 // SequenceAnalyzer.Analyzer
 export const sequenceAnalyzerEnabledAtom = atomWithStorage(
-  _getStorageKey("sequenceAnalyzerEnabled"),
+  getJotaiStorageKey("sequenceAnalyzerEnabled"),
   false,
   undefined,
   { getOnInit: true }
 );
 
 export const backendServiceHostAtom = atomWithStorage(
-  _getStorageKey("backendServiceHostAtom"),
+  getJotaiStorageKey("backendServiceHostAtom"),
   "127.0.0.1",
   undefined,
   { getOnInit: true }
@@ -161,7 +159,7 @@ export const backendPdfAnalyzerApiStateAtom = atom<null | {
 
 // SwapVid Desktop
 export const swapvidDesktopEnabledAtom = atomWithStorage(
-  _getStorageKey("swapvidDesktopEnabled"),
+  getJotaiStorageKey("swapvidDesktopEnabled"),
   false,
   undefined,
   { getOnInit: true }
@@ -174,3 +172,25 @@ export const userCroppedAreaAtom = atom<{
 
 export const videoCropperActiveAtom = atom(false);
 export const pdfUploaderActiveAtom = atom(false);
+
+export type AppModalElementAtomReducerActions =
+  | {
+      type: "close";
+    }
+  | {
+      type: "open";
+      payload: React.ReactElement;
+    };
+export const appModalElementAtom = atomWithReducer<
+  null | React.ReactElement,
+  AppModalElementAtomReducerActions
+>(null, (value, action) => {
+  if (!action) throw new Error("Action is not defined.");
+
+  switch (action.type) {
+    case "close":
+      return null;
+    case "open":
+      return action.payload;
+  }
+});

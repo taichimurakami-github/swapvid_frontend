@@ -7,11 +7,11 @@ import {
   videoSrcAtom,
 } from "@/providers/jotai/store";
 import { useAtom, useAtomValue, useSetAtom } from "jotai/react";
-import { AppModalTypeA, AppModalWrapper } from "@/presentations/Modal";
 import { useMultipleFilesInput } from "@/hooks/useFileInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { ScreenCaptureAuthorizationButton } from "@containers/SwapVidDesktopUtils";
+import { AppModalWrapper } from "@/presentations/Modal";
 
 const CheckMark: React.FC<{ active: boolean }> = ({ active }) => (
   <div
@@ -50,12 +50,9 @@ type ErrorMessageState = PickedAssetState<string>;
 /**
  * Load large files
  */
-export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
-  zIndex,
-}) => {
-  // const { video: loaderStateVideo, pdf: loaderStatePdf } =
-  //   useAtomValue(assetLoaderStateAtom);
-
+export const LocalAssetRegistrationForm: React.FC<{
+  handleClose: () => void;
+}> = ({ handleClose }) => {
   const [selectedAsset, dispatchSelectedAsset] = useReducer(
     (b: SelectedAssetState, payload: Partial<SelectedAssetState>) => ({
       ...b,
@@ -87,7 +84,6 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
   const setPreGeneratedScrollTimelineData = useSetAtom(
     preGeneratedScrollTimelineDataAtom
   );
-  const [active, setActive] = useAtom(localFilePickerActiveAtom);
 
   const { files, handleOnInputChange } = useMultipleFilesInput();
   const handleChange = useCallback(
@@ -166,10 +162,10 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
       }
     }
 
-    setActive(false);
+    handleClose();
   }, [
-    setActive,
     files,
+    handleClose,
     setVideoSrc,
     setPdfSrc,
     setPreGeneratedScrollTimelineData,
@@ -179,70 +175,68 @@ export const LocalAssetRegistrationForm: React.FC<{ zIndex?: number }> = ({
   // && selectedAsset.overviewImage;
 
   return (
-    <AppModalWrapper visibility={active} zIndex={zIndex}>
-      <AppModalTypeA title="Asset Picker">
-        <div className="grid justify-center gap-8 text-xl max-w-[750px]">
-          <h2 className="text-center font-bold">
-            Pleaase select required asset files.
-          </h2>
+    <AppModalWrapper title="Asset Picker" handleClose={handleClose}>
+      <div className="grid justify-center gap-8 text-xl max-w-[750px]">
+        <h2 className="text-center font-bold">
+          Pleaase select required asset files.
+        </h2>
 
-          <div className="flex flex-col gap-6 items-start">
-            {swapVidDesktopEnabled ? (
-              <div className="flex justify-between items-center w-full">
-                <Item
-                  title="Video Streaming"
-                  errorMessage={errorMessage.video}
-                  value={selectedAsset.video}
-                />
-                <ScreenCaptureAuthorizationButton
-                  onSetCaptureStream={() => {
-                    dispatchSelectedAsset({ video: true });
-                  }}
-                />
-              </div>
-            ) : (
+        <div className="flex flex-col gap-6 items-start">
+          {swapVidDesktopEnabled ? (
+            <div className="flex justify-between items-center w-full">
               <Item
-                title="【REQUIRED】 Video File (.mp4)"
+                title="Video Streaming"
                 errorMessage={errorMessage.video}
                 value={selectedAsset.video}
               />
-            )}
-
-            <Item
-              title="【REQUIRED】 Document File (.pdf)"
-              errorMessage={errorMessage.document}
-              value={selectedAsset.document}
-            />
-
-            {!swapVidDesktopEnabled && (
-              <Item
-                title="【OPTIONAL】 Scroll Timeline (.json)"
-                errorMessage={errorMessage.scrollTimeline}
-                value={selectedAsset.scrollTimeline}
+              <ScreenCaptureAuthorizationButton
+                onSetCaptureStream={() => {
+                  dispatchSelectedAsset({ video: true });
+                }}
               />
-            )}
-          </div>
+            </div>
+          ) : (
+            <Item
+              title="【REQUIRED】 Video File (.mp4)"
+              errorMessage={errorMessage.video}
+              value={selectedAsset.video}
+            />
+          )}
 
-          <input
-            className="bg-slate-200 p-2 rounded-sm hover:bg-slate-300"
-            type="file"
-            accept={`${swapVidDesktopEnabled ? "" : "video/*"},.pdf,.json`}
-            onChange={handleChange}
-            maxLength={3}
-            minLength={2}
-            multiple
+          <Item
+            title="【REQUIRED】 Document File (.pdf)"
+            errorMessage={errorMessage.document}
+            value={selectedAsset.document}
           />
 
-          <button
-            className="w-28 p-2 mx-auto bg-teal-600 hover:bg-teal-700 disabled:opacity-40 text-xl text-white font-bold rounded-full"
-            // disabled={!videoInput.file}
-            disabled={!submissionReady}
-            onClick={handleSubmit}
-          >
-            OK
-          </button>
+          {!swapVidDesktopEnabled && (
+            <Item
+              title="【OPTIONAL】 Scroll Timeline (.json)"
+              errorMessage={errorMessage.scrollTimeline}
+              value={selectedAsset.scrollTimeline}
+            />
+          )}
         </div>
-      </AppModalTypeA>
+
+        <input
+          className="bg-slate-200 p-2 rounded-sm hover:bg-slate-300"
+          type="file"
+          accept={`${swapVidDesktopEnabled ? "" : "video/*"},.pdf,.json`}
+          onChange={handleChange}
+          maxLength={3}
+          minLength={2}
+          multiple
+        />
+
+        <button
+          className="w-28 p-2 mx-auto bg-teal-600 hover:bg-teal-700 disabled:opacity-40 text-xl text-white font-bold rounded-full"
+          // disabled={!videoInput.file}
+          disabled={!submissionReady}
+          onClick={handleSubmit}
+        >
+          OK
+        </button>
+      </div>
     </AppModalWrapper>
   );
 };

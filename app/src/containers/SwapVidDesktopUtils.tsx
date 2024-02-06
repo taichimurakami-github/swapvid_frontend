@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from "react";
 import {
+  appModalElementAtom,
   assetLoaderStateAtom,
-  pdfUploaderActiveAtom,
   sequenceAnalyzerEnabledAtom,
   videoCropperActiveAtom,
   videoSrcAtom,
@@ -9,6 +9,7 @@ import {
 import { useAtomValue, useSetAtom } from "jotai/react";
 
 import { useDesktopCapture } from "@/hooks/useDesktopCapture";
+import { PdfUplorder } from "./PDFUplorder";
 
 export const SwapVidDesktopUtils: React.FC<{ zIndex?: number }> = ({
   zIndex,
@@ -56,7 +57,7 @@ export const SwapVidDesktopMenu: React.FC<{ zIndex?: number }> = ({
   zIndex,
 }) => {
   const setVideoCropperActive = useSetAtom(videoCropperActiveAtom);
-  const setPdfUploaderActive = useSetAtom(pdfUploaderActiveAtom);
+  const dispatchAppModalElement = useSetAtom(appModalElementAtom);
 
   return (
     <div
@@ -79,7 +80,12 @@ export const SwapVidDesktopMenu: React.FC<{ zIndex?: number }> = ({
 
         <button
           className="p-3 bg-teal-600 hover:bg-teal-700 rounded-full"
-          onClick={() => setPdfUploaderActive(true)}
+          onClick={() =>
+            dispatchAppModalElement({
+              type: "open",
+              payload: <PdfUplorder />,
+            })
+          }
         >
           Upload PDF File
         </button>

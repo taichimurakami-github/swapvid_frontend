@@ -1,9 +1,8 @@
 import { AppConfig } from "@/containers/AppConfig";
 import { ErrorBoundary } from "@/containers/ErrorBoundary";
-import { LocalAssetRegistrationForm } from "@/containers/LocalAssetPicker";
-import { PdfUplorder } from "@/containers/PDFUplorder";
 import { SwapVidPlayerRoot } from "@/containers/SwapVidPlayerRoot";
 import { VideoCropper } from "@/containers/VideoCropper";
+import { AppModalRoot } from "./containers/AppModalRoot";
 
 export type TAppMode = "PoCUserStudy" | "SwapVid";
 
@@ -13,8 +12,7 @@ export default function App() {
       <ErrorBoundary>
         <SwapVidPlayerRoot zIndex={0} />
         <VideoCropper zIndex={10} />
-        <PdfUplorder zIndex={10} />
-        <LocalAssetRegistrationForm zIndex={20} />
+        <AppModalRoot zIndex={20} />
       </ErrorBoundary>
 
       <AppConfig zIndex={20} />

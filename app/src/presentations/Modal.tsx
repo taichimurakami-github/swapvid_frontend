@@ -8,27 +8,6 @@ export const AppMenu: React.FC = () => {
 
 export const AppModalWrapper: React.FC<
   PropsWithChildren<{
-    visibility: boolean;
-    height?: CSSProperties["height"];
-    handleClose?: () => void;
-    zIndex?: number;
-  }>
-> = ({ children, visibility, height, handleClose, zIndex }) => (
-  <div
-    className="fixed flex-xyc z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full overflow-hidden rounded-lg bg-white text-black text-lg rounded-lg bg-black-transparent-01"
-    style={{
-      visibility: visibility ? "visible" : "hidden",
-      zIndex: zIndex ?? "auto",
-      height: height ?? "100%",
-    }}
-    onClick={handleClose}
-  >
-    {children}
-  </div>
-);
-
-export const AppModalTypeA: React.FC<
-  PropsWithChildren<{
     title: string;
     width?: CSSProperties["width"];
     height?: CSSProperties["height"];

@@ -19,19 +19,21 @@ export const AppProgressBar: React.FC<{
 );
 
 export const FileUploaderForm: React.FC<{
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   handleChangeFileInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleDeleteSelectedFile?: () => void;
   fileReady?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
   enableFileDeletionButton?: boolean;
 }> = ({
+  handleSubmit,
   handleChangeFileInput,
+  handleDeleteSelectedFile,
   inputRef,
   enableFileDeletionButton,
   fileReady,
-  handleDeleteSelectedFile,
 }) => (
-  <div className="grid gap-8 place-items-center">
+  <form className="grid gap-8 place-items-center" onSubmit={handleSubmit}>
     <input
       className="p-2 text-black"
       type="file"
@@ -50,11 +52,11 @@ export const FileUploaderForm: React.FC<{
     )}
 
     <button
-      className="p-2 rounded-full bg-teal-600 hover:bg-teal-700 w-[300px] font-bold disabled:opacity-40"
+      className="p-2 rounded-full bg-teal-600 hover:bg-teal-700 w-[300px] text-white font-bold disabled:opacity-40"
       disabled={!fileReady}
     >
       <FontAwesomeIcon icon={faCloudArrowUp} className="mr-2" />
       アップロード開始
     </button>
-  </div>
+  </form>
 );

@@ -21,7 +21,7 @@ export const PlayerCombinedView: React.FC<{
     style={{ zIndex: zIndex ?? "auto" }}
   >
     <div className="player-container relative max-w-full max-h-full z-0">
-      <VideoPlayer desktopCaptureEnabled={swapvidDesktopEnabled} />
+      <VideoPlayer />
 
       {swapvidDesktopEnabled ? (
         <ShowDocumentPlayerOnDesktopCaptured>

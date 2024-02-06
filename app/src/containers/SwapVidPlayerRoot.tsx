@@ -5,6 +5,7 @@ import {
   PlayerParallelView,
 } from "@/presentations/SwapVidPlayerView";
 import {
+  appModalElementAtom,
   assetIdAtom,
   assetLoaderStateAtom,
   backendPdfAnalyzerApiStateAtom,
@@ -19,6 +20,7 @@ import {
 import { useBackendFileExplorerApi } from "@/hooks/useBackendFileExplorerApi";
 import usePDFAnalyzer from "@/hooks/usePDFAnalyzer";
 import usePDFReceiver from "@/hooks/usePDFReceiver";
+import { LocalAssetRegistrationForm } from "./LocalAssetPicker";
 // import { TAssetId } from "@/types/swapvid";
 
 export const SwapVidPlayerRoot: React.FC<{
@@ -60,8 +62,19 @@ export const SwapVidPlayerRoot: React.FC<{
   const { runPDFContentAnalysis } = usePDFAnalyzer(backendServiceHost);
   const { uploadPDF } = usePDFReceiver(backendServiceHost);
 
+  const dispatchAppModalElement = useSetAtom(appModalElementAtom);
+
   useEffect(() => {
-    if (!pdfSrc || !sequenceAnalyzerEnabled) return;
+    if (!pdfSrc || !videoSrc) {
+      return dispatchAppModalElement({
+        type: "open",
+        payload: (
+          <LocalAssetRegistrationForm
+            handleClose={() => dispatchAppModalElement({ type: "close" })}
+          />
+        ),
+      });
+    }
 
     const assetId = pdfSrc.name.split(".")[0];
 
@@ -108,6 +121,8 @@ export const SwapVidPlayerRoot: React.FC<{
     uploadPDF,
     runPDFContentAnalysis,
     setBackendPdfAnalyzerApiState,
+    videoSrc,
+    dispatchAppModalElement,
   ]);
 
   switch (interfaceType) {
