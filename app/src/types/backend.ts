@@ -1,5 +1,9 @@
 import { TBoundingBox } from "./swapvid";
 
+export type RequestProtocol = "ws" | "http" | "https";
+
+export type CmdProtocolPdfAnalyzerApi = "inline" | "json";
+
 export type FileExplorerAPIResponse = {
   pdf_files: string[];
   index_files: string[];
