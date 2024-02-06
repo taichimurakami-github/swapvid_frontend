@@ -33,7 +33,7 @@ export default function usePDFAnalyzer(apiHost: string) {
     ws?.close();
 
     wsEventListenersRef.current.forEach((listener, eventName) => {
-      ws.removeEventListener(eventName, listener);
+      ws && ws.removeEventListener(eventName, listener);
     });
 
     wsRef.current = null;

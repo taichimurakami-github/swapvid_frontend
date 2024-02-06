@@ -33,7 +33,9 @@ export function useAutoVideoSrcInjecter(
           videoElement.srcObject = videoSrc;
           videoElement.play();
           return () => {
-            videoElement.srcObject = null;
+            if (videoElement) {
+              videoElement.srcObject = null;
+            }
           };
       }
     },
