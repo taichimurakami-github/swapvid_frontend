@@ -247,7 +247,7 @@ export const LocalAssetRegistrationForm: React.FC<{
             handleClick={() =>
               setSequenceAnalyzerEnabled(!sequenceAnalyzerEnabled)
             }
-            disabled={sequenceAnalyzerEnabled}
+            disabled={swapVidDesktopEnabled}
           />
         )}
 
@@ -255,8 +255,12 @@ export const LocalAssetRegistrationForm: React.FC<{
           <AppConfigToggle
             labelText="SwapVid Desktop"
             currentValue={swapVidDesktopEnabled}
-            handleClick={() => setSwapVidDesktopEnabled(!swapVidDesktopEnabled)}
-            disabled={swapVidDesktopEnabled}
+            handleClick={() => {
+              setSwapVidDesktopEnabled((b) => {
+                !b && setSequenceAnalyzerEnabled(true);
+                return !b;
+              });
+            }}
           />
         )}
       </div>
