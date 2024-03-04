@@ -2,11 +2,9 @@ import { getJotaiStorageKey } from "@/utils/getKeyString";
 import { atomWithStorage } from "jotai/utils";
 
 /** TODO: Create setter as a reducer */
-export const backendServiceConfig = atomWithStorage(
+export const backendServiceConfigAtom = atomWithStorage(
   getJotaiStorageKey("backendServiceConfig"),
   {
-    backendApiHost: "127.0.0.1",
-
     portFileExplorerApi: 8884,
     portPdfAnalyzerApi: 8883,
     portPdfReceiverApi: 8881,
@@ -25,8 +23,15 @@ export const backendServiceConfig = atomWithStorage(
   { getOnInit: true }
 );
 
+export const sequenceAnalyzerSyncIntervalMsAtom = atomWithStorage(
+  getJotaiStorageKey("sequenceAnalyzerSyncIntervalMsAtom"),
+  1000,
+  undefined,
+  { getOnInit: true }
+);
+
 /** TODO: Create setter as a reducer */
-export const userInterfaceConfig = atomWithStorage(
+export const userInterfaceConfigAtom = atomWithStorage(
   getJotaiStorageKey("userInterfaceConfig"),
   {
     pipVideoWindowWidthPx: 320,

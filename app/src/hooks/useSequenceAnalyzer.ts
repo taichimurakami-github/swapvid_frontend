@@ -199,7 +199,7 @@ export function useSequenceAnalyzer(
       endpointURL: string,
       assetId: string,
       currentTime: number,
-      maxSamplingRate_sec = 0.8
+      maxSamplingRate_sec = 0.1
     ) => {
       const timeDiff = Math.abs(currentTime - prevSampledCurrentTime.current);
 
