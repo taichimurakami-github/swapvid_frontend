@@ -183,11 +183,9 @@ export const LocalAssetRegistrationForm: React.FC<{
   ]);
 
   const submissionReady = selectedAsset.video && selectedAsset.document;
-  // && selectedAsset.overviewImage;
 
   return (
-    // <AppModalWrapper title="Asset Picker" handleClose={handleClose}>
-    <div className="flex-xyc flex-col gap-8 text-xl p-8 bg-white">
+    <div className="flex-xyc flex-col gap-8 text-xl px-8 py-4 bg-white overflow-hidden">
       <h2 className="text-center font-bold">
         Pleaase select required asset files.
       </h2>
@@ -274,6 +272,5 @@ export const LocalAssetRegistrationForm: React.FC<{
         OK
       </button>
     </div>
-    // </AppModalWrapper>
   );
 };

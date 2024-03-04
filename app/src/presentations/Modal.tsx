@@ -15,14 +15,14 @@ export const AppModalWrapper: React.FC<
   }>
 > = ({ children, title, width, height, handleClose }) => (
   <div
-    className="z-10 max-h-[90%] max-w-[80%] overflow-hidden rounded-lg bg-white text-black text-lg min-w-[50vw] max-w-[1280px] rounded-lg"
+    className="z-10 flex flex-col max-h-[90%] max-w-[80%] overflow-hidden rounded-lg bg-white text-black text-lg min-w-[50vw] max-w-[1280px] rounded-lg"
     style={{
-      height: height ?? "auto",
+      height: height ?? "100%",
       width: width ?? "auto",
     }}
     onClick={(e) => e.stopPropagation()}
   >
-    <h2 className="relative py-4 px-8 bg-slate-600 text-white text-2xl font-bold mb-4">
+    <h2 className="relative py-4 px-8 bg-slate-600 text-white text-2xl font-bold">
       {title}
       <button
         className="absolute top-1/2 -translate-y-1/2 right-0 p-2 disabled:hidden"
@@ -32,9 +32,7 @@ export const AppModalWrapper: React.FC<
         <FontAwesomeIcon className="text-3xl px-2" icon={faXmark} />
       </button>
     </h2>
-    <div className="flex-xyc p-4 h-full overflow-scroll scrollbar-hidden">
-      {children}
-    </div>
+    <div className="p-4 h-[1fr] overflow-auto scrollbar-hidden">{children}</div>
   </div>
 );
 

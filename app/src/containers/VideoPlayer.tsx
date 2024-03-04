@@ -171,7 +171,7 @@ const _VideoPlayer: React.FC<{
       />
 
       {!videoSrc && (
-        <div className="p-2 flex-xyc flex-col gap-8 text-center text-2xl w-[50vw] h-[50vh]">
+        <div className="p-2 mx-auto flex-xyc flex-col gap-8 text-center text-2xl w-[50vw] h-[50vh]">
           <span>
             Cannot find video source.<br></br> Please select the asset files.
           </span>
