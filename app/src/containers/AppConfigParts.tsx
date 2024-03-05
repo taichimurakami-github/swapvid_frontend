@@ -1,12 +1,14 @@
 import React, { PropsWithChildren, useCallback, useRef, useState } from "react";
 
 export const AppConfigMenuSectionContainer: React.FC<
-  PropsWithChildren<{ title: string }>
+  PropsWithChildren<{ title?: string }>
 > = ({ children, title }) => (
   <div className="mb-8">
-    <h3 className="select-none mx-auto flex-xyc text-center font-bold text-xl text-gray-600 p-2 mb-2">
-      {title}
-    </h3>
+    {title && (
+      <h3 className="select-none mx-auto flex-xyc text-center font-bold text-xl text-gray-600 p-2 mb-2">
+        {title}
+      </h3>
+    )}
     <div className="divide-y divide-gray-300">{children}</div>
   </div>
 );
