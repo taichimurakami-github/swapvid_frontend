@@ -30,6 +30,7 @@ import {
 import { TBoundingBox } from "@/types/swapvid";
 import { cvtToWHArray } from "@utils/bboxUtil";
 import { VideoViewportRectangle } from "@/containers/VideoViewportRectangle";
+import { sequenceAnalyzerSyncIntervalMsAtom } from "@/providers/jotai/config";
 
 export const DocumentPlayer: React.FC<{
   playerWidth?: number;
@@ -37,14 +38,6 @@ export const DocumentPlayer: React.FC<{
   zIndex?: number;
   standaloneModeEnabled?: boolean;
 }> = ({ playerWidth, playerHeight, zIndex, standaloneModeEnabled }) => {
-  const preGeneratedScrollTimeline = useAtomValue(
-    preGeneratedScrollTimelineDataAtom
-  );
-  const pdfSrc = useAtomValue(pdfSrcAtom);
-  const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
-  const videoCurrentTime = useAtomValue(videoCurrentTimeAtom);
-
-  const backendServiceHost = useAtomValue(backendServiceHostAtom);
   const [documentPlayerActive, setDocumentPlayerActive] = useAtom(
     documentPlayerActiveAtom
   );
@@ -63,7 +56,18 @@ export const DocumentPlayer: React.FC<{
   );
   const setRelatedVideoTimeSections = useSetAtom(relatedVideoTimeSectionsAtom);
 
+  const preGeneratedScrollTimeline = useAtomValue(
+    preGeneratedScrollTimelineDataAtom
+  );
+  const pdfSrc = useAtomValue(pdfSrcAtom);
+  const sequenceAnalyzerEnabled = useAtomValue(sequenceAnalyzerEnabledAtom);
+  const videoCurrentTime = useAtomValue(videoCurrentTimeAtom);
+  const backendServiceHost = useAtomValue(backendServiceHostAtom);
+  const sequenceAnalyzerSyncIntervalMs = useAtomValue(
+    sequenceAnalyzerSyncIntervalMsAtom
+  );
   const videoElementRef = useAtomValue(videoElementRefAtom);
+
   const documentWrapperRef = useRef<HTMLDivElement>(null);
   const documentContainerRef = useRef<HTMLDivElement>(null);
   const renderingScaleVideoViewport = useRef(videoViewport);
@@ -90,10 +94,6 @@ export const DocumentPlayer: React.FC<{
   const updateVideoViewport = useCallback(
     (v: TBoundingBox | null) => {
       setVideoViewport(v);
-      // console.log("Update renderingScleVideoViewport");
-      // if (!playerActive) {
-      //   renderingScaleVideoViewport.current = v; // Update renderingScale video viewport to re-render PDFRenderer, while player is unactive.
-      // }
     },
     [setVideoViewport]
   );
@@ -274,8 +274,12 @@ export const DocumentPlayer: React.FC<{
    * at every time videoCurrentTime changed
    */
   const isResponded = useRef(true);
+  const prevSqaFetchTimeMs = useRef(-Infinity);
   useEffect(() => {
-    if (isResponded.current) {
+    if (
+      isResponded.current &&
+      Date.now() - prevSqaFetchTimeMs.current >= sequenceAnalyzerSyncIntervalMs
+    ) {
       (async () => {
         isResponded.current = false;
 
@@ -285,12 +289,15 @@ export const DocumentPlayer: React.FC<{
         updatePlayerStandby(!!activeVideoViewport);
         updateVideoViewport(activeVideoViewport); // Record current viewport
 
+        prevSqaFetchTimeMs.current = Date.now();
         isResponded.current = true;
       })();
     }
   }, [
     videoCurrentTime,
     isResponded,
+    prevSqaFetchTimeMs,
+    sequenceAnalyzerSyncIntervalMs,
     updatePlayerStandby,
     getCurrentVideoViewport,
     updateVideoViewport,

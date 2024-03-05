@@ -28,6 +28,7 @@ import {
 } from "@/presentations/Button";
 import { PdfUplorder } from "./PDFUplorder";
 import { LocalAssetRegistrationForm } from "./LocalAssetPicker";
+import { sequenceAnalyzerSyncIntervalMsAtom } from "@/providers/jotai/config";
 
 type AppMenuContents = {
   element: JSX.Element;
@@ -209,10 +210,11 @@ export const AppConfig: React.FC<{
                 SwapVid Demo version {APP_VERSION}
               </p>
               <div className="h-8"></div>
-              <AppConfigMenuPlayerOptions
+              <AppConfigFileHandlers
                 togglePdfUploader={handleTogglePdfUploader}
                 toggleAssetPicker={handleToggleAssetPicker}
               />
+              <AppConfigMenuPlayerOptions />
               <AppConfigBackendServiceOptions />
               {/* <AppConfigMenuSequenceAnalyzerOptions /> */}
               {/* <AppConfigMenuSwapVidDesktopOptions /> */}
@@ -227,10 +229,32 @@ export const AppConfig: React.FC<{
   );
 };
 
+const AppConfigFileHandlers: React.FC<{
+  togglePdfUploader: () => void;
+  toggleAssetPicker: () => void;
+}> = ({ togglePdfUploader, toggleAssetPicker }) => {
+  return (
+    <AppConfigMenuSectionContainer>
+      <AppConfigLinkItem handleClick={toggleAssetPicker}>
+        Open Asset Picker{" "}
+        <FontAwesomeIcon icon={faCircleRight} className="text-black" />
+      </AppConfigLinkItem>
+
+      <AppConfigLinkItem handleClick={togglePdfUploader}>
+        Upload PDF{" "}
+        <FontAwesomeIcon icon={faCircleRight} className="text-black" />
+      </AppConfigLinkItem>
+    </AppConfigMenuSectionContainer>
+  );
+};
+
 const AppConfigBackendServiceOptions: React.FC = () => {
   const [backendServiceHost, setBackendServiceHost] = useAtom(
     backendServiceHostAtom
   );
+
+  const [sequenceAnalyzerSyncIntervalMs, setSequenceAnalyzerSyncIntervalMs] =
+    useAtom(sequenceAnalyzerSyncIntervalMsAtom);
 
   return (
     <AppConfigMenuSectionContainer title="Backend Service Options">
@@ -239,14 +263,17 @@ const AppConfigBackendServiceOptions: React.FC = () => {
         currentValue={backendServiceHost}
         handleSetValue={setBackendServiceHost}
       />
+
+      <AppConfigInput
+        labelText="Backend Sync Interval (ms)"
+        currentValue={String(sequenceAnalyzerSyncIntervalMs)}
+        handleSetValue={(v) => setSequenceAnalyzerSyncIntervalMs(Number(v))}
+      />
     </AppConfigMenuSectionContainer>
   );
 };
 
-const AppConfigMenuPlayerOptions: React.FC<{
-  togglePdfUploader: () => void;
-  toggleAssetPicker: () => void;
-}> = ({ togglePdfUploader, toggleAssetPicker }) => {
+const AppConfigMenuPlayerOptions: React.FC = () => {
   const [swapVidInterfaceType, setSwapVidInterfaceType] = useAtom(
     swapvidInterfaceTypeAtom
   );
@@ -294,16 +321,6 @@ const AppConfigMenuPlayerOptions: React.FC<{
         currentValue={swapVidDesktopEnabled}
         handleClick={handleToggleSwapVidDesktop}
       />
-
-      <AppConfigLinkItem handleClick={togglePdfUploader}>
-        Upload PDF{" "}
-        <FontAwesomeIcon icon={faCircleRight} className="text-black" />
-      </AppConfigLinkItem>
-
-      <AppConfigLinkItem handleClick={toggleAssetPicker}>
-        Open Asset Picker{" "}
-        <FontAwesomeIcon icon={faCircleRight} className="text-black" />
-      </AppConfigLinkItem>
 
       {/* {React.createElement(AppConfigMultipleSelect<TMediaSourceType>, {
         currentValue: assetLoaderState.video.sourceType,

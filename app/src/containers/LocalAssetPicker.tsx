@@ -183,20 +183,18 @@ export const LocalAssetRegistrationForm: React.FC<{
   ]);
 
   const submissionReady = selectedAsset.video && selectedAsset.document;
-  // && selectedAsset.overviewImage;
 
   return (
-    // <AppModalWrapper title="Asset Picker" handleClose={handleClose}>
-    <div className="flex-xyc flex-col gap-8 text-xl p-8 bg-white">
+    <div className="flex-xyc flex-col gap-8 text-xl px-8 py-4 bg-white overflow-hidden">
       <h2 className="text-center font-bold">
         Pleaase select required asset files.
       </h2>
 
       <div className="flex flex-col gap-6 items-start">
         {swapVidDesktopEnabled ? (
-          <div className="flex justify-between items-center w-full">
+          <div className="flex justify-between items-center gap-4 w-full">
             <Item
-              title="Video Streaming"
+              title="【REQUIRED】Video Streaming"
               errorMessage={errorMessage.video}
               value={selectedAsset.video}
             />
@@ -208,21 +206,21 @@ export const LocalAssetRegistrationForm: React.FC<{
           </div>
         ) : (
           <Item
-            title="【REQUIRED】 Video File (.mp4)"
+            title="【REQUIRED】Video File (.mp4)"
             errorMessage={errorMessage.video}
             value={selectedAsset.video}
           />
         )}
 
         <Item
-          title="【REQUIRED】 Document File (.pdf)"
+          title="【REQUIRED】Document File (.pdf)"
           errorMessage={errorMessage.document}
           value={selectedAsset.document}
         />
 
         {!swapVidDesktopEnabled && (
           <Item
-            title="【OPTIONAL】 Scroll Timeline (.json)"
+            title="【OPTIONAL】Scroll Timeline (.json)"
             errorMessage={errorMessage.scrollTimeline}
             value={selectedAsset.scrollTimeline}
           />
@@ -247,7 +245,7 @@ export const LocalAssetRegistrationForm: React.FC<{
             handleClick={() =>
               setSequenceAnalyzerEnabled(!sequenceAnalyzerEnabled)
             }
-            disabled={sequenceAnalyzerEnabled}
+            disabled={swapVidDesktopEnabled}
           />
         )}
 
@@ -255,8 +253,12 @@ export const LocalAssetRegistrationForm: React.FC<{
           <AppConfigToggle
             labelText="SwapVid Desktop"
             currentValue={swapVidDesktopEnabled}
-            handleClick={() => setSwapVidDesktopEnabled(!swapVidDesktopEnabled)}
-            disabled={swapVidDesktopEnabled}
+            handleClick={() => {
+              setSwapVidDesktopEnabled((b) => {
+                !b && setSequenceAnalyzerEnabled(true);
+                return !b;
+              });
+            }}
           />
         )}
       </div>
@@ -270,6 +272,5 @@ export const LocalAssetRegistrationForm: React.FC<{
         OK
       </button>
     </div>
-    // </AppModalWrapper>
   );
 };

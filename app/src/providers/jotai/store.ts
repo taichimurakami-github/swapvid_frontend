@@ -133,7 +133,7 @@ export const sequenceAnalyzerEnabledAtom = atomWithStorage(
 
 export const backendServiceHostAtom = atomWithStorage(
   getJotaiStorageKey("backendServiceHostAtom"),
-  "127.0.0.1",
+  location.hostname,
   undefined,
   { getOnInit: true }
 );
