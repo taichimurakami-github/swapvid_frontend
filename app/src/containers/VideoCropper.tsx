@@ -45,12 +45,12 @@ export const VideoCropper: React.FC<{
     videoCropperActiveAtom
   );
 
+  // const setUserCroppedArea = useSetAtom(userCroppedAreaAtom);
+  const [userCroppedArea, setUserCroppedArea] = useAtom(userCroppedAreaAtom);
   const [dragAreaRect, setDragAreaRect] = useState<null | DragAreaRect>(null);
   const wrapperElementRef = useRef<HTMLDivElement>(null);
   const dragAreaRef = useRef<HTMLDivElement>(null);
   const videoElementRef = useAtomValue(videoElementRefAtom);
-
-  const setUserCroppedArea = useSetAtom(userCroppedAreaAtom);
 
   const handleCloseComponent = useCallback(() => {
     setVideoCropperActive(false);
@@ -248,6 +248,20 @@ export const VideoCropper: React.FC<{
       <div className="absolute top-2 left-1/2 -translate-x-1/2 text-xl text-white select-none">
         <b>Video Cropper Mode</b> : Please drag document area in the video.
       </div>
+
+      {userCroppedArea && (
+        <div
+          className="absolute flex-xyc p-2 bg-blue-300 select-none opacity-40 text-black font-bold text-2xl overflow-hidden"
+          style={{
+            top: userCroppedArea.raw.top,
+            left: userCroppedArea.raw.left,
+            width: userCroppedArea.raw.width,
+            height: userCroppedArea.raw.height,
+          }}
+        >
+          current selected area
+        </div>
+      )}
 
       <div
         className="absolute bg-[rgba(256,256,256,0.35)] border-4 border-white border-dashed select-none"
