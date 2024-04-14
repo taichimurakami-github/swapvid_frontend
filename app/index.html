@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SwapVid demo app (public)" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      href="/apple-touch-icon-180x180.png"
+      sizes="180x180"
+    />
+    <link rel="mask-icon" href="/maskable-icon-512x512.png" color="#FFFFFF" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>SwapVid Demo</title>
+  </head>
+  <!--
+    trick:
+    Set style="overflow:hidden;" on body element to make it sure for iOS/iPadOS Safari 
+    not to scroll body element first.
+  -->
+  <body style="overflow: hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
